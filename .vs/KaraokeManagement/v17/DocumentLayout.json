@@ -1,7 +1,16 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|c:\\users\\admin\\onedrive\\m\u00E1y t\u00EDnh\\prn222\\karaokemanagement\\karaokemanagement\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|c:\\users\\admin\\onedrive\\m\u00E1y t\u00EDnh\\prn222\\karaokemanagement\\karaokemanagement\\wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,7 +18,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 13,
           "Children": [
             {
               "$type": "Bookmark",
@@ -62,6 +71,32 @@
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "_Layout.cshtml",
+              "DocumentMoniker": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Views\\Shared\\_Layout.cshtml",
+              "RelativeDocumentMoniker": "KaraokeManagement\\Views\\Shared\\_Layout.cshtml",
+              "ToolTip": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Views\\Shared\\_Layout.cshtml",
+              "RelativeToolTip": "KaraokeManagement\\Views\\Shared\\_Layout.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAABZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-06-02T14:58:25.554Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "site.css",
+              "DocumentMoniker": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\wwwroot\\css\\site.css",
+              "RelativeDocumentMoniker": "KaraokeManagement\\wwwroot\\css\\site.css",
+              "ToolTip": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\wwwroot\\css\\site.css",
+              "RelativeToolTip": "KaraokeManagement\\wwwroot\\css\\site.css",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-06-02T14:57:07.027Z",
+              "EditorCaption": ""
             }
           ]
         }
