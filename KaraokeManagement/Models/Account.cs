@@ -1,0 +1,41 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace KaraokeManagement.Models;
+
+public partial class Account
+{
+    public int AccountId { get; set; }
+
+    public int RoleId { get; set; }
+
+    public int? TierId { get; set; }
+
+    public string Username { get; set; } = null!;
+
+    public string PasswordHash { get; set; } = null!;
+
+    public string FullName { get; set; } = null!;
+
+    public string? Phone { get; set; }
+
+    public string? Email { get; set; }
+
+    public int? LoyaltyPoints { get; set; }
+
+    public DateTime? CreatedAt { get; set; }
+
+    public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+
+    public virtual ICollection<CustomerFeedback> CustomerFeedbacks { get; set; } = new List<CustomerFeedback>();
+
+    public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
+
+    public virtual ICollection<MaintenanceLog> MaintenanceLogs { get; set; } = new List<MaintenanceLog>();
+
+    public virtual ICollection<PurchaseOrder> PurchaseOrders { get; set; } = new List<PurchaseOrder>();
+
+    public virtual Role Role { get; set; } = null!;
+
+    public virtual MembershipTier? Tier { get; set; }
+}

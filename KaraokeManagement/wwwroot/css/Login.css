@@ -1,0 +1,428 @@
+﻿/* =========================================
+   Base Styles & Resets
+========================================= */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #FAF8F5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    position: relative;
+    overflow-x: hidden;
+    user-select: none;
+}
+
+/* =========================================
+   Animations
+========================================= */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 40px, 0);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-4px);
+    }
+
+    75% {
+        transform: translateX(4px);
+    }
+}
+
+/* =========================================
+   Background Mesh Gradients
+========================================= */
+.mesh-background {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -10;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.mesh-item {
+    position: absolute;
+}
+
+.mesh-1 {
+    background: radial-gradient(circle, rgba(236, 0, 140, 0.15) 0%, rgba(236, 0, 140, 0) 70%);
+}
+
+.mesh-2 {
+    background: radial-gradient(circle, rgba(147, 51, 234, 0.12) 0%, rgba(147, 51, 234, 0) 70%);
+}
+
+.top-left {
+    top: -20%;
+    left: -10%;
+    width: 60%;
+    height: 60%;
+    filter: blur(80px);
+}
+
+.bottom-right {
+    bottom: -20%;
+    right: -10%;
+    width: 70%;
+    height: 70%;
+    filter: blur(100px);
+}
+
+.top-right {
+    top: 30%;
+    right: 10%;
+    width: 45%;
+    height: 45%;
+    filter: blur(90px);
+}
+
+/* =========================================
+   Layout Containers
+========================================= */
+.login-container {
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* =========================================
+   Header & Typography
+========================================= */
+.login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.logo-box {
+    width: 4rem;
+    height: 4rem;
+    background: linear-gradient(to bottom right, #ec008c, #9333ea);
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 15px -3px rgba(236, 0, 140, 0.25);
+    margin: 0 auto 1rem auto;
+    transition: transform 0.3s ease;
+}
+
+    .logo-box:hover {
+        transform: rotate(3deg);
+    }
+
+.logo-icon {
+    width: 2rem;
+    height: 2rem;
+}
+
+.login-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: #111827;
+    letter-spacing: -0.025em;
+}
+
+.login-subtitle {
+    font-size: 10px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-top: 0.375rem;
+}
+
+/* =========================================
+   Form Card
+========================================= */
+.login-card {
+    width: 100%;
+    background-color: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f3f4f6;
+    padding: 2rem;
+    transition: box-shadow 0.3s ease;
+}
+
+@media (min-width: 640px) {
+    .login-card {
+        padding: 2.5rem;
+    }
+}
+
+.login-card:hover {
+    box-shadow: 0 16px 48px -10px rgba(0, 0, 0, 0.08);
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* =========================================
+   Error Alert
+========================================= */
+.error-alert {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: rgba(254, 242, 242, 0.7);
+    border: 1px solid #fee2e2;
+    border-radius: 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    color: #dc2626;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.625;
+    animation: shake 0.5s ease-in-out;
+}
+
+.error-icon {
+    font-size: 1rem;
+    margin-top: 0.125rem;
+}
+
+/* =========================================
+   Inputs & Labels
+========================================= */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.input-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #9ca3af;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    display: block;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    color: #9ca3af;
+    transition: color 0.2s ease;
+}
+
+.input-wrapper:focus-within .input-icon {
+    color: #ec008c;
+}
+
+.input-field {
+    width: 100%;
+    padding: 0.875rem 1rem 0.875rem 2.75rem;
+    background-color: #f9fafb;
+    border: 1px solid rgba(229, 231, 235, 0.7);
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    color: #1f2937;
+    transition: all 0.2s ease;
+    outline: none;
+    font-family: inherit;
+}
+
+    .input-field::placeholder {
+        color: rgba(156, 163, 175, 0.8);
+    }
+
+    .input-field:focus {
+        background-color: #ffffff;
+        border-color: #ec008c;
+        box-shadow: 0 0 0 4px rgba(236, 0, 140, 0.1);
+    }
+
+.password-field {
+    padding-right: 2.75rem;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 1rem;
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: color 0.2s ease;
+    outline: none;
+}
+
+    .toggle-password:hover {
+        color: #4b5563;
+    }
+
+/* =========================================
+   Options (Checkbox & Forgot Password)
+========================================= */
+.form-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.25rem;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    cursor: pointer;
+}
+
+    .remember-me input[type="checkbox"] {
+        display: none;
+    }
+
+.checkbox-box {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    border: 1px solid #d1d5db;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.check-icon {
+    font-size: 10px;
+    color: #ffffff;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+/* Checkbox Checked State */
+.remember-me input[type="checkbox"]:checked + .checkbox-box {
+    background-color: #ec008c;
+    border-color: #ec008c;
+}
+
+    .remember-me input[type="checkbox"]:checked + .checkbox-box .check-icon {
+        opacity: 1;
+    }
+
+.remember-text {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.forgot-password {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #ec008c;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+    .forgot-password:hover {
+        color: #c40072;
+    }
+
+/* =========================================
+   Buttons
+========================================= */
+.form-submit {
+    padding-top: 0.5rem;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(to right, #ec008c, #d80073);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1rem;
+    border: none;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    box-shadow: 0 10px 15px -3px rgba(236, 0, 140, 0.15);
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+    .btn-submit:hover {
+        background: linear-gradient(to right, #c40072, #be0065);
+        box-shadow: 0 10px 15px -3px rgba(236, 0, 140, 0.25);
+        transform: translateY(-2px);
+    }
+
+    .btn-submit:active {
+        transform: translateY(0);
+    }
+
+.btn-icon {
+    font-size: 0.75rem;
+    transition: transform 0.2s ease;
+}
+
+.btn-submit:hover .btn-icon {
+    transform: translateX(6px);
+}
+
+/* =========================================
+   Footer
+========================================= */
+.card-footer {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #9ca3af;
+    font-weight: 500;
+}
+
+.request-access {
+    color: #ec008c;
+    font-weight: 700;
+    text-decoration: none;
+    margin-left: 0.25rem;
+}
+
+    .request-access:hover {
+        text-decoration: underline;
+    }
