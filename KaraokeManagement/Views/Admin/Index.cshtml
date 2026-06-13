@@ -1,0 +1,107 @@
+@{
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+    ViewData["Title"] = "Dashboard";
+    ViewData["ActiveNav"] = "dashboard";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Dashboard</h1>
+        <nav class="breadcrumb-nav">
+            <span>Admin</span>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">Dashboard</span>
+        </nav>
+    </div>
+</div>
+
+<div class="stats-row">
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-box"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">128</div>
+            <div class="stat-label">Total Items</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-layer-group"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">6</div>
+            <div class="stat-label">Categories</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">4</div>
+            <div class="stat-label">Staff Accounts</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-file-invoice"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">3</div>
+            <div class="stat-label">Active Invoices</div>
+        </div>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="table-card-header">
+        <h2 class="table-card-title">Recent Entries</h2>
+        <a href="/Admin/Create" class="btn-primary-sm">
+            <i class="fa-solid fa-plus"></i> Add New
+        </a>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Heineken</td>
+                <td>Bia</td>
+                <td>40,000đ</td>
+                <td>500</td>
+                <td><span class="badge-status active">Active</span></td>
+                <td class="table-actions">
+                    <a href="/Admin/Edit/1" class="action-btn edit"><i class="fa-solid fa-pen"></i></a>
+                    <button class="action-btn delete"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Chivas 12</td>
+                <td>Rượu</td>
+                <td>1,500,000đ</td>
+                <td>20</td>
+                <td><span class="badge-status active">Active</span></td>
+                <td class="table-actions">
+                    <a href="/Admin/Edit/2" class="action-btn edit"><i class="fa-solid fa-pen"></i></a>
+                    <button class="action-btn delete"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Combo Sinh Nhật</td>
+                <td>Combo</td>
+                <td>1,500,000đ</td>
+                <td>5</td>
+                <td><span class="badge-status draft">Draft</span></td>
+                <td class="table-actions">
+                    <a href="/Admin/Edit/3" class="action-btn edit"><i class="fa-solid fa-pen"></i></a>
+                    <button class="action-btn delete"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

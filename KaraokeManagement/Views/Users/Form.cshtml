@@ -1,0 +1,224 @@
+@{
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+    bool isEdit = ViewBag.IsEdit == true;
+    ViewData["Title"] = isEdit ? "Edit User" : "Add User";
+    ViewData["ActiveNav"] = "users";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">@(isEdit ? "Edit User" : "Add User")</h1>
+        <nav class="breadcrumb-nav">
+            <a href="/Admin">Admin</a>
+            <span class="breadcrumb-sep">/</span>
+            <a href="/Users">Users</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">@(isEdit ? "Edit" : "Create New")</span>
+        </nav>
+    </div>
+</div>
+
+<div class="form-layout">
+
+    <!-- Left: Main form -->
+    <div class="form-main">
+        <div class="form-card">
+            <form id="userForm">
+
+                <div class="form-row-2">
+                    <div class="field-group">
+                        <label class="field-label">Full Name</label>
+                        <input type="text"
+                               name="FullName"
+                               class="field-input"
+                               placeholder="Nguyễn Văn A"
+                               value="@(isEdit ? "Lê Thị Lan" : "")" />
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Username</label>
+                        <input type="text"
+                               name="Username"
+                               class="field-input"
+                               placeholder="letan_lan"
+                               value="@(isEdit ? "letan_lan" : "")" />
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="field-group">
+                        <label class="field-label">Email</label>
+                        <input type="email"
+                               name="Email"
+                               class="field-input"
+                               placeholder="example@karaoke.com"
+                               value="@(isEdit ? "lan@karaoke.com" : "")" />
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Phone</label>
+                        <input type="text"
+                               name="Phone"
+                               class="field-input"
+                               placeholder="09xxxxxxxx"
+                               value="@(isEdit ? "0900000003" : "")" />
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="field-group">
+                        <label class="field-label">Role</label>
+                        <div class="select-wrapper">
+                            <select name="RoleId" class="field-select" id="roleSelect">
+                                <option value="">Select role</option>
+                                <option value="1">Admin</option>
+                                <option value="2">Manager</option>
+                                <option value="3">Receptionist</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">
+                            @(isEdit ? "New Password" : "Password")
+                            @if (isEdit) { <span class="field-hint-inline">(leave blank to keep)</span> }
+                        </label>
+                        <div class="password-wrapper">
+                            <input type="password"
+                                   name="Password"
+                                   id="passwordInput"
+                                   class="field-input"
+                                   placeholder="••••••••" />
+                            <button type="button" class="toggle-pw" id="togglePw">
+                                <i class="fa-regular fa-eye" id="pwEye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                @if (!isEdit)
+                {
+                    <div class="field-group" style="margin-bottom:20px;">
+                        <label class="field-label">Confirm Password</label>
+                        <div class="password-wrapper">
+                            <input type="password"
+                                   name="ConfirmPassword"
+                                   id="confirmInput"
+                                   class="field-input"
+                                   placeholder="••••••••" />
+                        </div>
+                    </div>
+                }
+
+                <div class="form-actions">
+                    <a href="/Users" class="btn-cancel">Cancel</a>
+                    <button type="submit" class="btn-save">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        @(isEdit ? "Update User" : "Create User")
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Right: Avatar + Info -->
+    <div class="form-aside">
+
+        <!-- Avatar -->
+        <div class="aside-card" style="text-align:center;">
+            <h3 class="aside-title">Profile Photo</h3>
+            <div class="avatar-upload-area" id="avatarUpload">
+                <input type="file" id="avatarInput" accept="image/*" class="upload-input" />
+                <div id="avatarPlaceholder">
+                    <div class="avatar-big" id="avatarInitial">@(isEdit ? "L" : "?")</div>
+                    <p class="upload-hint" style="margin-top:10px;">Click to upload photo</p>
+                </div>
+                <img id="avatarPreview" src="" alt="" class="avatar-preview d-none" />
+            </div>
+        </div>
+
+        <!-- Role summary -->
+        <div class="aside-card">
+            <h3 class="aside-title-sm">ROLE PERMISSIONS</h3>
+            <div class="role-info" id="roleInfo">
+                <p class="role-placeholder">Select a role to see permissions.</p>
+            </div>
+        </div>
+
+        <!-- Account stats -->
+        <div class="aside-card">
+            <h3 class="aside-title-sm">ACCOUNT INFO</h3>
+            <div class="stat-row">
+                <span class="stat-row-label">Status</span>
+                <span class="badge-status active">Active</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-row-label">Created</span>
+                <span class="stat-row-value">@(isEdit ? "01/01/2024" : "—")</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-row-label">Last Login</span>
+                <span class="stat-row-value">@(isEdit ? "Hôm nay" : "—")</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Role permissions preview
+    const rolePerms = {
+        '1': ['Toàn quyền hệ thống', 'Quản lý tài khoản', 'Xem báo cáo doanh thu', 'Cấu hình hệ thống'],
+        '2': ['Quản lý phòng & thiết bị', 'Quản lý kho hàng', 'Xem báo cáo doanh thu', 'Tạo đơn nhập hàng'],
+        '3': ['Check-in / Check-out khách', 'Tạo hóa đơn', 'Gọi dịch vụ', 'Xem lịch đặt phòng']
+    };
+
+    @if (isEdit) {
+        <text>document.getElementById('roleSelect').value = '3';</text>
+    }
+
+    function updateRoleInfo(val) {
+        const container = document.getElementById('roleInfo');
+        if (!val || !rolePerms[val]) {
+            container.innerHTML = '<p class="role-placeholder">Select a role to see permissions.</p>';
+            return;
+        }
+        container.innerHTML = rolePerms[val].map(p =>
+            `<div class="perm-item"><i class="fa-solid fa-check perm-check"></i><span>${p}</span></div>`
+        ).join('');
+    }
+
+    document.getElementById('roleSelect').addEventListener('change', e => updateRoleInfo(e.target.value));
+    updateRoleInfo(document.getElementById('roleSelect').value);
+
+    // Toggle password
+    document.getElementById('togglePw').addEventListener('click', () => {
+        const input = document.getElementById('passwordInput');
+        const eye = document.getElementById('pwEye');
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        eye.className = isPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+    });
+
+    // Avatar upload
+    document.getElementById('avatarUpload').addEventListener('click', () => {
+        document.getElementById('avatarInput').click();
+    });
+
+    document.getElementById('avatarInput').addEventListener('change', function() {
+        if (!this.files[0]) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('avatarPreview').src = e.target.result;
+            document.getElementById('avatarPreview').classList.remove('d-none');
+            document.getElementById('avatarPlaceholder').classList.add('d-none');
+        };
+        reader.readAsDataURL(this.files[0]);
+    });
+
+    document.getElementById('userForm').addEventListener('submit', e => {
+        e.preventDefault();
+        alert('@(isEdit ? "User updated!" : "User created!")');
+    });
+</script>
+}

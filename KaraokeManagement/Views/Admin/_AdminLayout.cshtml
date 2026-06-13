@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AdminPanel</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+<div class="admin-wrapper">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">
+                <i class="fa-solid fa-table-columns"></i>
+            </div>
+            <div>
+                <div class="brand-name">AdminPanel</div>
+                <div class="brand-sub">Data Management</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="/Admin" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "dashboard" ? "active" : "")">
+                <i class="fa-solid fa-table-columns nav-icon"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/Admin/Create" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "inventory" ? "active" : "")">
+                <i class="fa-solid fa-box nav-icon"></i>
+                <span>Inventory</span>
+            </a>
+            <a href="/Categories" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "categories" ? "active" : "")">
+                <i class="fa-solid fa-layer-group nav-icon"></i>
+                <span>Categories</span>
+            </a>
+            <a href="/Users" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "users" ? "active" : "")">
+                <i class="fa-solid fa-users nav-icon"></i>
+                <span>Users</span>
+            </a>
+            <a href="#" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "settings" ? "active" : "")">
+                <i class="fa-solid fa-gear nav-icon"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <a href="/Admin/Create" class="btn-add-new">
+                <i class="fa-solid fa-plus"></i>
+                Add New Entry
+            </a>
+            <a href="#" class="sidebar-footer-link">
+                <i class="fa-regular fa-circle-question"></i>
+                <span>Help Center</span>
+            </a>
+            <a href="/Auth/Logout" class="sidebar-footer-link">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main area -->
+    <div class="admin-main">
+
+        <!-- Top header -->
+        <header class="admin-header">
+            <div class="header-search">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" placeholder="Search system..." class="search-input" />
+            </div>
+            <nav class="header-tabs">
+                <a href="#" class="header-tab active">Overview</a>
+                <a href="#" class="header-tab">History</a>
+                <a href="#" class="header-tab">Reports</a>
+            </nav>
+            <div class="header-actions">
+                <button class="header-icon-btn"><i class="fa-regular fa-bell"></i></button>
+                <button class="header-icon-btn"><i class="fa-solid fa-grip"></i></button>
+                <div class="header-avatar">I</div>
+            </div>
+        </header>
+
+        <!-- Page content -->
+        <div class="admin-content">
+            @RenderBody()
+        </div>
+    </div>
+</div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
