@@ -13,5 +13,5 @@ public partial class MembershipTier
 
     public int? MinPoints { get; set; }
 
-    public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
+    public virtual ICollection<Customer> Customers { get; set; } = new List<Customer>();
 }

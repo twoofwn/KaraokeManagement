@@ -9,6 +9,8 @@ public partial class Booking
 
     public int CustomerId { get; set; }
 
+    public int CreatedById { get; set; }
+
     public int RoomId { get; set; }
 
     public DateTime? BookingTime { get; set; }
@@ -19,7 +21,9 @@ public partial class Booking
 
     public string? Status { get; set; }
 
-    public virtual Account Customer { get; set; } = null!;
+    public virtual Account CreatedBy { get; set; } = null!;
+
+    public virtual Customer Customer { get; set; } = null!;
 
     public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
 

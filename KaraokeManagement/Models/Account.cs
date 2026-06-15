@@ -9,8 +9,6 @@ public partial class Account
 
     public int RoleId { get; set; }
 
-    public int? TierId { get; set; }
-
     public string Username { get; set; } = null!;
 
     public string PasswordHash { get; set; } = null!;
@@ -21,13 +19,9 @@ public partial class Account
 
     public string? Email { get; set; }
 
-    public int? LoyaltyPoints { get; set; }
-
     public DateTime? CreatedAt { get; set; }
 
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
-
-    public virtual ICollection<CustomerFeedback> CustomerFeedbacks { get; set; } = new List<CustomerFeedback>();
 
     public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
 
@@ -36,6 +30,4 @@ public partial class Account
     public virtual ICollection<PurchaseOrder> PurchaseOrders { get; set; } = new List<PurchaseOrder>();
 
     public virtual Role Role { get; set; } = null!;
-
-    public virtual MembershipTier? Tier { get; set; }
 }

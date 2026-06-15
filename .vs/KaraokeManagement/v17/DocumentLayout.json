@@ -74,7 +74,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 57,
-          "SelectedChildIndex": 19,
+          "SelectedChildIndex": 14,
           "Children": [
             {
               "$type": "Bookmark",
@@ -126,7 +126,24 @@
             },
             {
               "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
+            {
+              "$type": "Bookmark",
               "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "KaraokeManagement\\Controllers\\AuthController.cs",
+              "ToolTip": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "KaraokeManagement\\Controllers\\AuthController.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAAwG4AAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-11T07:40:04.887Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -138,8 +155,7 @@
               "RelativeToolTip": "KaraokeManagement\\Views\\Admin\\Index.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-06-14T13:45:27.823Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-14T13:45:27.823Z"
             },
             {
               "$type": "Document",
@@ -151,8 +167,7 @@
               "RelativeToolTip": "KaraokeManagement\\Views\\Admin\\Form.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-06-14T13:45:35.742Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-14T13:45:35.742Z"
             },
             {
               "$type": "Document",
@@ -164,8 +179,7 @@
               "RelativeToolTip": "KaraokeManagement\\Views\\Admin\\_AdminLayout.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-06-14T13:43:57.848Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-14T13:43:57.848Z"
             },
             {
               "$type": "Document",
@@ -177,8 +191,7 @@
               "RelativeToolTip": "KaraokeManagement\\Controllers\\AdminController.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-14T13:41:10.448Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-14T13:41:10.448Z"
             },
             {
               "$type": "Document",
@@ -206,19 +219,6 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "AuthController.cs",
-              "DocumentMoniker": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Controllers\\AuthController.cs",
-              "RelativeDocumentMoniker": "KaraokeManagement\\Controllers\\AuthController.cs",
-              "ToolTip": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Controllers\\AuthController.cs",
-              "RelativeToolTip": "KaraokeManagement\\Controllers\\AuthController.cs",
-              "ViewState": "AgIAAF8AAAAAAAAAAAAgwG4AAAAyAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-11T07:40:04.887Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 1,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Views\\Home\\Index.cshtml",
@@ -227,8 +227,7 @@
               "RelativeToolTip": "KaraokeManagement\\Views\\Home\\Index.cshtml",
               "ViewState": "AgIAADQAAAAAAAAAAAAowIkAAAAHAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-06-11T07:43:32.155Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-11T07:43:32.155Z"
             },
             {
               "$type": "Document",
@@ -240,8 +239,7 @@
               "RelativeToolTip": "KaraokeManagement\\Controllers\\CategoriesController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-14T13:41:15.953Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-14T13:41:15.953Z"
             },
             {
               "$type": "Document",
@@ -253,8 +251,7 @@
               "RelativeToolTip": "KaraokeManagement\\Controllers\\HomeController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-14T13:41:17.292Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-14T13:41:17.292Z"
             },
             {
               "$type": "Document",
@@ -278,8 +275,7 @@
               "RelativeToolTip": "KaraokeManagement\\Views\\Auth\\Login.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-06-11T07:40:36.95Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-11T07:40:36.95Z"
             },
             {
               "$type": "Document",
@@ -291,8 +287,7 @@
               "RelativeToolTip": "KaraokeManagement\\Controllers\\UsersController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-14T13:41:21.772Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-14T13:41:21.772Z"
             },
             {
               "$type": "Document",

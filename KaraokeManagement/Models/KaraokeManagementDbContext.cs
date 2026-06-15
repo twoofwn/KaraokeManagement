@@ -21,7 +21,7 @@ public partial class KaraokeManagementDbContext : DbContext
 
     public virtual DbSet<Category> Categories { get; set; }
 
-    public virtual DbSet<CustomerFeedback> CustomerFeedbacks { get; set; }
+    public virtual DbSet<Customer> Customers { get; set; }
 
     public virtual DbSet<Equipment> Equipment { get; set; }
 
@@ -54,23 +54,18 @@ public partial class KaraokeManagementDbContext : DbContext
     public virtual DbSet<Supplier> Suppliers { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-        if (!optionsBuilder.IsConfigured)
-        {
-            optionsBuilder.UseSqlServer(config.GetConnectionString("MyCnn"));
-        }
-    }
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("server=QUYNHNCHE190334;database=KaraokeManagementDB;uid=sa;pwd=123;TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Account>(entity =>
         {
-            entity.HasKey(e => e.AccountId).HasName("PK__Account__349DA5869DECBF5C");
+            entity.HasKey(e => e.AccountId).HasName("PK__Account__349DA5862F09315B");
 
             entity.ToTable("Account");
 
-            entity.HasIndex(e => e.Username, "UQ__Account__536C85E47C68D587").IsUnique();
+            entity.HasIndex(e => e.Username, "UQ__Account__536C85E4D19FA311").IsUnique();
 
             entity.Property(e => e.AccountId).HasColumnName("AccountID");
             entity.Property(e => e.CreatedAt)
@@ -80,7 +75,6 @@ public partial class KaraokeManagementDbContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false);
             entity.Property(e => e.FullName).HasMaxLength(100);
-            entity.Property(e => e.LoyaltyPoints).HasDefaultValue(0);
             entity.Property(e => e.PasswordHash)
                 .HasMaxLength(255)
                 .IsUnicode(false);
@@ -88,7 +82,6 @@ public partial class KaraokeManagementDbContext : DbContext
                 .HasMaxLength(15)
                 .IsUnicode(false);
             entity.Property(e => e.RoleId).HasColumnName("RoleID");
-            entity.Property(e => e.TierId).HasColumnName("TierID");
             entity.Property(e => e.Username)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -96,16 +89,12 @@ public partial class KaraokeManagementDbContext : DbContext
             entity.HasOne(d => d.Role).WithMany(p => p.Accounts)
                 .HasForeignKey(d => d.RoleId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Account__RoleID__403A8C7D");
-
-            entity.HasOne(d => d.Tier).WithMany(p => p.Accounts)
-                .HasForeignKey(d => d.TierId)
-                .HasConstraintName("FK__Account__TierID__412EB0B6");
+                .HasConstraintName("FK__Account__RoleID__3B75D760");
         });
 
         modelBuilder.Entity<Booking>(entity =>
         {
-            entity.HasKey(e => e.BookingId).HasName("PK__Booking__73951ACDEE15A8A4");
+            entity.HasKey(e => e.BookingId).HasName("PK__Booking__73951ACDA05E4DAE");
 
             entity.ToTable("Booking");
 
@@ -113,6 +102,7 @@ public partial class KaraokeManagementDbContext : DbContext
             entity.Property(e => e.BookingTime)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.CreatedById).HasColumnName("CreatedByID");
             entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
             entity.Property(e => e.EndTime).HasColumnType("datetime");
             entity.Property(e => e.RoomId).HasColumnName("RoomID");
@@ -121,20 +111,25 @@ public partial class KaraokeManagementDbContext : DbContext
                 .HasMaxLength(50)
                 .HasDefaultValue("Pending");
 
+            entity.HasOne(d => d.CreatedBy).WithMany(p => p.Bookings)
+                .HasForeignKey(d => d.CreatedById)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Booking__Created__6E01572D");
+
             entity.HasOne(d => d.Customer).WithMany(p => p.Bookings)
                 .HasForeignKey(d => d.CustomerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Booking__Custome__6A30C649");
+                .HasConstraintName("FK__Booking__Custome__6D0D32F4");
 
             entity.HasOne(d => d.Room).WithMany(p => p.Bookings)
                 .HasForeignKey(d => d.RoomId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Booking__RoomID__6B24EA82");
+                .HasConstraintName("FK__Booking__RoomID__6EF57B66");
         });
 
         modelBuilder.Entity<Category>(entity =>
         {
-            entity.HasKey(e => e.CategoryId).HasName("PK__Category__19093A2B9DC9AE85");
+            entity.HasKey(e => e.CategoryId).HasName("PK__Category__19093A2BEBC42E6A");
 
             entity.ToTable("Category");
 
@@ -142,33 +137,34 @@ public partial class KaraokeManagementDbContext : DbContext
             entity.Property(e => e.CategoryName).HasMaxLength(100);
         });
 
-        modelBuilder.Entity<CustomerFeedback>(entity =>
+        modelBuilder.Entity<Customer>(entity =>
         {
-            entity.HasKey(e => e.FeedbackId).HasName("PK__Customer__6A4BEDF6BA02915D");
+            entity.HasKey(e => e.CustomerId).HasName("PK__Customer__A4AE64B805742F79");
 
-            entity.ToTable("CustomerFeedback");
+            entity.ToTable("Customer");
 
-            entity.Property(e => e.FeedbackId).HasColumnName("FeedbackID");
+            entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
-            entity.Property(e => e.InvoiceId).HasColumnName("InvoiceID");
+            entity.Property(e => e.Email)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.FullName).HasMaxLength(100);
+            entity.Property(e => e.LoyaltyPoints).HasDefaultValue(0);
+            entity.Property(e => e.Phone)
+                .HasMaxLength(15)
+                .IsUnicode(false);
+            entity.Property(e => e.TierId).HasColumnName("TierID");
 
-            entity.HasOne(d => d.Customer).WithMany(p => p.CustomerFeedbacks)
-                .HasForeignKey(d => d.CustomerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__CustomerF__Custo__7F2BE32F");
-
-            entity.HasOne(d => d.Invoice).WithMany(p => p.CustomerFeedbacks)
-                .HasForeignKey(d => d.InvoiceId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__CustomerF__Invoi__7E37BEF6");
+            entity.HasOne(d => d.Tier).WithMany(p => p.Customers)
+                .HasForeignKey(d => d.TierId)
+                .HasConstraintName("FK__Customer__TierID__440B1D61");
         });
 
         modelBuilder.Entity<Equipment>(entity =>
         {
-            entity.HasKey(e => e.EquipmentId).HasName("PK__Equipmen__3447459975DCD9A8");
+            entity.HasKey(e => e.EquipmentId).HasName("PK__Equipmen__3447459968E57684");
 
             entity.Property(e => e.EquipmentId).HasColumnName("EquipmentID");
             entity.Property(e => e.EquipmentName).HasMaxLength(100);
@@ -183,12 +179,12 @@ public partial class KaraokeManagementDbContext : DbContext
             entity.HasOne(d => d.Room).WithMany(p => p.Equipment)
                 .HasForeignKey(d => d.RoomId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Equipment__RoomI__4AB81AF0");
+                .HasConstraintName("FK__Equipment__RoomI__4D94879B");
         });
 
         modelBuilder.Entity<Invoice>(entity =>
         {
-            entity.HasKey(e => e.InvoiceId).HasName("PK__Invoice__D796AAD51A1CAA4D");
+            entity.HasKey(e => e.InvoiceId).HasName("PK__Invoice__D796AAD573270A4F");
 
             entity.ToTable("Invoice");
 
@@ -217,26 +213,26 @@ public partial class KaraokeManagementDbContext : DbContext
 
             entity.HasOne(d => d.Booking).WithMany(p => p.Invoices)
                 .HasForeignKey(d => d.BookingId)
-                .HasConstraintName("FK__Invoice__Booking__72C60C4A");
+                .HasConstraintName("FK__Invoice__Booking__76969D2E");
 
             entity.HasOne(d => d.Promotion).WithMany(p => p.Invoices)
                 .HasForeignKey(d => d.PromotionId)
-                .HasConstraintName("FK__Invoice__Promoti__75A278F5");
+                .HasConstraintName("FK__Invoice__Promoti__797309D9");
 
             entity.HasOne(d => d.Receptionist).WithMany(p => p.Invoices)
                 .HasForeignKey(d => d.ReceptionistId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Invoice__Recepti__74AE54BC");
+                .HasConstraintName("FK__Invoice__Recepti__787EE5A0");
 
             entity.HasOne(d => d.Room).WithMany(p => p.Invoices)
                 .HasForeignKey(d => d.RoomId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Invoice__RoomID__73BA3083");
+                .HasConstraintName("FK__Invoice__RoomID__778AC167");
         });
 
         modelBuilder.Entity<InvoiceDetail>(entity =>
         {
-            entity.HasKey(e => e.InvoiceDetailId).HasName("PK__InvoiceD__1F1578F124846476");
+            entity.HasKey(e => e.InvoiceDetailId).HasName("PK__InvoiceD__1F1578F19C530940");
 
             entity.ToTable("InvoiceDetail");
 
@@ -248,17 +244,17 @@ public partial class KaraokeManagementDbContext : DbContext
             entity.HasOne(d => d.Invoice).WithMany(p => p.InvoiceDetails)
                 .HasForeignKey(d => d.InvoiceId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__InvoiceDe__Invoi__787EE5A0");
+                .HasConstraintName("FK__InvoiceDe__Invoi__7C4F7684");
 
             entity.HasOne(d => d.Service).WithMany(p => p.InvoiceDetails)
                 .HasForeignKey(d => d.ServiceId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__InvoiceDe__Servi__797309D9");
+                .HasConstraintName("FK__InvoiceDe__Servi__7D439ABD");
         });
 
         modelBuilder.Entity<MaintenanceLog>(entity =>
         {
-            entity.HasKey(e => e.LogId).HasName("PK__Maintena__5E5499A8C1C68102");
+            entity.HasKey(e => e.LogId).HasName("PK__Maintena__5E5499A835EBF7E0");
 
             entity.ToTable("MaintenanceLog");
 
@@ -276,17 +272,17 @@ public partial class KaraokeManagementDbContext : DbContext
             entity.HasOne(d => d.Equipment).WithMany(p => p.MaintenanceLogs)
                 .HasForeignKey(d => d.EquipmentId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Maintenan__Equip__4F7CD00D");
+                .HasConstraintName("FK__Maintenan__Equip__52593CB8");
 
             entity.HasOne(d => d.ReportedBy).WithMany(p => p.MaintenanceLogs)
                 .HasForeignKey(d => d.ReportedById)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Maintenan__Repor__5070F446");
+                .HasConstraintName("FK__Maintenan__Repor__534D60F1");
         });
 
         modelBuilder.Entity<MembershipTier>(entity =>
         {
-            entity.HasKey(e => e.TierId).HasName("PK__Membersh__362F55FD2485ACE3");
+            entity.HasKey(e => e.TierId).HasName("PK__Membersh__362F55FDA2B3A150");
 
             entity.ToTable("MembershipTier");
 
@@ -300,7 +296,7 @@ public partial class KaraokeManagementDbContext : DbContext
 
         modelBuilder.Entity<PaymentMethod>(entity =>
         {
-            entity.HasKey(e => e.MethodId).HasName("PK__PaymentM__FC681FB1B003FD97");
+            entity.HasKey(e => e.MethodId).HasName("PK__PaymentM__FC681FB16A571FA5");
 
             entity.ToTable("PaymentMethod");
 
@@ -310,7 +306,7 @@ public partial class KaraokeManagementDbContext : DbContext
 
         modelBuilder.Entity<PaymentTransaction>(entity =>
         {
-            entity.HasKey(e => e.TransactionId).HasName("PK__PaymentT__55433A4B54190190");
+            entity.HasKey(e => e.TransactionId).HasName("PK__PaymentT__55433A4B866BB10B");
 
             entity.ToTable("PaymentTransaction");
 
@@ -328,21 +324,21 @@ public partial class KaraokeManagementDbContext : DbContext
             entity.HasOne(d => d.Invoice).WithMany(p => p.PaymentTransactions)
                 .HasForeignKey(d => d.InvoiceId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__PaymentTr__Invoi__04E4BC85");
+                .HasConstraintName("FK__PaymentTr__Invoi__02FC7413");
 
             entity.HasOne(d => d.Method).WithMany(p => p.PaymentTransactions)
                 .HasForeignKey(d => d.MethodId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__PaymentTr__Metho__05D8E0BE");
+                .HasConstraintName("FK__PaymentTr__Metho__03F0984C");
         });
 
         modelBuilder.Entity<Promotion>(entity =>
         {
-            entity.HasKey(e => e.PromotionId).HasName("PK__Promotio__52C42F2F34FFE92D");
+            entity.HasKey(e => e.PromotionId).HasName("PK__Promotio__52C42F2F066FB723");
 
             entity.ToTable("Promotion");
 
-            entity.HasIndex(e => e.PromoCode, "UQ__Promotio__32DBED3585161E33").IsUnique();
+            entity.HasIndex(e => e.PromoCode, "UQ__Promotio__32DBED35851D9D2D").IsUnique();
 
             entity.Property(e => e.PromotionId).HasColumnName("PromotionID");
             entity.Property(e => e.DiscountPercent)
@@ -359,7 +355,7 @@ public partial class KaraokeManagementDbContext : DbContext
 
         modelBuilder.Entity<PurchaseOrder>(entity =>
         {
-            entity.HasKey(e => e.PoId).HasName("PK__Purchase__5ECDB69D539F029F");
+            entity.HasKey(e => e.PoId).HasName("PK__Purchase__5ECDB69D5E33513D");
 
             entity.ToTable("PurchaseOrder");
 
@@ -376,17 +372,17 @@ public partial class KaraokeManagementDbContext : DbContext
             entity.HasOne(d => d.CreatedBy).WithMany(p => p.PurchaseOrders)
                 .HasForeignKey(d => d.CreatedById)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__PurchaseO__Creat__5DCAEF64");
+                .HasConstraintName("FK__PurchaseO__Creat__60A75C0F");
 
             entity.HasOne(d => d.Supplier).WithMany(p => p.PurchaseOrders)
                 .HasForeignKey(d => d.SupplierId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__PurchaseO__Suppl__5CD6CB2B");
+                .HasConstraintName("FK__PurchaseO__Suppl__5FB337D6");
         });
 
         modelBuilder.Entity<PurchaseOrderDetail>(entity =>
         {
-            entity.HasKey(e => e.PodetailId).HasName("PK__Purchase__4EB47B5EDA464174");
+            entity.HasKey(e => e.PodetailId).HasName("PK__Purchase__4EB47B5EF00FCEC9");
 
             entity.ToTable("PurchaseOrderDetail");
 
@@ -398,17 +394,17 @@ public partial class KaraokeManagementDbContext : DbContext
             entity.HasOne(d => d.Po).WithMany(p => p.PurchaseOrderDetails)
                 .HasForeignKey(d => d.PoId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__PurchaseO__PO_ID__60A75C0F");
+                .HasConstraintName("FK__PurchaseO__PO_ID__6383C8BA");
 
             entity.HasOne(d => d.Service).WithMany(p => p.PurchaseOrderDetails)
                 .HasForeignKey(d => d.ServiceId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__PurchaseO__Servi__619B8048");
+                .HasConstraintName("FK__PurchaseO__Servi__6477ECF3");
         });
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.RoleId).HasName("PK__Role__8AFACE3A3FD8CFBF");
+            entity.HasKey(e => e.RoleId).HasName("PK__Role__8AFACE3AECCBE944");
 
             entity.ToTable("Role");
 
@@ -418,7 +414,7 @@ public partial class KaraokeManagementDbContext : DbContext
 
         modelBuilder.Entity<Room>(entity =>
         {
-            entity.HasKey(e => e.RoomId).HasName("PK__Room__32863919628FBB55");
+            entity.HasKey(e => e.RoomId).HasName("PK__Room__32863919B7E6916F");
 
             entity.ToTable("Room");
 
@@ -432,12 +428,12 @@ public partial class KaraokeManagementDbContext : DbContext
             entity.HasOne(d => d.RoomType).WithMany(p => p.Rooms)
                 .HasForeignKey(d => d.RoomTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Room__RoomTypeID__46E78A0C");
+                .HasConstraintName("FK__Room__RoomTypeID__49C3F6B7");
         });
 
         modelBuilder.Entity<RoomType>(entity =>
         {
-            entity.HasKey(e => e.RoomTypeId).HasName("PK__RoomType__BCC8961147791181");
+            entity.HasKey(e => e.RoomTypeId).HasName("PK__RoomType__BCC8961173225B5E");
 
             entity.ToTable("RoomType");
 
@@ -449,7 +445,7 @@ public partial class KaraokeManagementDbContext : DbContext
 
         modelBuilder.Entity<ServiceItem>(entity =>
         {
-            entity.HasKey(e => e.ServiceId).HasName("PK__ServiceI__C51BB0EA8EAA64E1");
+            entity.HasKey(e => e.ServiceId).HasName("PK__ServiceI__C51BB0EA701CCECC");
 
             entity.ToTable("ServiceItem");
 
@@ -463,12 +459,12 @@ public partial class KaraokeManagementDbContext : DbContext
             entity.HasOne(d => d.Category).WithMany(p => p.ServiceItems)
                 .HasForeignKey(d => d.CategoryId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ServiceIt__Categ__5629CD9C");
+                .HasConstraintName("FK__ServiceIt__Categ__59063A47");
         });
 
         modelBuilder.Entity<Supplier>(entity =>
         {
-            entity.HasKey(e => e.SupplierId).HasName("PK__Supplier__4BE6669461A381C9");
+            entity.HasKey(e => e.SupplierId).HasName("PK__Supplier__4BE66694BC6848DC");
 
             entity.ToTable("Supplier");
 
