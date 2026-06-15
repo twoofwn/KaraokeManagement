@@ -1,0 +1,174 @@
+@model KaraokeManagement.Models.Account
+@{
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+    bool isEdit = ViewBag.IsEdit == true;
+    ViewData["Title"] = isEdit ? "Edit User" : "Add User";
+    ViewData["ActiveNav"] = "users";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">@(isEdit ? "Edit User" : "Add User")</h1>
+        <nav class="breadcrumb-nav">
+            <a href="/Admin/Users">Users</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">@(isEdit ? "Edit" : "Create New")</span>
+        </nav>
+    </div>
+</div>
+
+<div class="form-layout">
+    <div class="form-main">
+        <div class="form-card">
+            <form method="post"
+                  asp-action="@(isEdit ? "UserEdit" : "UserCreate")"
+                  asp-controller="Admin"
+                  asp-route-id="@(isEdit ? Model.AccountId : 0)">
+
+                <div class="form-row-2">
+                    <div class="field-group">
+                        <label class="field-label">Full Name</label>
+                        <input asp-for="FullName" class="field-input" placeholder="Nguyễn Văn A" />
+                        <span asp-validation-for="FullName" class="field-error"></span>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Username</label>
+                        <input asp-for="Username" class="field-input" placeholder="username" autocomplete="off" />
+                        <span asp-validation-for="Username" class="field-error"></span>
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="field-group">
+                        <label class="field-label">Email</label>
+                        <input asp-for="Email" type="email" class="field-input" placeholder="name@email.com" />
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">Phone</label>
+                        <input asp-for="Phone" class="field-input" placeholder="09xxxxxxxx" />
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="field-group">
+                        <label class="field-label">Role</label>
+                        <div class="select-wrapper">
+                            <select asp-for="RoleId" asp-items="ViewBag.Roles" id="roleSelect" class="field-select">
+                                <option value="">Select role</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down select-arrow"></i>
+                        </div>
+                        <span asp-validation-for="RoleId" class="field-error"></span>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label">
+                            @(isEdit ? "New Password" : "Password")
+                            @if (isEdit) { <span class="field-hint" style="margin-left:6px;">(leave blank to keep)</span> }
+                        </label>
+                        <div class="password-wrapper">
+                            <input name="Password" id="passwordInput" type="password"
+                                   class="field-input has-eye"
+                                   placeholder="••••••••"
+                                   autocomplete="new-password" />
+                            <button type="button" class="toggle-pw" id="togglePw">
+                                <i class="fa-regular fa-eye" id="pwEye"></i>
+                            </button>
+                        </div>
+                        @if (!isEdit)
+                        {
+                            <span class="field-hint">Mật khẩu sẽ được hash SHA-256.</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="/Admin/Users" class="btn-cancel">Cancel</a>
+                    <button type="submit" class="btn-save">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        @(isEdit ? "Update User" : "Save User")
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="form-aside">
+        <div class="aside-card" style="text-align:center;">
+            <h3 class="aside-title">Avatar</h3>
+            <div class="avatar-upload-area">
+                <div class="avatar-big" id="avatarInitial">
+                    @if (!string.IsNullOrEmpty(Model?.FullName))
+                    {
+                        @Model.FullName[0]
+                    }
+                    else
+                    {
+                        <i class="fa-solid fa-user"></i>
+                    }
+                </div>
+                <p class="upload-hint" style="margin-top:10px;">Avatar từ chữ cái đầu tên</p>
+            </div>
+        </div>
+
+        <div class="aside-card">
+            <h3 class="aside-title-sm">ROLE PERMISSIONS</h3>
+            <div id="roleInfo">
+                <p class="role-placeholder">Select a role to see permissions.</p>
+            </div>
+        </div>
+
+        <div class="aside-card">
+            <h3 class="aside-title-sm">ACCOUNT INFO</h3>
+            <div class="stat-row">
+                <span class="stat-row-label">Status</span>
+                <span class="badge-status active">Active</span>
+            </div>
+            @if (isEdit && Model?.CreatedAt.HasValue == true)
+            {
+                <div class="stat-row">
+                    <span class="stat-row-label">Created</span>
+                    <span class="stat-row-value">@Model.CreatedAt.Value.ToString("dd/MM/yyyy")</span>
+                </div>
+            }
+            <div class="stat-row">
+                <span class="stat-row-label">Password</span>
+                <span class="stat-row-value">SHA-256 hashed</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const rolePerms = {
+        'Admin':        ['Toàn quyền hệ thống', 'Quản lý tài khoản', 'Xem báo cáo doanh thu', 'Cấu hình hệ thống'],
+        'Manager':      ['Quản lý phòng & thiết bị', 'Quản lý kho hàng', 'Xem báo cáo doanh thu', 'Tạo đơn nhập hàng'],
+        'Receptionist': ['Check-in / Check-out khách', 'Tạo hóa đơn', 'Gọi dịch vụ', 'Xem lịch đặt phòng']
+    };
+
+    function updateRoleInfo() {
+        const sel = document.getElementById('roleSelect');
+        const text = sel.options[sel.selectedIndex]?.text || '';
+        const container = document.getElementById('roleInfo');
+        const perms = rolePerms[text];
+        if (!perms) {
+            container.innerHTML = '<p class="role-placeholder">Select a role to see permissions.</p>';
+        } else {
+            container.innerHTML = perms.map(p =>
+                `<div class="perm-item"><i class="fa-solid fa-check perm-check"></i><span>${p}</span></div>`
+            ).join('');
+        }
+    }
+
+    document.getElementById('roleSelect').addEventListener('change', updateRoleInfo);
+    updateRoleInfo();
+
+    document.getElementById('togglePw').addEventListener('click', () => {
+        const inp = document.getElementById('passwordInput');
+        const eye = document.getElementById('pwEye');
+        const show = inp.type === 'password';
+        inp.type = show ? 'text' : 'password';
+        eye.className = show ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+    });
+</script>
+}

@@ -1,0 +1,62 @@
+@model IEnumerable<KaraokeManagement.Models.Category>
+@{
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+    ViewData["Title"] = "Categories";
+    ViewData["ActiveNav"] = "categories";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Categories</h1>
+        <nav class="breadcrumb-nav">
+            <span class="breadcrumb-current">Categories</span>
+        </nav>
+    </div>
+    <a href="/Admin/CategoryCreate" class="btn-primary-sm">
+        <i class="fa-solid fa-plus"></i> Add Category
+    </a>
+</div>
+
+<div class="table-card">
+    <div class="table-card-header">
+        <h2 class="table-card-title">All Categories</h2>
+        <span class="record-count">@Model.Count() records</span>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Category Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.CategoryId</td>
+                    <td><span class="category-chip-plain">@item.CategoryName</span></td>
+                    <td class="table-actions">
+                        <a href="/Admin/CategoryEdit/@item.CategoryId" class="action-btn edit">
+                            <i class="fa-solid fa-pen"></i>
+                        </a>
+                        <form method="post" action="/Admin/CategoryDelete/@item.CategoryId"
+                              onsubmit="return confirm('Xóa danh mục @item.CategoryName?')" style="display:inline">
+                            <button type="submit" class="action-btn delete">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="3" style="text-align:center;color:#a09098;padding:32px;">
+                        Chưa có danh mục nào. <a href="/Admin/CategoryCreate">Thêm mới</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

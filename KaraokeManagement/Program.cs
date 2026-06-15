@@ -1,6 +1,11 @@
+using KaraokeManagement.Models;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddDbContext<KaraokeManagementDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();

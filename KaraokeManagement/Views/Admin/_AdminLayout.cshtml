@@ -25,19 +25,19 @@
         </div>
 
         <nav class="sidebar-nav">
-            <a href="/Admin" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "dashboard" ? "active" : "")">
+            <a href="/Admin/Dashboard" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "dashboard" ? "active" : "")">
                 <i class="fa-solid fa-table-columns nav-icon"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="/Admin/Create" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "inventory" ? "active" : "")">
+            <a href="/Admin/Inventory" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "inventory" ? "active" : "")">
                 <i class="fa-solid fa-box nav-icon"></i>
                 <span>Inventory</span>
             </a>
-            <a href="/Categories" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "categories" ? "active" : "")">
+            <a href="/Admin/Categories" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "categories" ? "active" : "")">
                 <i class="fa-solid fa-layer-group nav-icon"></i>
                 <span>Categories</span>
             </a>
-            <a href="/Users" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "users" ? "active" : "")">
+            <a href="/Admin/Users" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "users" ? "active" : "")">
                 <i class="fa-solid fa-users nav-icon"></i>
                 <span>Users</span>
             </a>
@@ -48,7 +48,7 @@
         </nav>
 
         <div class="sidebar-bottom">
-            <a href="/Admin/Create" class="btn-add-new">
+            <a href="/Admin/InventoryCreate" class="btn-add-new">
                 <i class="fa-solid fa-plus"></i>
                 Add New Entry
             </a>

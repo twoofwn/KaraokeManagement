@@ -1,0 +1,80 @@
+@model IEnumerable<KaraokeManagement.Models.Account>
+@{
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+    ViewData["Title"] = "Users";
+    ViewData["ActiveNav"] = "users";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Users</h1>
+        <nav class="breadcrumb-nav">
+            <span class="breadcrumb-current">Users</span>
+        </nav>
+    </div>
+    <a href="/Admin/UserCreate" class="btn-primary-sm">
+        <i class="fa-solid fa-plus"></i> Add User
+    </a>
+</div>
+
+<div class="table-card">
+    <div class="table-card-header">
+        <h2 class="table-card-title">Staff Accounts</h2>
+        <span class="record-count">@Model.Count() records</span>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Staff</th>
+                <th>Username</th>
+                <th>Phone</th>
+                <th>Role</th>
+                <th>Created At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                var roleName = user.Role?.RoleName ?? "";
+                var roleClass = roleName switch { "Admin" => "admin", "Manager" => "manager", _ => "receptionist" };
+                <tr>
+                    <td>@user.AccountId</td>
+                    <td>
+                        <div class="user-cell">
+                            <div class="user-avatar">@user.FullName[0]</div>
+                            <div>
+                                <div class="user-name">@user.FullName</div>
+                                <div class="user-email">@user.Email</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><code class="username-code">@user.Username</code></td>
+                    <td>@user.Phone</td>
+                    <td><span class="role-badge @roleClass">@roleName</span></td>
+                    <td>@user.CreatedAt?.ToString("dd/MM/yyyy")</td>
+                    <td class="table-actions">
+                        <a href="/Admin/UserEdit/@user.AccountId" class="action-btn edit">
+                            <i class="fa-solid fa-pen"></i>
+                        </a>
+                        <form method="post" action="/Admin/UserDelete/@user.AccountId"
+                              onsubmit="return confirm('Xóa tài khoản @user.Username?')" style="display:inline">
+                            <button type="submit" class="action-btn delete">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="7" style="text-align:center;color:#a09098;padding:32px;">
+                        Chưa có tài khoản nào. <a href="/Admin/UserCreate">Thêm mới</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

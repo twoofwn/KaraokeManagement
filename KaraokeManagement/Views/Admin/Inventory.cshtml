@@ -1,0 +1,70 @@
+@model IEnumerable<KaraokeManagement.Models.ServiceItem>
+@{
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+    ViewData["Title"] = "Inventory";
+    ViewData["ActiveNav"] = "inventory";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Inventory</h1>
+        <nav class="breadcrumb-nav">
+            <span class="breadcrumb-current">Inventory</span>
+        </nav>
+    </div>
+    <a href="/Admin/InventoryCreate" class="btn-primary-sm">
+        <i class="fa-solid fa-plus"></i> Add Item
+    </a>
+</div>
+
+<div class="table-card">
+    <div class="table-card-header">
+        <h2 class="table-card-title">Service Items</h2>
+        <span class="record-count">@Model.Count() records</span>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Unit</th>
+                <th>Stock</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.ServiceId</td>
+                    <td>@item.ServiceName</td>
+                    <td><span class="category-chip-plain">@item.Category?.CategoryName</span></td>
+                    <td>@item.SellingPrice.ToString("N0")đ</td>
+                    <td>@item.Unit</td>
+                    <td>@item.StockQuantity</td>
+                    <td class="table-actions">
+                        <a href="/Admin/InventoryEdit/@item.ServiceId" class="action-btn edit">
+                            <i class="fa-solid fa-pen"></i>
+                        </a>
+                        <form method="post" action="/Admin/InventoryDelete/@item.ServiceId"
+                              onsubmit="return confirm('Xóa item này?')" style="display:inline">
+                            <button type="submit" class="action-btn delete">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="7" style="text-align:center;color:#a09098;padding:32px;">
+                        Chưa có item nào. <a href="/Admin/InventoryCreate">Thêm mới</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
