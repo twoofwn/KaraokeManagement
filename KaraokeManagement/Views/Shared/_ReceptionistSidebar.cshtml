@@ -1,0 +1,33 @@
+@{
+    var currentPath = Context.Request.Path.Value ?? "";
+    var isRoomMapActive = currentPath.Contains("/Receptionist/Index") || currentPath.EndsWith("/Receptionist") || currentPath.EndsWith("/Receptionist/") || currentPath.Contains("/Receptionist/Checkout");
+    var isCheckInActive = currentPath.Contains("/Receptionist/CheckIn");
+}
+<aside class="reception-sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-main">Minh Tuấn KTV</div>
+        <div class="logo-sub">Reception</div>
+    </div>
+
+    <ul class="sidebar-menu">
+        <li class="menu-item @(isRoomMapActive ? "active" : "")">
+            <a href="/Receptionist">
+                <i class="fa-solid fa-shapes"></i>
+                <span>Quản lý phòng</span>
+            </a>
+        </li>
+        <li class="menu-item @(isCheckInActive ? "active" : "")">
+            <a href="/Receptionist/CheckIn">
+                <i class="fa-solid fa-file-signature"></i>
+                <span>Check-in</span>
+            </a>
+        </li>
+    </ul>
+
+    <div class="sidebar-footer">
+        <a href="/Auth/Logout" class="logout-link">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            <span>Đăng xuất</span>
+        </a>
+    </div>
+</aside>

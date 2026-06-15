@@ -42,7 +42,6 @@ namespace KaraokeManagement.Controllers
 
             try
             {
-                // Try checking the database
                 account = await _context.Accounts
                     .Include(a => a.Role)
                     .FirstOrDefaultAsync(a => a.Username == model.UsernameOrEmail || a.Email == model.UsernameOrEmail);
@@ -61,8 +60,7 @@ namespace KaraokeManagement.Controllers
             }
             else
             {
-                // Fallback hardcoded credentials for demo/testing without database setup
-                if (model.UsernameOrEmail == "admin@ktv.com" && model.Password == "admin123")
+                if (model.UsernameOrEmail == "admin123" && model.Password == "admin123")
                 {
                     isValidUser = true;
                 }
@@ -70,43 +68,28 @@ namespace KaraokeManagement.Controllers
 
             if (isValidUser)
             {
-                string username = account?.Username ?? "admin";
-                string role = account?.Role?.RoleName ?? "Admin";
+                string username = account?.FullName ?? "Chua ro";
+                string role = account?.Role?.RoleName ?? "Chua ro";
 
-                // Standard ASP.NET Core Cookie Authentication (Try-catch in case middleware is not registered yet)
-                try
-                {
-                    var claims = new List<Claim>
+                var claims = new List<Claim>
                     {
                         new Claim(ClaimTypes.Name, username),
                         new Claim(ClaimTypes.Role, role)
                     };
-                    if (account?.Email != null)
-                    {
-                        claims.Add(new Claim(ClaimTypes.Email, account.Email));
-                    }
-
-                    var claimsIdentity = new ClaimsIdentity(claims, "CookieAuth");
-                    var authProperties = new AuthenticationProperties
-                    {
-                        IsPersistent = model.RememberMe,
-                        ExpiresUtc = model.RememberMe ? DateTimeOffset.UtcNow.AddDays(7) : DateTimeOffset.UtcNow.AddMinutes(30)
-                    };
-
-                    await HttpContext.SignInAsync("CookieAuth", new ClaimsPrincipal(claimsIdentity), authProperties);
-                }
-                catch
+                if (account?.Email != null)
                 {
-                    // Fallback: simple cookie-based state if authentication middleware isn't configured in Program.cs
-                    var cookieOptions = new CookieOptions
-                    {
-                        Expires = model.RememberMe ? DateTime.Now.AddDays(7) : DateTime.Now.AddMinutes(30),
-                        HttpOnly = true,
-                        Secure = true
-                    };
-                    Response.Cookies.Append("UserSession", username, cookieOptions);
-                    Response.Cookies.Append("UserRole", role, cookieOptions);
+                    claims.Add(new Claim(ClaimTypes.Email, account.Email));
                 }
+
+                var claimsIdentity = new ClaimsIdentity(claims, "CookieAuth");
+                var authProperties = new AuthenticationProperties
+                {
+                    IsPersistent = model.RememberMe,
+                    ExpiresUtc = model.RememberMe ? DateTimeOffset.UtcNow.AddDays(7) : DateTimeOffset.UtcNow.AddMinutes(30)
+                };
+
+                await HttpContext.SignInAsync("CookieAuth", new ClaimsPrincipal(claimsIdentity), authProperties);
+
 
                 return RedirectToAction("Index", "Admin");
             }
@@ -122,7 +105,7 @@ namespace KaraokeManagement.Controllers
             {
                 await HttpContext.SignOutAsync("CookieAuth");
             }
-            catch {}
+            catch { }
 
             Response.Cookies.Delete("UserSession");
             Response.Cookies.Delete("UserRole");
@@ -132,33 +115,10 @@ namespace KaraokeManagement.Controllers
 
         private bool VerifyPassword(string inputPassword, string storedPasswordHash)
         {
-            // Case 1: Plaintext match
-            if (inputPassword == storedPasswordHash) return true;
-
-            // Case 2: SHA256 hash match
-            try
+            if (inputPassword == storedPasswordHash)
             {
-                using (var sha256 = System.Security.Cryptography.SHA256.Create())
-                {
-                    var bytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(inputPassword));
-                    var hash = Convert.ToHexString(bytes).ToLower();
-                    if (hash == storedPasswordHash.ToLower()) return true;
-                }
+                return true;
             }
-            catch {}
-
-            // Case 3: MD5 hash match
-            try
-            {
-                using (var md5 = System.Security.Cryptography.MD5.Create())
-                {
-                    var bytes = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(inputPassword));
-                    var hash = Convert.ToHexString(bytes).ToLower();
-                    if (hash == storedPasswordHash.ToLower()) return true;
-                }
-            }
-            catch {}
-
             return false;
         }
     }

@@ -1,0 +1,848 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using KaraokeManagement.Models;
+
+namespace KaraokeManagement.Controllers
+{
+    public class ReceptionistController : Controller
+    {
+        private readonly KaraokeManagementDbContext _context;
+
+        public ReceptionistController(KaraokeManagementDbContext context)
+        {
+            _context = context;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Index(string searchString, string roomType, string status)
+        {
+            // Lay danh sach loai phong
+            var dbRoomTypes = await _context.RoomTypes.Select(rt => rt.TypeName.ToUpper()).Distinct().ToListAsync();
+            List<string> roomTypes = new List<string> { "Tất cả loại" };
+            roomTypes.AddRange(dbRoomTypes);
+
+            List<string> statuses = new List<string> { "Tất cả", "SẴN SÀNG", "ĐANG SỬ DỤNG", "CHỜ NHẬN PHÒNG", "ĐANG BẢO TRÌ" };
+
+            List<RoomCardViewModel> roomCards = new List<RoomCardViewModel>();
+            var now = DateTime.Now;
+
+            try
+            {
+                // Lấy toàn bộ phòng kèm theo loại phòng, booking, thiết bị và log bảo trì
+                var dbRooms = await _context.Rooms
+                    .Include(r => r.RoomType)
+                    .Include(r => r.Bookings).ThenInclude(b => b.Customer)
+                    .Include(r => r.Equipment).ThenInclude(e => e.MaintenanceLogs)
+                    .ToListAsync();
+
+                foreach (var room in dbRooms)
+                {
+                    string cardStatus = "SẴN SÀNG";
+                    string timeLeft = "--:--:--";
+                    string customerBooking = null;
+                    string maintenanceNote = null;
+                    bool showCheckIn = true;
+                    bool showDots = false;
+
+                    // Lọc Booking để xác định trạng thái thực tế
+                    var activeBooking = room.Bookings
+                        .FirstOrDefault(b => b.StartTime <= now && b.EndTime >= now && b.Status == "CheckedIn");
+
+                    var upcomingBooking = room.Bookings
+                        .Where(b => b.StartTime > now && b.Status != "Cancelled" && b.Status != "Completed")
+                        .OrderBy(b => b.StartTime)
+                        .FirstOrDefault();
+
+                    // Ánh xạ trạng thái từ DB ra View
+                    if (room.Status == "Maintenance")
+                    {
+                        cardStatus = "ĐANG BẢO TRÌ";
+                        showCheckIn = false;
+                        showDots = true;
+
+                        // Lấy log bảo trì mới nhất của thiết bị trong phòng này
+                        var latestLog = room.Equipment
+                            .SelectMany(e => e.MaintenanceLogs)
+                            .OrderByDescending(l => l.LogDate)
+                            .FirstOrDefault();
+
+                        maintenanceNote = latestLog != null ? latestLog.IssueDescription : "Đang bảo trì/sửa chữa";
+                    }
+                    else if (room.Status == "InUse" || activeBooking != null)
+                    {
+                        cardStatus = "ĐANG SỬ DỤNG";
+                        showCheckIn = false;
+                        showDots = true;
+
+                        if (activeBooking != null && activeBooking.EndTime.HasValue)
+                        {
+                            var remaining = activeBooking.EndTime.Value - now;
+                            timeLeft = remaining.TotalSeconds > 0
+                                ? string.Format("{0:00}:{1:00}:{2:00}", (int)remaining.TotalHours, remaining.Minutes, remaining.Seconds)
+                                : "00:00:00";
+                        }
+                    }
+                    else // Trạng thái DB là Available
+                    {
+                        // Kiểm tra xem phòng có booking sắp tới trong vòng 3 tiếng không
+                        if (upcomingBooking != null && (upcomingBooking.StartTime - now).TotalHours <= 3)
+                        {
+                            cardStatus = "CHỜ NHẬN PHÒNG";
+                            showCheckIn = true; // Lễ tân có thể check-in cho khách tới sớm
+                            showDots = true;
+                            string cusName = upcomingBooking.Customer?.FullName ?? "Khách";
+                            customerBooking = $"{cusName} - {upcomingBooking.StartTime:HH\\hmm}";
+                        }
+                        else
+                        {
+                            cardStatus = "SẴN SÀNG";
+                            showCheckIn = true;
+                            showDots = false;
+                        }
+                    }
+
+                    // Gán icon tự động theo loại phòng
+                    string icon = "fa-solid fa-microphone";
+                    string typeNameUpper = room.RoomType.TypeName.ToUpper();
+                    if (typeNameUpper.Contains("SUPER VIP") || typeNameUpper.Contains("PARTY")) icon = "fa-solid fa-music";
+                    else if (typeNameUpper.Contains("VIP")) icon = "fa-solid fa-star";
+                    else if (typeNameUpper.Contains("COUPLE")) icon = "fa-solid fa-heart";
+
+                    roomCards.Add(new RoomCardViewModel
+                    {
+                        RoomId = room.RoomId,
+                        RoomName = room.RoomName,
+                        TypeName = typeNameUpper,
+                        Status = cardStatus,
+                        IconClass = icon,
+                        PricePerHour = room.RoomType.PricePerHour,
+                        TimeLeft = timeLeft,
+                        CustomerBooking = customerBooking,
+                        MaintenanceDescription = maintenanceNote,
+                        ShowCheckInButton = showCheckIn,
+                        ShowMenuDots = showDots
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"DB Loading failed: {ex.Message}");
+            }
+
+            // Tính toán số lượng thẻ dựa trên tổng dữ liệu trước khi Lọc (Filter)
+            int readyCount = roomCards.Count(r => r.Status == "SẴN SÀNG");
+            int usingCount = roomCards.Count(r => r.Status == "ĐANG SỬ DỤNG");
+            int waitingCount = roomCards.Count(r => r.Status == "CHỜ NHẬN PHÒNG");
+            int maintenanceCount = roomCards.Count(r => r.Status == "ĐANG BẢO TRÌ");
+
+            // Xử lý Lọc (Filters)
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                var term = searchString.Trim().ToLower();
+                roomCards = roomCards.Where(r => r.RoomName.ToLower().Contains(term) || r.TypeName.ToLower().Contains(term)).ToList();
+            }
+
+            if (!string.IsNullOrEmpty(roomType) && roomType != "Tất cả loại")
+            {
+                roomCards = roomCards.Where(r => r.TypeName.Equals(roomType, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            if (!string.IsNullOrEmpty(status) && status != "Tất cả")
+            {
+                roomCards = roomCards.Where(r => r.Status.Equals(status, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            // Trả về ViewModel
+            var viewModel = new ReceptionistDashboardViewModel
+            {
+                RoomCards = roomCards,
+                RoomTypes = roomTypes,
+                Statuses = statuses,
+                SearchString = searchString,
+                SelectedRoomType = roomType ?? "Tất cả loại",
+                SelectedStatus = status ?? "Tất cả",
+
+                ReadyCount = readyCount,
+                UsingCount = usingCount,
+                WaitingCount = waitingCount,
+                MaintenanceCount = maintenanceCount
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Detail(int roomId)
+        {
+            var room = await _context.Rooms
+                .Include(r => r.RoomType)
+                .FirstOrDefaultAsync(r => r.RoomId == roomId);
+
+            if (room == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            // Find active unpaid invoice
+            var invoice = await _context.Invoices
+                .Include(i => i.InvoiceDetails)
+                .ThenInclude(id => id.Service)
+                .FirstOrDefaultAsync(i => i.RoomId == roomId && i.Status == "Unpaid");
+
+            if (invoice == null)
+            {
+                var userName = User.Identity?.Name;
+                var receptionist = await _context.Accounts.FirstOrDefaultAsync(a => a.FullName == userName || a.Username == userName);
+                if (receptionist == null)
+                {
+                    receptionist = await _context.Accounts.FirstOrDefaultAsync();
+                }
+                int receptionistId = receptionist?.AccountId ?? 1;
+
+                invoice = new Invoice
+                {
+                    RoomId = roomId,
+                    ReceptionistId = receptionistId,
+                    CheckInTime = DateTime.Now,
+                    Status = "Unpaid",
+                    RoomTotal = 0,
+                    ServiceTotal = 0,
+                    DiscountAmount = 0,
+                    GrandTotal = 0
+                };
+
+                _context.Invoices.Add(invoice);
+                if (room.Status != "InUse")
+                {
+                    room.Status = "InUse";
+                }
+                await _context.SaveChangesAsync();
+            }
+
+            var categories = await _context.Categories
+                .Select(c => new CategoryViewModel
+                {
+                    CategoryId = c.CategoryId,
+                    CategoryName = c.CategoryName
+                })
+                .ToListAsync();
+
+            var serviceItems = await _context.ServiceItems
+                .Include(s => s.Category)
+                .Select(s => new PosProductItem
+                {
+                    ServiceId = s.ServiceId,
+                    CategoryId = s.CategoryId,
+                    ServiceName = s.ServiceName,
+                    SellingPrice = s.SellingPrice,
+                    Unit = s.Unit,
+                    StockQuantity = s.StockQuantity ?? 0,
+                    CategoryName = s.Category.CategoryName
+                })
+                .ToListAsync();
+
+            var orderItems = invoice.InvoiceDetails.Select(id => new PosOrderItem
+            {
+                InvoiceDetailId = id.InvoiceDetailId,
+                ServiceId = id.ServiceId,
+                ServiceName = id.Service.ServiceName,
+                Unit = id.Service.Unit,
+                Quantity = id.Quantity,
+                UnitPrice = id.UnitPrice
+            }).ToList();
+
+            var availableRooms = await _context.Rooms
+                .Include(r => r.RoomType)
+                .Where(r => r.Status == "Available" && r.RoomId != roomId)
+                .Select(r => new PosRoomItem
+                {
+                    RoomId = r.RoomId,
+                    RoomName = r.RoomName,
+                    RoomTypeName = r.RoomType.TypeName,
+                    PricePerHour = r.RoomType.PricePerHour
+                })
+                .ToListAsync();
+
+            var viewModel = new RoomDetailPosViewModel
+            {
+                RoomId = room.RoomId,
+                RoomName = room.RoomName,
+                RoomTypeName = room.RoomType.TypeName,
+                PricePerHour = room.RoomType.PricePerHour,
+                RoomStatus = room.Status ?? "InUse",
+                InvoiceId = invoice.InvoiceId,
+                CheckInTime = invoice.CheckInTime,
+                OrderItems = orderItems,
+                ProductItems = serviceItems,
+                Categories = categories,
+                AvailableRooms = availableRooms
+            };
+
+            return View(viewModel);
+        }
+
+        private async Task RecalculateInvoiceTotals(int invoiceId)
+        {
+            var invoice = await _context.Invoices
+                .Include(i => i.InvoiceDetails)
+                .Include(i => i.Room)
+                .ThenInclude(r => r.RoomType)
+                .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
+
+            if (invoice != null)
+            {
+                decimal serviceTotal = invoice.InvoiceDetails.Sum(id => id.Quantity * id.UnitPrice);
+                invoice.ServiceTotal = serviceTotal;
+
+                var duration = DateTime.Now - invoice.CheckInTime;
+                double hours = duration.TotalHours;
+                if (hours < 0) hours = 0;
+                decimal roomTotal = (decimal)hours * invoice.Room.RoomType.PricePerHour;
+                invoice.RoomTotal = roomTotal;
+
+                invoice.GrandTotal = roomTotal + serviceTotal - (invoice.DiscountAmount ?? 0);
+
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddServiceItem([FromBody] AddServiceRequest request)
+        {
+            var service = await _context.ServiceItems.FindAsync(request.ServiceId);
+            if (service == null)
+            {
+                return Json(new { success = false, message = "Sản phẩm không tồn tại." });
+            }
+
+            if (service.StockQuantity.HasValue && service.StockQuantity.Value <= 0)
+            {
+                return Json(new { success = false, message = "Sản phẩm đã hết hàng trong kho." });
+            }
+
+            var invoice = await _context.Invoices
+                .Include(i => i.InvoiceDetails)
+                .FirstOrDefaultAsync(i => i.RoomId == request.RoomId && i.Status == "Unpaid");
+
+            if (invoice == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy hóa đơn chưa thanh toán cho phòng này." });
+            }
+
+            var detail = invoice.InvoiceDetails.FirstOrDefault(d => d.ServiceId == request.ServiceId);
+            if (detail != null)
+            {
+                detail.Quantity += 1;
+            }
+            else
+            {
+                detail = new InvoiceDetail
+                {
+                    InvoiceId = invoice.InvoiceId,
+                    ServiceId = request.ServiceId,
+                    Quantity = 1,
+                    UnitPrice = service.SellingPrice
+                };
+                _context.InvoiceDetails.Add(detail);
+            }
+
+            if (service.StockQuantity.HasValue)
+            {
+                service.StockQuantity -= 1;
+            }
+
+            await _context.SaveChangesAsync();
+            await RecalculateInvoiceTotals(invoice.InvoiceId);
+
+            return Json(new { success = true });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateServiceItem([FromBody] UpdateServiceRequest request)
+        {
+            var detail = await _context.InvoiceDetails
+                .Include(d => d.Service)
+                .FirstOrDefaultAsync(d => d.InvoiceDetailId == request.InvoiceDetailId);
+
+            if (detail == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy chi tiết hóa đơn." });
+            }
+
+            int diff = request.Quantity - detail.Quantity;
+            if (diff > 0)
+            {
+                if (detail.Service.StockQuantity.HasValue && detail.Service.StockQuantity.Value < diff)
+                {
+                    return Json(new { success = false, message = $"Không đủ số lượng trong kho. Còn lại: {detail.Service.StockQuantity.Value}" });
+                }
+            }
+
+            if (detail.Service.StockQuantity.HasValue)
+            {
+                detail.Service.StockQuantity -= diff;
+            }
+
+            detail.Quantity = request.Quantity;
+
+            await _context.SaveChangesAsync();
+            await RecalculateInvoiceTotals(detail.InvoiceId);
+
+            return Json(new { success = true });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveServiceItem([FromBody] RemoveServiceRequest request)
+        {
+            var detail = await _context.InvoiceDetails
+                .Include(d => d.Service)
+                .FirstOrDefaultAsync(d => d.InvoiceDetailId == request.InvoiceDetailId);
+
+            if (detail == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy chi tiết hóa đơn." });
+            }
+
+            if (detail.Service.StockQuantity.HasValue)
+            {
+                detail.Service.StockQuantity += detail.Quantity;
+            }
+
+            int invoiceId = detail.InvoiceId;
+            _context.InvoiceDetails.Remove(detail);
+
+            await _context.SaveChangesAsync();
+            await RecalculateInvoiceTotals(invoiceId);
+
+            return Json(new { success = true });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangeRoom([FromBody] ChangeRoomRequest request)
+        {
+            var invoice = await _context.Invoices.FindAsync(request.InvoiceId);
+            if (invoice == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy hóa đơn." });
+            }
+
+            var oldRoom = await _context.Rooms.FindAsync(invoice.RoomId);
+            var newRoom = await _context.Rooms.FindAsync(request.NewRoomId);
+
+            if (newRoom == null)
+            {
+                return Json(new { success = false, message = "Phòng mới không tồn tại." });
+            }
+            if (newRoom.Status != "Available")
+            {
+                return Json(new { success = false, message = "Phòng mới không sẵn sàng." });
+            }
+
+            if (oldRoom != null)
+            {
+                oldRoom.Status = "Available";
+            }
+
+            newRoom.Status = "InUse";
+            invoice.RoomId = request.NewRoomId;
+
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, message = "Đổi phòng thành công." });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ProcessPayment([FromBody] PaymentRequest request)
+        {
+            var invoice = await _context.Invoices
+                .Include(i => i.InvoiceDetails)
+                .Include(i => i.Room)
+                .ThenInclude(r => r.RoomType)
+                .FirstOrDefaultAsync(i => i.InvoiceId == request.InvoiceId);
+
+            if (invoice == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy hóa đơn." });
+            }
+
+            var room = invoice.Room;
+            invoice.CheckOutTime = DateTime.Now;
+
+            decimal serviceTotal = invoice.InvoiceDetails.Sum(id => id.Quantity * id.UnitPrice);
+            invoice.ServiceTotal = serviceTotal;
+
+            var duration = invoice.CheckOutTime.Value - invoice.CheckInTime;
+            double hours = duration.TotalHours;
+            if (hours < 0) hours = 0;
+
+            decimal roomTotal = (decimal)hours * room.RoomType.PricePerHour;
+            invoice.RoomTotal = roomTotal;
+
+            invoice.GrandTotal = roomTotal + serviceTotal - (invoice.DiscountAmount ?? 0);
+            invoice.Status = "Paid";
+
+            room.Status = "Available";
+
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Thanh toán hóa đơn thành công!" });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CheckIn(int? roomId)
+        {
+            var availableRooms = await _context.Rooms
+                .Include(r => r.RoomType)
+                .Where(r => r.Status == "Available" || r.RoomId == roomId)
+                .Select(r => new AvailableRoomItem
+                {
+                    RoomId = r.RoomId,
+                    RoomName = r.RoomName,
+                    TypeName = r.RoomType.TypeName,
+                    PricePerHour = r.RoomType.PricePerHour
+                })
+                .ToListAsync();
+
+            var currentEmployeeName = User.Identity?.Name ?? "Nguyễn Minh Anh";
+
+            var viewModel = new CheckInViewModel
+            {
+                CurrentEmployeeName = currentEmployeeName,
+                AvailableRooms = availableRooms,
+                RoomId = roomId ?? 0,
+                CheckInTime = DateTime.Now
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetCustomerByPhone(string phone)
+        {
+            if (string.IsNullOrWhiteSpace(phone))
+            {
+                return Json(new { found = false });
+            }
+
+            var customer = await _context.Customers
+                .Include(c => c.Tier)
+                .FirstOrDefaultAsync(c => c.Phone == phone);
+
+            if (customer == null)
+            {
+                return Json(new { found = false });
+            }
+
+            return Json(new {
+                found = true,
+                customerId = customer.CustomerId,
+                fullName = customer.FullName,
+                phone = customer.Phone,
+                points = customer.LoyaltyPoints ?? 0,
+                tierName = customer.Tier?.TierName ?? "THƯỜNG"
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateCustomer([FromBody] CreateCustomerRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.FullName))
+            {
+                return Json(new { success = false, message = "Họ và tên là bắt buộc." });
+            }
+
+            var existing = await _context.Customers.FirstOrDefaultAsync(c => c.Phone == request.Phone);
+            if (existing != null)
+            {
+                return Json(new { success = false, message = "Số điện thoại đã tồn tại." });
+            }
+
+            var defaultTier = await _context.MembershipTiers.OrderBy(t => t.MinPoints).FirstOrDefaultAsync();
+
+            var customer = new Customer
+            {
+                Phone = request.Phone,
+                FullName = request.FullName,
+                Email = request.Email,
+                LoyaltyPoints = 0,
+                TierId = defaultTier?.TierId,
+                CreatedAt = DateTime.Now
+            };
+
+            _context.Customers.Add(customer);
+            await _context.SaveChangesAsync();
+
+            var tierName = defaultTier?.TierName ?? "THƯỜNG";
+
+            return Json(new {
+                success = true,
+                customerId = customer.CustomerId,
+                fullName = customer.FullName,
+                phone = customer.Phone,
+                points = 0,
+                tierName = tierName
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CheckIn(CheckInViewModel model)
+        {
+            var room = await _context.Rooms.FindAsync(model.RoomId);
+            if (room == null)
+            {
+                ModelState.AddModelError("", "Phòng được chọn không tồn tại.");
+                // Reload available rooms to render form again
+                model.AvailableRooms = await _context.Rooms
+                    .Include(r => r.RoomType)
+                    .Where(r => r.Status == "Available" || r.RoomId == model.RoomId)
+                    .Select(r => new AvailableRoomItem
+                    {
+                        RoomId = r.RoomId,
+                        RoomName = r.RoomName,
+                        TypeName = r.RoomType.TypeName,
+                        PricePerHour = r.RoomType.PricePerHour
+                    })
+                    .ToListAsync();
+                model.CurrentEmployeeName = User.Identity?.Name ?? "Nguyễn Minh Anh";
+                return View(model);
+            }
+
+            var userName = User.Identity?.Name;
+            var receptionist = await _context.Accounts.FirstOrDefaultAsync(a => a.FullName == userName || a.Username == userName);
+            if (receptionist == null)
+            {
+                receptionist = await _context.Accounts.FirstOrDefaultAsync();
+            }
+            int receptionistId = receptionist?.AccountId ?? 1;
+
+            int finalCustomerId;
+            if (model.CustomerId.HasValue)
+            {
+                finalCustomerId = model.CustomerId.Value;
+            }
+            else
+            {
+                var guest = await _context.Customers.FirstOrDefaultAsync(c => c.Phone == "0000000000");
+                if (guest == null)
+                {
+                    guest = new Customer
+                    {
+                        FullName = "Khách vãng lai",
+                        Phone = "0000000000",
+                        CreatedAt = DateTime.Now
+                    };
+                    _context.Customers.Add(guest);
+                    await _context.SaveChangesAsync();
+                }
+                finalCustomerId = guest.CustomerId;
+            }
+
+            var booking = new Booking
+            {
+                CustomerId = finalCustomerId,
+                RoomId = model.RoomId,
+                CreatedById = receptionistId,
+                StartTime = model.CheckInTime,
+                EndTime = model.CheckOutTimeEstimated,
+                BookingTime = DateTime.Now,
+                Status = "CheckedIn"
+            };
+            _context.Bookings.Add(booking);
+            await _context.SaveChangesAsync();
+
+            var invoice = new Invoice
+            {
+                BookingId = booking.BookingId,
+                RoomId = model.RoomId,
+                ReceptionistId = receptionistId,
+                CheckInTime = model.CheckInTime,
+                Status = "Unpaid",
+                RoomTotal = 0,
+                ServiceTotal = 0,
+                DiscountAmount = 0,
+                GrandTotal = 0
+            };
+            _context.Invoices.Add(invoice);
+
+            room.Status = "InUse";
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Checkout(int invoiceId)
+        {
+            var invoice = await _context.Invoices
+                .Include(i => i.Room)
+                    .ThenInclude(r => r.RoomType)
+                .Include(i => i.InvoiceDetails)
+                    .ThenInclude(id => id.Service)
+                .Include(i => i.Booking)
+                    .ThenInclude(b => b.Customer)
+                        .ThenInclude(c => c.Tier)
+                .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
+
+            if (invoice == null)
+            {
+                return NotFound("Không tìm thấy hóa đơn cần thanh toán.");
+            }
+
+            var checkInTime = invoice.CheckInTime;
+            var checkOutTime = DateTime.Now;
+            var duration = checkOutTime - checkInTime;
+            if (duration.TotalSeconds < 0) duration = TimeSpan.Zero;
+
+            double durationHours = duration.TotalHours;
+            string durationText = $"{(int)duration.TotalHours}h {duration.Minutes}m";
+
+            decimal pricePerHour = invoice.Room.RoomType.PricePerHour;
+            decimal roomTotal = (decimal)durationHours * pricePerHour;
+
+            decimal serviceTotal = invoice.InvoiceDetails.Sum(id => id.Quantity * id.UnitPrice);
+
+            decimal discountPercent = invoice.Booking?.Customer?.Tier?.DiscountPercent ?? 0;
+            decimal discountAmount = (roomTotal + serviceTotal) * discountPercent / 100;
+            decimal grandTotal = roomTotal + serviceTotal - discountAmount;
+
+            var orderItems = invoice.InvoiceDetails.Select(id => new CheckoutItemViewModel
+            {
+                ServiceName = id.Service.ServiceName,
+                Quantity = id.Quantity,
+                UnitPrice = id.UnitPrice,
+                TotalPrice = id.Quantity * id.UnitPrice,
+                Unit = id.Service.Unit
+            }).ToList();
+
+            var viewModel = new CheckoutViewModel
+            {
+                InvoiceId = invoice.InvoiceId,
+                RoomId = invoice.RoomId,
+                RoomName = invoice.Room.RoomName,
+                RoomTypeName = invoice.Room.RoomType.TypeName,
+                PricePerHour = pricePerHour,
+                CheckInTime = checkInTime,
+                CheckOutTime = checkOutTime,
+                DurationHours = durationHours,
+                DurationText = durationText,
+                RoomTotal = roomTotal,
+                ServiceTotal = serviceTotal,
+                DiscountPercent = discountPercent,
+                DiscountAmount = discountAmount,
+                GrandTotal = grandTotal,
+                CustomerName = invoice.Booking?.Customer?.FullName ?? "Khách vãng lai",
+                CustomerPhone = invoice.Booking?.Customer?.Phone ?? "",
+                CustomerTier = invoice.Booking?.Customer?.Tier?.TierName ?? "THƯỜNG",
+                OrderItems = orderItems
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Checkout(CheckoutViewModel model)
+        {
+            var invoice = await _context.Invoices
+                .Include(i => i.Room)
+                .Include(i => i.Booking)
+                .FirstOrDefaultAsync(i => i.InvoiceId == model.InvoiceId);
+
+            if (invoice == null)
+            {
+                return NotFound("Không tìm thấy hóa đơn cần thanh toán.");
+            }
+
+            // Cập nhật thông tin hóa đơn
+            invoice.CheckOutTime = model.CheckOutTime;
+            invoice.RoomTotal = model.RoomTotal;
+            invoice.ServiceTotal = model.ServiceTotal;
+            invoice.DiscountAmount = model.DiscountAmount;
+            invoice.GrandTotal = model.GrandTotal;
+            invoice.Status = "Paid";
+
+            // Cập nhật trạng thái phòng
+            invoice.Room.Status = "Available";
+
+            // Cập nhật trạng thái Booking
+            if (invoice.Booking != null)
+            {
+                invoice.Booking.Status = "Completed";
+                invoice.Booking.EndTime = model.CheckOutTime;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index");
+        }
+    }
+
+    // Các class ViewModel giữ nguyên
+    public class RoomCardViewModel
+    {
+        public int RoomId { get; set; }
+        public string RoomName { get; set; } = string.Empty;
+        public string TypeName { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string IconClass { get; set; } = string.Empty;
+        public decimal PricePerHour { get; set; }
+        public string? TimeLeft { get; set; }
+        public string? CustomerBooking { get; set; }
+        public string? MaintenanceDescription { get; set; }
+        public bool ShowCheckInButton { get; set; }
+        public bool ShowMenuDots { get; set; }
+    }
+
+    public class ReceptionistDashboardViewModel
+    {
+        public List<RoomCardViewModel> RoomCards { get; set; } = new List<RoomCardViewModel>();
+        public List<string> RoomTypes { get; set; } = new List<string>();
+        public List<string> Statuses { get; set; } = new List<string>();
+
+        public string SearchString { get; set; } = string.Empty;
+        public string SelectedRoomType { get; set; } = string.Empty;
+        public string SelectedStatus { get; set; } = string.Empty;
+
+        public int ReadyCount { get; set; }
+        public int UsingCount { get; set; }
+        public int WaitingCount { get; set; }
+        public int MaintenanceCount { get; set; }
+    }
+
+    public class AddServiceRequest
+    {
+        public int RoomId { get; set; }
+        public int ServiceId { get; set; }
+    }
+
+    public class UpdateServiceRequest
+    {
+        public int InvoiceDetailId { get; set; }
+        public int Quantity { get; set; }
+    }
+
+    public class RemoveServiceRequest
+    {
+        public int InvoiceDetailId { get; set; }
+    }
+
+    public class ChangeRoomRequest
+    {
+        public int InvoiceId { get; set; }
+        public int NewRoomId { get; set; }
+    }
+
+    public class PaymentRequest
+    {
+        public int InvoiceId { get; set; }
+    }
+
+    public class CreateCustomerRequest
+    {
+        public string Phone { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public string? Email { get; set; }
+    }
+}

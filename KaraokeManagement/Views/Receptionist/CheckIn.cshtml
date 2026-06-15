@@ -1,0 +1,505 @@
+@model KaraokeManagement.Models.CheckInViewModel
+@{
+    Layout = null;
+}
+@using System.Security.Claims
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nhận phòng - Minh Tuấn KTV</title>
+    
+    <!-- CSS Dependencies -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/receptionist.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/CheckIn.css" asp-append-version="true" />
+</head>
+<body>
+    <!-- Fixed Sidebar on the Left -->
+    <partial name="_ReceptionistSidebar" />
+
+    <!-- Main Content Area on the Right -->
+    <div class="reception-main">
+        <!-- Header Section -->
+        <header class="reception-header">
+            <div class="header-title-wrapper" style="margin-left: 0;">
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-dark);">Nhận phòng & Check-in</h1>
+                <p style="font-size: 0.85rem; color: var(--text-secondary-dark); margin-top: 2px;">Tạo phòng hát hoạt động mới</p>
+            </div>
+            
+            <div class="header-actions">
+                <div class="user-profile">
+                    <div class="avatar-container">
+                        <img src="~/img/receptionist_avatar.png" alt="Avatar" class="user-avatar" />
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">@Model.CurrentEmployeeName</span>
+                        <span class="user-role">Lễ tân trực</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <main class="reception-content" style="padding-top: 10px; overflow-y: auto; height: calc(100vh - 80px);">
+
+            <!-- ASP.NET Checkin Form -->
+            <form id="checkInForm" method="post" action="/Receptionist/CheckIn">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="hiddenCustomerId" name="CustomerId" value="@Model.CustomerId" />
+                <input type="hidden" id="hiddenGuestCount" name="GuestCount" value="@Model.GuestCount" />
+
+                <!-- Display Model Validation Summary if any -->
+                <div class="validation-alert" id="formValidationError" @(ViewData.ModelState.IsValid ? "" : "style=display:block")>
+                    @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="checkin-layout">
+                    <!-- Column 1: Customer Profile Search -->
+                    <div class="checkin-card">
+                        <div class="checkin-card-title">
+                            <i class="fa-solid fa-user-tag"></i>
+                            <span>Tìm kiếm khách hàng</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="phoneSearchInput">Số điện thoại khách hàng</label>
+                            <div class="search-row">
+                                <div class="form-input-wrapper" style="flex-grow: 1;">
+                                    <input type="text" id="phoneSearchInput" class="form-input" 
+                                           placeholder="Nhập số điện thoại khách hàng..." 
+                                           autocomplete="off" />
+                                </div>
+                                <button type="button" class="btn-search" id="btnPhoneSearch">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Customer Profile Dynamic Card -->
+                        <div class="customer-profile-card" id="customerProfileCard">
+                            <!-- JS will dynamically swap this content -->
+                            <div class="customer-profile-empty" id="customerProfileEmpty">
+                                <i class="fa-solid fa-address-card"></i>
+                                <div>
+                                    <p style="font-weight: 700; font-size: 0.95rem;">Khách vãng lai (Mặc định)</p>
+                                    <p style="font-size: 0.8rem; margin-top: 4px; color: var(--text-secondary-dark);">Nhập số điện thoại để tra cứu thành viên tích điểm</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Check-in Details -->
+                    <div class="checkin-card">
+                        <div class="checkin-card-title">
+                            <i class="fa-solid fa-microphone-lines"></i>
+                            <span>Thông tin nhận phòng</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="RoomId">Chọn phòng trống</label>
+                            <select name="RoomId" id="RoomId" class="form-input" required>
+                                @if (Model.AvailableRooms.Any())
+                                {
+                                    <option value="" disabled selected>-- Chọn phòng trống --</option>
+                                    @foreach (var room in Model.AvailableRooms)
+                                    {
+                                        var isSelected = room.RoomId == Model.RoomId ? "selected" : "";
+                                        <![CDATA[
+                                        ]]>
+                                        <option value="@room.RoomId" selected="@(room.RoomId == Model.RoomId)">
+                                            @room.RoomName - @room.TypeName (@(room.PricePerHour.ToString("N0"))đ/giờ)
+                                        </option>
+                                    }
+                                }
+                                else
+                                {
+                                    <option value="" disabled>Không có phòng trống nào khả dụng</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Số lượng khách</label>
+                            <div class="counter-container">
+                                <button type="button" class="btn-counter" id="btnDecGuest">-</button>
+                                <span class="counter-value" id="guestCountDisplay">@Model.GuestCount</span>
+                                <button type="button" class="btn-counter" id="btnIncGuest">+</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="CheckInTime">Thời gian vào phòng</label>
+                            <input type="datetime-local" id="CheckInTime" name="CheckInTime" 
+                                   value="@Model.CheckInTime.ToString("yyyy-MM-ddTHH:mm")" 
+                                   class="form-input" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="CheckOutTimeEstimated">Thời gian ra dự kiến (Ước tính)</label>
+                            <input type="datetime-local" id="CheckOutTimeEstimated" name="CheckOutTimeEstimated" 
+                                   value="@(Model.CheckOutTimeEstimated?.ToString("yyyy-MM-ddTHH:mm") ?? "")" 
+                                   class="form-input" />
+                            
+                            <!-- Quick selectors -->
+                            <div class="quick-time-grid">
+                                <button type="button" class="btn-quick-time" data-hours="1">1 Giờ</button>
+                                <button type="button" class="btn-quick-time active" data-hours="2">2 Giờ</button>
+                                <button type="button" class="btn-quick-time" data-hours="3">3 Giờ</button>
+                                <button type="button" class="btn-quick-time" data-hours="4">4 Giờ</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="Notes">Ghi chú</label>
+                            <textarea id="Notes" name="Notes" rows="3" class="form-input" 
+                                      style="resize: none;" placeholder="Ghi chú thêm (ví dụ: nước uống đi kèm, yêu cầu mic...)">@Model.Notes</textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn-cancel" onclick="window.location.href='/Receptionist'">Hủy bỏ</button>
+                            <button type="submit" class="btn-submit">
+                                <i class="fa-solid fa-check"></i> Xác nhận nhận phòng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <!-- Modal: New Customer Dialog -->
+    <div class="modal-overlay" id="newCustomerModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Đăng ký thành viên mới</h3>
+                <button type="button" class="btn-close-modal" id="btnCancelModal">&times;</button>
+            </div>
+            
+            <div class="validation-alert" id="modalValidationError"></div>
+            
+            <form id="newCustomerForm">
+                <div class="form-group">
+                    <label class="form-label" for="modalPhone">Số điện thoại</label>
+                    <input type="text" id="modalPhone" class="form-input" required placeholder="Nhập số điện thoại..." />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="modalFullName">Họ và tên khách hàng</label>
+                    <input type="text" id="modalFullName" class="form-input" required placeholder="Nhập đầy đủ họ tên..." />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="modalEmail">Email (Tùy chọn)</label>
+                    <input type="email" id="modalEmail" class="form-input" placeholder="Nhập địa chỉ email..." />
+                </div>
+                
+                <div class="form-actions" style="margin-top: 20px;">
+                    <button type="button" class="btn-cancel" id="btnCancelModalForm">Hủy</button>
+                    <button type="submit" class="btn-submit">
+                        <i class="fa-solid fa-user-plus"></i> Đăng ký & Chọn
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script Interactions -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Element variables
+            const phoneSearchInput = document.getElementById('phoneSearchInput');
+            const btnPhoneSearch = document.getElementById('btnPhoneSearch');
+            const customerProfileCard = document.getElementById('customerProfileCard');
+            const hiddenCustomerId = document.getElementById('hiddenCustomerId');
+            
+            // Modal Elements
+            const newCustomerModal = document.getElementById('newCustomerModal');
+            const btnCancelModal = document.getElementById('btnCancelModal');
+            const btnCancelModalForm = document.getElementById('btnCancelModalForm');
+            const newCustomerForm = document.getElementById('newCustomerForm');
+            const modalPhone = document.getElementById('modalPhone');
+            const modalFullName = document.getElementById('modalFullName');
+            const modalEmail = document.getElementById('modalEmail');
+            const modalValidationError = document.getElementById('modalValidationError');
+
+            // Guest Count elements
+            const btnDecGuest = document.getElementById('btnDecGuest');
+            const btnIncGuest = document.getElementById('btnIncGuest');
+            const guestCountDisplay = document.getElementById('guestCountDisplay');
+            const hiddenGuestCount = document.getElementById('hiddenGuestCount');
+
+            // Time estimate elements
+            const checkInTimeInput = document.getElementById('CheckInTime');
+            const checkOutTimeEstimatedInput = document.getElementById('CheckOutTimeEstimated');
+            const quickTimeButtons = document.querySelectorAll('.btn-quick-time');
+
+            // 1. Initialize Default Estimated Checkout Time (+2 hours)
+            function updateEstimatedCheckoutTime(hours) {
+                const checkInVal = checkInTimeInput.value;
+                if (checkInVal) {
+                    const checkInDate = new Date(checkInVal);
+                    checkInDate.setHours(checkInDate.getHours() + parseInt(hours));
+                    
+                    // Format to local ISO (YYYY-MM-DDTHH:mm)
+                    const pad = (num) => String(num).padStart(2, '0');
+                    const formattedDate = checkInDate.getFullYear() + '-' +
+                                          pad(checkInDate.getMonth() + 1) + '-' +
+                                          pad(checkInDate.getDate()) + 'T' +
+                                          pad(checkInDate.getHours()) + ':' +
+                                          pad(checkInDate.getMinutes());
+                    checkOutTimeEstimatedInput.value = formattedDate;
+                }
+            }
+
+            // Set default estimated checkout time on load
+            if (!checkOutTimeEstimatedInput.value) {
+                updateEstimatedCheckoutTime(2);
+            }
+
+            // Check-in time manual change triggers checkout time update based on currently active quick-time button
+            checkInTimeInput.addEventListener('change', () => {
+                const activeBtn = document.querySelector('.btn-quick-time.active');
+                if (activeBtn) {
+                    const hours = activeBtn.getAttribute('data-hours');
+                    updateEstimatedCheckoutTime(hours);
+                }
+            });
+
+            // Quick checkout hours selection click handlers
+            quickTimeButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    quickTimeButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const hours = btn.getAttribute('data-hours');
+                    updateEstimatedCheckoutTime(hours);
+                });
+            });
+
+            // 2. Guest Count Actions
+            btnDecGuest.addEventListener('click', () => {
+                let currentVal = parseInt(guestCountDisplay.textContent);
+                if (currentVal > 1) {
+                    currentVal--;
+                    guestCountDisplay.textContent = currentVal;
+                    hiddenGuestCount.value = currentVal;
+                }
+            });
+
+            btnIncGuest.addEventListener('click', () => {
+                let currentVal = parseInt(guestCountDisplay.textContent);
+                currentVal++;
+                guestCountDisplay.textContent = currentVal;
+                hiddenGuestCount.value = currentVal;
+            });
+
+            // 3. Customer Search via phone logic
+            let searchTimeout = null;
+            
+            // Live typing debounce search
+            phoneSearchInput.addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                const query = phoneSearchInput.value.trim();
+                if (query.length >= 9) {
+                    searchTimeout = setTimeout(() => {
+                        performCustomerLookup(query);
+                    }, 500);
+                }
+            });
+
+            // Manual button click search
+            btnPhoneSearch.addEventListener('click', () => {
+                const query = phoneSearchInput.value.trim();
+                if (query) {
+                    performCustomerLookup(query);
+                } else {
+                    alert('Vui lòng nhập số điện thoại để tìm kiếm.');
+                }
+            });
+
+            // Trigger search on Enter key
+            phoneSearchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    btnPhoneSearch.click();
+                }
+            });
+
+            function performCustomerLookup(phone) {
+                // Show a loading indicator inside the customer profile card
+                customerProfileCard.innerHTML = `
+                    <div style="text-align: center; color: var(--primary-magenta); padding: 20px;">
+                        <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem;"></i>
+                        <p style="margin-top: 10px; font-weight: 600;">Đang tra cứu dữ liệu khách hàng...</p>
+                    </div>
+                `;
+
+                fetch(`/Receptionist/GetCustomerByPhone?phone=${encodeURIComponent(phone)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.found) {
+                            renderCustomerProfile(data);
+                        } else {
+                            renderNotFoundState(phone);
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Lỗi tìm kiếm khách hàng:', err);
+                        customerProfileCard.innerHTML = `
+                            <div style="text-align: center; color: #DC2626; padding: 20px;">
+                                <i class="fa-solid fa-triangle-exclamation" style="font-size: 2rem;"></i>
+                                <p style="margin-top: 10px; font-weight: 600;">Lỗi kết nối cơ sở dữ liệu.</p>
+                            </div>
+                        `;
+                    });
+            }
+
+            function renderCustomerProfile(customer) {
+                hiddenCustomerId.value = customer.customerId;
+                
+                // Add specific styling based on tier
+                let badgeClass = '';
+                const tier = customer.tierName.toUpperCase();
+                if (tier.includes('KIM CƯƠNG') || tier.includes('DIAMOND')) {
+                    badgeClass = 'diamond';
+                } else if (tier.includes('VÀNG') || tier.includes('GOLD')) {
+                    badgeClass = 'gold';
+                }
+
+                customerProfileCard.innerHTML = `
+                    <button type="button" class="btn-clear-customer" id="btnClearCustomerSelection" title="Chọn lại khách vãng lai">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <div class="customer-details">
+                        <div class="customer-header-info">
+                            <div>
+                                <span class="customer-name">${escapeHtml(customer.fullName)}</span>
+                                <div class="customer-phone"><i class="fa-solid fa-phone" style="font-size:0.8rem; margin-right:4px;"></i> ${escapeHtml(customer.phone)}</div>
+                            </div>
+                            <span class="tier-badge ${badgeClass}">${escapeHtml(customer.tierName)}</span>
+                        </div>
+                        <div style="margin-top: auto; border-top: 1.5px solid var(--border-color-soft); padding-top: 12px; display: flex; align-items: center; justify-content: space-between;">
+                            <div class="points-box">
+                                <i class="fa-solid fa-star"></i>
+                                <span>Tích lũy: ${customer.points} Điểm</span>
+                            </div>
+                            <span style="font-size: 0.75rem; color: #10B981; font-weight: 600;">
+                                <i class="fa-solid fa-circle-check"></i> Đã chọn thành viên
+                            </span>
+                        </div>
+                    </div>
+                `;
+
+                // Wire clear click
+                document.getElementById('btnClearCustomerSelection').addEventListener('click', () => {
+                    resetToGuestCustomer();
+                });
+            }
+
+            function renderNotFoundState(searchedPhone) {
+                hiddenCustomerId.value = ''; // clears to guest customer
+                customerProfileCard.innerHTML = `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <i class="fa-solid fa-user-slash" style="font-size: 2rem; color: #DC2626; margin-bottom: 12px;"></i>
+                        <p style="font-weight: 700; color: #DC2626; font-size: 0.95rem;">Không tìm thấy số điện thoại</p>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary-dark); margin-top: 4px; max-width: 280px; margin-inline: auto;">
+                            Số điện thoại <strong>${escapeHtml(searchedPhone)}</strong> chưa được đăng ký làm thành viên.
+                        </p>
+                        <div style="margin-top: 15px; display: flex; justify-content: center; gap: 10px;">
+                            <button type="button" class="btn-quick-time" style="background-color: #F3EEF0; border-color: #E2D7DA; color: var(--text-secondary-dark);" id="btnQuickGuest">Bỏ qua (Khách vãng lai)</button>
+                            <button type="button" class="btn-search" style="padding: 6px 15px; font-size: 0.8rem; border-radius: 8px;" id="btnOpenNewCustomerModal">Đăng ký mới</button>
+                        </div>
+                    </div>
+                `;
+
+                // Setup actions
+                document.getElementById('btnQuickGuest').addEventListener('click', () => {
+                    resetToGuestCustomer();
+                });
+                
+                document.getElementById('btnOpenNewCustomerModal').addEventListener('click', () => {
+                    modalPhone.value = searchedPhone;
+                    modalValidationError.style.display = 'none';
+                    modalValidationError.textContent = '';
+                    newCustomerModal.classList.add('show');
+                });
+            }
+
+            function resetToGuestCustomer() {
+                hiddenCustomerId.value = '';
+                phoneSearchInput.value = '';
+                customerProfileCard.innerHTML = `
+                    <div class="customer-profile-empty" id="customerProfileEmpty">
+                        <i class="fa-solid fa-address-card"></i>
+                        <div>
+                            <p style="font-weight: 700; font-size: 0.95rem;">Khách vãng lai (Mặc định)</p>
+                            <p style="font-size: 0.8rem; margin-top: 4px; color: var(--text-secondary-dark);">Nhập số điện thoại để tra cứu thành viên tích điểm</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 4. Modal Operations
+            function closeModal() {
+                newCustomerModal.classList.remove('show');
+                newCustomerForm.reset();
+            }
+
+            btnCancelModal.addEventListener('click', closeModal);
+            btnCancelModalForm.addEventListener('click', closeModal);
+
+            // Submit customer form via AJAX
+            newCustomerForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                modalValidationError.style.display = 'none';
+                modalValidationError.textContent = '';
+
+                const requestBody = {
+                    Phone: modalPhone.value.trim(),
+                    FullName: modalFullName.value.trim(),
+                    Email: modalEmail.value.trim() || null
+                };
+
+                fetch('/Receptionist/CreateCustomer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    },
+                    body: JSON.stringify(requestBody)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        // Prefill search input and select new customer
+                        phoneSearchInput.value = data.phone;
+                        renderCustomerProfile(data);
+                        closeModal();
+                    } else {
+                        modalValidationError.textContent = data.message || 'Đăng ký thất bại. Vui lòng kiểm tra lại.';
+                        modalValidationError.style.display = 'block';
+                    }
+                })
+                .catch(err => {
+                    console.error('Đăng ký thành viên thất bại:', err);
+                    modalValidationError.textContent = 'Lỗi hệ thống. Không thể hoàn tất đăng ký.';
+                    modalValidationError.style.display = 'block';
+                });
+            });
+
+            // Helper to escape HTML tags to avoid XSS in dynamically injected properties
+            function escapeHtml(text) {
+                if (!text) return '';
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.toString().replace(/[&<>"']/g, function(m) { return map[m]; });
+            }
+        });
+    </script>
+</body>
+</html>
