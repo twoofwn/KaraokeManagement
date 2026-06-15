@@ -24,7 +24,7 @@ namespace KaraokeManagement.Controllers
             // If already logged in, redirect to Home
             if (Request.Cookies.ContainsKey("UserSession") || User.Identity?.IsAuthenticated == true)
             {
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Admin");
             }
             return View();
         }
@@ -62,7 +62,7 @@ namespace KaraokeManagement.Controllers
             else
             {
                 // Fallback hardcoded credentials for demo/testing without database setup
-                if (model.UsernameOrEmail == "admin@lumina.com" && model.Password == "admin123")
+                if (model.UsernameOrEmail == "admin@ktv.com" && model.Password == "admin123")
                 {
                     isValidUser = true;
                 }
@@ -108,7 +108,7 @@ namespace KaraokeManagement.Controllers
                     Response.Cookies.Append("UserRole", role, cookieOptions);
                 }
 
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Admin");
             }
 
             ViewBag.Error = "Invalid username/email or password.";
