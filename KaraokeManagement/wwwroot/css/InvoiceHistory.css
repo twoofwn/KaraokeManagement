@@ -1,0 +1,474 @@
+/* --- INVOICE HISTORY SCREEN STYLES --- */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --bg-history: #FCF2F4;
+    --bg-card: #FFFFFF;
+    --primary-magenta: #D8005A;
+    --primary-hover: #B8004C;
+    --primary-light: #FFF0F3;
+    --primary-light-border: #FCDCE3;
+    --text-dark: #2A1A1D;
+    --text-secondary: #6E5B5E;
+    --text-muted: #A38F92;
+    --border-soft: #F2E3E6;
+    
+    --shadow-soft: 0 4px 20px rgba(216, 0, 90, 0.03);
+    --shadow-premium: 0 10px 30px rgba(216, 75, 115, 0.05);
+    --shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.15);
+    
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    
+    --color-success: #10B981;
+    --color-success-bg: #E6F8F0;
+    --color-warning: #FBBF24;
+    --color-warning-bg: #FEF9E6;
+    --color-danger: #EF4444;
+    --color-danger-bg: #FEE2E2;
+}
+
+body.invoice-history-page {
+    font-family: var(--font-sans);
+    background-color: var(--bg-history);
+    color: var(--text-dark);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+/* Scrollable main area */
+.history-container {
+    padding: 24px 32px;
+    height: calc(100vh - 80px);
+    overflow-y: auto;
+    width: 100%;
+}
+
+/* Title colors & styles */
+.header-title-wrapper .header-title-text {
+    color: var(--primary-magenta) !important;
+    font-weight: 800 !important;
+}
+
+/* White Card Containers */
+.history-card {
+    background-color: var(--bg-card);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--shadow-soft);
+    border: 1px solid var(--border-soft);
+    margin-bottom: 24px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.history-card:hover {
+    box-shadow: var(--shadow-premium);
+}
+
+.card-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card-title i {
+    font-size: 0.95rem;
+    color: var(--primary-magenta);
+}
+
+/* Filter Forms Grid */
+.filter-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+@media (min-width: 576px) {
+    .filter-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 992px) {
+    .filter-grid {
+        grid-template-columns: 2fr 1fr 1fr 1.2fr;
+    }
+}
+
+.filter-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-input-group label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.filter-control {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border-soft);
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-dark);
+    background-color: #FCF9F9;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.filter-control:focus {
+    background-color: #FFFFFF;
+    border-color: var(--primary-magenta);
+    box-shadow: 0 0 0 3px rgba(216, 0, 90, 0.06);
+}
+
+/* Filter Action Buttons */
+.filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.btn-filter {
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    outline: none;
+}
+
+.btn-filter-reset {
+    background-color: transparent;
+    border: 1.5px solid var(--primary-magenta);
+    color: var(--primary-magenta);
+}
+
+.btn-filter-reset:hover {
+    background-color: var(--primary-light);
+}
+
+.btn-filter-search {
+    background-color: var(--primary-magenta);
+    border: none;
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(216, 0, 90, 0.15);
+}
+
+.btn-filter-search:hover {
+    background-color: var(--primary-hover);
+    box-shadow: 0 6px 16px rgba(216, 0, 90, 0.2);
+}
+
+/* Data Table Styling */
+.history-table-container {
+    overflow-x: auto;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.history-table th {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 16px;
+    border-bottom: 1.5px solid var(--border-soft);
+}
+
+.history-table td {
+    padding: 16px;
+    font-size: 0.85rem;
+    border-bottom: 1px dashed var(--border-soft);
+    vertical-align: middle;
+}
+
+.history-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Columns specific formatting */
+.col-invoice-code {
+    color: var(--primary-magenta);
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+/* Badges */
+.badge-room {
+    background-color: var(--primary-light);
+    color: var(--primary-magenta);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    display: inline-block;
+    border: 1px solid var(--primary-light-border);
+}
+
+.customer-name {
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.customer-phone {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.staff-name {
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+/* Time entries with status dots */
+.time-entry-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.time-entry-row:not(:last-child) {
+    margin-bottom: 4px;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-dot.in {
+    background-color: var(--color-success);
+}
+
+.status-dot.out {
+    background-color: var(--color-danger);
+}
+
+.total-amount-cell {
+    font-weight: 700;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+}
+
+/* Status badge in table */
+.badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.badge-status.paid {
+    background-color: var(--color-success);
+    color: #FFFFFF;
+}
+
+.badge-status.unpaid {
+    background-color: var(--color-warning-bg);
+    color: #D97706;
+    border: 1px solid #FDE68A;
+}
+
+/* Action button */
+.btn-action-view {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background-color: rgba(216, 0, 90, 0.06);
+    color: var(--primary-magenta);
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 0.85rem;
+}
+
+.btn-action-view:hover {
+    background-color: var(--primary-magenta);
+    color: #FFFFFF;
+    box-shadow: 0 4px 10px rgba(216, 0, 90, 0.15);
+}
+
+/* Pagination container */
+.pagination-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.pagination-list {
+    display: flex;
+    gap: 6px;
+    list-style: none;
+}
+
+.page-item-link {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--border-soft);
+    background-color: var(--bg-card);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.page-item-link:hover {
+    border-color: var(--primary-magenta);
+    color: var(--primary-magenta);
+    background-color: var(--primary-light);
+}
+
+.page-item-link.active {
+    background-color: var(--primary-magenta);
+    border-color: var(--primary-magenta);
+    color: #FFFFFF;
+    box-shadow: 0 4px 10px rgba(216, 0, 90, 0.15);
+}
+
+.page-item-link.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    background-color: #F8F5F5;
+}
+
+/* Modal Popup Core */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(42, 26, 29, 0.6); /* Backdrop mờ tối */
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-container {
+    background-color: #FCF9F9; /* matching receptionist background */
+    border-radius: 20px;
+    width: 90%;
+    max-width: 650px;
+    max-height: 85vh;
+    box-shadow: var(--shadow-modal);
+    border: 1px solid var(--border-soft);
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+}
+
+.modal-backdrop.show .modal-container {
+    transform: scale(1) translateY(0);
+}
+
+.modal-header {
+    padding: 16px 24px;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--primary-magenta);
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.2s;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.modal-close-btn:hover {
+    background-color: #FAF4F5;
+    color: var(--primary-magenta);
+}
+
+.modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+/* Empty table result state */
+.empty-table-state {
+    text-align: center;
+    padding: 48px !important;
+    color: var(--text-secondary);
+}
+
+.empty-table-state i {
+    font-size: 2.5rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
