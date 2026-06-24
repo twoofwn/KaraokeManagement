@@ -1,70 +1,42 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\",
+  "WorkspaceRootPath": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|d:\\hoctap\\semester\\ky7\\prn222\\project\\karaokemanagement\\karaokemanagement\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|c:\\users\\admin\\onedrive\\m\u00E1y t\u00EDnh\\prn222\\karaokemanagement\\karaokemanagement\\views\\manager\\invoices.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\views\\manager\\invoices.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|d:\\hoctap\\semester\\ky7\\prn222\\project\\karaokemanagement\\karaokemanagement\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|c:\\users\\admin\\onedrive\\m\u00E1y t\u00EDnh\\prn222\\karaokemanagement\\karaokemanagement\\views\\manager\\expenses.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\views\\manager\\expenses.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|d:\\hoctap\\semester\\ky7\\prn222\\project\\karaokemanagement\\karaokemanagement\\views\\admin\\_adminlayout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\views\\admin\\_adminlayout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|c:\\users\\admin\\onedrive\\m\u00E1y t\u00EDnh\\prn222\\karaokemanagement\\karaokemanagement\\views\\manager\\_managerlayout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\views\\manager\\_managerlayout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|d:\\hoctap\\semester\\ky7\\prn222\\project\\karaokemanagement\\karaokemanagement\\views\\admin\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\views\\admin\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|c:\\users\\admin\\onedrive\\m\u00E1y t\u00EDnh\\prn222\\karaokemanagement\\karaokemanagement\\views\\manager\\importhistory.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\views\\manager\\importhistory.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|d:\\hoctap\\semester\\ky7\\prn222\\project\\karaokemanagement\\karaokemanagement\\views\\admin\\form.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\views\\admin\\form.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|c:\\users\\admin\\onedrive\\m\u00E1y t\u00EDnh\\prn222\\karaokemanagement\\karaokemanagement\\controllers\\managercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\controllers\\managercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|d:\\hoctap\\semester\\ky7\\prn222\\project\\karaokemanagement\\karaokemanagement\\controllers\\userscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\controllers\\userscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|c:\\users\\admin\\onedrive\\m\u00E1y t\u00EDnh\\prn222\\karaokemanagement\\karaokemanagement\\views\\admin\\categories.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\views\\admin\\categories.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|d:\\hoctap\\semester\\ky7\\prn222\\project\\karaokemanagement\\karaokemanagement\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|c:\\users\\admin\\onedrive\\m\u00E1y t\u00EDnh\\prn222\\karaokemanagement\\karaokemanagement\\views\\manager\\inventory.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\views\\manager\\inventory.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|d:\\hoctap\\semester\\ky7\\prn222\\project\\karaokemanagement\\karaokemanagement\\controllers\\categoriescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\controllers\\categoriescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|c:\\users\\admin\\onedrive\\m\u00E1y t\u00EDnh\\prn222\\karaokemanagement\\karaokemanagement\\views\\manager\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\views\\manager\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|d:\\hoctap\\semester\\ky7\\prn222\\project\\karaokemanagement\\karaokemanagement\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|d:\\hoctap\\semester\\ky7\\prn222\\project\\karaokemanagement\\karaokemanagement\\views\\auth\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\views\\auth\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|d:\\hoctap\\semester\\ky7\\prn222\\project\\karaokemanagement\\karaokemanagement\\wwwroot\\css\\login.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
-      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\wwwroot\\css\\login.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|d:\\hoctap\\semester\\ky7\\prn222\\project\\karaokemanagement\\karaokemanagement\\wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
-      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|d:\\hoctap\\semester\\ky7\\prn222\\project\\karaokemanagement\\karaokemanagement\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|d:\\hoctap\\semester\\ky7\\prn222\\project\\karaokemanagement\\karaokemanagement\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|d:\\hoctap\\semester\\ky7\\prn222\\project\\karaokemanagement\\karaokemanagement\\karaokemanagement.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|",
-      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\karaokemanagement.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|d:\\hoctap\\semester\\ky7\\prn222\\project\\karaokemanagement\\karaokemanagement\\karaokemanagement.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\karaokemanagement.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+      "AbsoluteMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|c:\\users\\admin\\onedrive\\m\u00E1y t\u00EDnh\\prn222\\karaokemanagement\\karaokemanagement\\views\\manager\\stockin.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{906F7DF4-C9DC-4936-B60B-83709417099E}|KaraokeManagement\\KaraokeManagement.csproj|solutionrelative:karaokemanagement\\views\\manager\\stockin.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -73,16 +45,12 @@
       "VerticalTabListWidth": 256,
       "DocumentGroups": [
         {
-          "DockedWidth": 57,
-          "SelectedChildIndex": 19,
+          "DockedWidth": 200,
+          "SelectedChildIndex": 13,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{40ea2e6b-2121-4bb8-a43e-c83c04b51041}"
             },
             {
               "$type": "Bookmark",
@@ -129,223 +97,125 @@
               "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
             },
             {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Index.cshtml",
-              "DocumentMoniker": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Views\\Admin\\Index.cshtml",
-              "RelativeDocumentMoniker": "KaraokeManagement\\Views\\Admin\\Index.cshtml",
-              "ToolTip": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Views\\Admin\\Index.cshtml",
-              "RelativeToolTip": "KaraokeManagement\\Views\\Admin\\Index.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-06-14T13:45:27.823Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "Form.cshtml",
-              "DocumentMoniker": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Views\\Admin\\Form.cshtml",
-              "RelativeDocumentMoniker": "KaraokeManagement\\Views\\Admin\\Form.cshtml",
-              "ToolTip": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Views\\Admin\\Form.cshtml",
-              "RelativeToolTip": "KaraokeManagement\\Views\\Admin\\Form.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-06-14T13:45:35.742Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "_AdminLayout.cshtml",
-              "DocumentMoniker": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Views\\Admin\\_AdminLayout.cshtml",
-              "RelativeDocumentMoniker": "KaraokeManagement\\Views\\Admin\\_AdminLayout.cshtml",
-              "ToolTip": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Views\\Admin\\_AdminLayout.cshtml",
-              "RelativeToolTip": "KaraokeManagement\\Views\\Admin\\_AdminLayout.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-06-14T13:43:57.848Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "AdminController.cs",
-              "DocumentMoniker": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Controllers\\AdminController.cs",
-              "RelativeDocumentMoniker": "KaraokeManagement\\Controllers\\AdminController.cs",
-              "ToolTip": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Controllers\\AdminController.cs",
-              "RelativeToolTip": "KaraokeManagement\\Controllers\\AdminController.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-14T13:41:10.448Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "Login.css",
-              "DocumentMoniker": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\wwwroot\\css\\Login.css",
-              "RelativeDocumentMoniker": "KaraokeManagement\\wwwroot\\css\\Login.css",
-              "ToolTip": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\wwwroot\\css\\Login.css",
-              "RelativeToolTip": "KaraokeManagement\\wwwroot\\css\\Login.css",
-              "ViewState": "AgIAAHQBAAAAAAAAAAAmwKwBAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2026-06-12T10:06:45.22Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "site.css",
-              "DocumentMoniker": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\wwwroot\\css\\site.css",
-              "RelativeDocumentMoniker": "KaraokeManagement\\wwwroot\\css\\site.css",
-              "ToolTip": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\wwwroot\\css\\site.css",
-              "RelativeToolTip": "KaraokeManagement\\wwwroot\\css\\site.css",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2026-06-12T10:04:03.869Z"
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "AuthController.cs",
-              "DocumentMoniker": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Controllers\\AuthController.cs",
-              "RelativeDocumentMoniker": "KaraokeManagement\\Controllers\\AuthController.cs",
-              "ToolTip": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Controllers\\AuthController.cs",
-              "RelativeToolTip": "KaraokeManagement\\Controllers\\AuthController.cs",
-              "ViewState": "AgIAAF8AAAAAAAAAAAAgwG4AAAAyAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-11T07:40:04.887Z",
+              "Title": "Invoices.cshtml",
+              "DocumentMoniker": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Views\\Manager\\Invoices.cshtml",
+              "RelativeDocumentMoniker": "KaraokeManagement\\Views\\Manager\\Invoices.cshtml",
+              "ToolTip": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Views\\Manager\\Invoices.cshtml",
+              "RelativeToolTip": "KaraokeManagement\\Views\\Manager\\Invoices.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAA1AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-06-22T13:11:39.107Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "Index.cshtml",
-              "DocumentMoniker": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Views\\Home\\Index.cshtml",
-              "RelativeDocumentMoniker": "KaraokeManagement\\Views\\Home\\Index.cshtml",
-              "ToolTip": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Views\\Home\\Index.cshtml",
-              "RelativeToolTip": "KaraokeManagement\\Views\\Home\\Index.cshtml",
-              "ViewState": "AgIAADQAAAAAAAAAAAAowIkAAAAHAAAAAAAAAA==",
+              "Title": "Expenses.cshtml",
+              "DocumentMoniker": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Views\\Manager\\Expenses.cshtml",
+              "RelativeDocumentMoniker": "KaraokeManagement\\Views\\Manager\\Expenses.cshtml",
+              "ToolTip": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Views\\Manager\\Expenses.cshtml",
+              "RelativeToolTip": "KaraokeManagement\\Views\\Manager\\Expenses.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-06-11T07:43:32.155Z",
+              "WhenOpened": "2026-06-22T13:08:48.852Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "CategoriesController.cs",
-              "DocumentMoniker": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Controllers\\CategoriesController.cs",
-              "RelativeDocumentMoniker": "KaraokeManagement\\Controllers\\CategoriesController.cs",
-              "ToolTip": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Controllers\\CategoriesController.cs",
-              "RelativeToolTip": "KaraokeManagement\\Controllers\\CategoriesController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-14T13:41:15.953Z",
+              "DocumentIndex": 3,
+              "Title": "ImportHistory.cshtml",
+              "DocumentMoniker": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Views\\Manager\\ImportHistory.cshtml",
+              "RelativeDocumentMoniker": "KaraokeManagement\\Views\\Manager\\ImportHistory.cshtml",
+              "ToolTip": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Views\\Manager\\ImportHistory.cshtml",
+              "RelativeToolTip": "KaraokeManagement\\Views\\Manager\\ImportHistory.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAA1AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-06-22T13:05:46.352Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 6,
-              "Title": "HomeController.cs",
-              "DocumentMoniker": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Controllers\\HomeController.cs",
-              "RelativeDocumentMoniker": "KaraokeManagement\\Controllers\\HomeController.cs",
-              "ToolTip": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Controllers\\HomeController.cs",
-              "RelativeToolTip": "KaraokeManagement\\Controllers\\HomeController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-14T13:41:17.292Z",
+              "Title": "Inventory.cshtml",
+              "DocumentMoniker": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Views\\Manager\\Inventory.cshtml",
+              "RelativeDocumentMoniker": "KaraokeManagement\\Views\\Manager\\Inventory.cshtml",
+              "ToolTip": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Views\\Manager\\Inventory.cshtml",
+              "RelativeToolTip": "KaraokeManagement\\Views\\Manager\\Inventory.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-06-22T13:04:24.289Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "Program.cs",
-              "DocumentMoniker": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Program.cs",
-              "RelativeDocumentMoniker": "KaraokeManagement\\Program.cs",
-              "ToolTip": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Program.cs",
-              "RelativeToolTip": "KaraokeManagement\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAArAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-11T07:43:20.384Z"
+              "DocumentIndex": 8,
+              "Title": "StockIn.cshtml",
+              "DocumentMoniker": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Views\\Manager\\StockIn.cshtml",
+              "RelativeDocumentMoniker": "KaraokeManagement\\Views\\Manager\\StockIn.cshtml",
+              "ToolTip": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Views\\Manager\\StockIn.cshtml",
+              "RelativeToolTip": "KaraokeManagement\\Views\\Manager\\StockIn.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-06-22T12:47:01.979Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "Login.cshtml",
-              "DocumentMoniker": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Views\\Auth\\Login.cshtml",
-              "RelativeDocumentMoniker": "KaraokeManagement\\Views\\Auth\\Login.cshtml",
-              "ToolTip": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Views\\Auth\\Login.cshtml",
-              "RelativeToolTip": "KaraokeManagement\\Views\\Auth\\Login.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAEAAAAAAAAAA==",
+              "DocumentIndex": 2,
+              "Title": "_ManagerLayout.cshtml",
+              "DocumentMoniker": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Views\\Manager\\_ManagerLayout.cshtml",
+              "RelativeDocumentMoniker": "KaraokeManagement\\Views\\Manager\\_ManagerLayout.cshtml",
+              "ToolTip": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Views\\Manager\\_ManagerLayout.cshtml",
+              "RelativeToolTip": "KaraokeManagement\\Views\\Manager\\_ManagerLayout.cshtml",
+              "ViewState": "AgIAAC4AAAAAAAAAAAAIwDkAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-06-11T07:40:36.95Z",
+              "WhenOpened": "2026-06-22T11:14:01.562Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
-              "Title": "UsersController.cs",
-              "DocumentMoniker": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Controllers\\UsersController.cs",
-              "RelativeDocumentMoniker": "KaraokeManagement\\Controllers\\UsersController.cs",
-              "ToolTip": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\Controllers\\UsersController.cs",
-              "RelativeToolTip": "KaraokeManagement\\Controllers\\UsersController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-14T13:41:21.772Z",
+              "Title": "Categories.cshtml",
+              "DocumentMoniker": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Views\\Admin\\Categories.cshtml",
+              "RelativeDocumentMoniker": "KaraokeManagement\\Views\\Admin\\Categories.cshtml",
+              "ToolTip": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Views\\Admin\\Categories.cshtml",
+              "RelativeToolTip": "KaraokeManagement\\Views\\Admin\\Categories.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-06-22T11:13:24.205Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\appsettings.json",
-              "RelativeDocumentMoniker": "KaraokeManagement\\appsettings.json",
-              "ToolTip": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\appsettings.json",
-              "RelativeToolTip": "KaraokeManagement\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-06-09T06:30:58.184Z"
+              "DocumentIndex": 7,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Views\\Manager\\Index.cshtml",
+              "RelativeDocumentMoniker": "KaraokeManagement\\Views\\Manager\\Index.cshtml",
+              "ToolTip": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Views\\Manager\\Index.cshtml",
+              "RelativeToolTip": "KaraokeManagement\\Views\\Manager\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-06-22T10:59:14.972Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
-              "Title": "KaraokeManagement.csproj",
-              "DocumentMoniker": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\KaraokeManagement.csproj",
-              "RelativeDocumentMoniker": "KaraokeManagement\\KaraokeManagement.csproj",
-              "ToolTip": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\KaraokeManagement.csproj",
-              "RelativeToolTip": "KaraokeManagement\\KaraokeManagement.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-06-09T06:21:20.86Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 14,
-              "Title": "KaraokeManagement",
-              "DocumentMoniker": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\KaraokeManagement.csproj",
-              "RelativeDocumentMoniker": "KaraokeManagement\\KaraokeManagement.csproj",
-              "ToolTip": "D:\\HocTap\\Semester\\Ky7\\PRN222\\Project\\KaraokeManagement\\KaraokeManagement\\KaraokeManagement.csproj",
-              "RelativeToolTip": "KaraokeManagement\\KaraokeManagement.csproj",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2026-06-09T06:29:14.851Z"
-            }
-          ]
-        },
-        {
-          "DockedWidth": 838,
-          "SelectedChildIndex": -1,
-          "Children": [
-            {
-              "$type": "Bookmark",
-              "Name": "ST:1:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:1:0:{e8034f19-ab72-4f06-83fd-f6832b41aa63}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:7:0:{e8034f19-ab72-4f06-83fd-f6832b41aa63}"
+              "DocumentIndex": 4,
+              "Title": "ManagerController.cs",
+              "DocumentMoniker": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Controllers\\ManagerController.cs",
+              "RelativeDocumentMoniker": "KaraokeManagement\\Controllers\\ManagerController.cs",
+              "ToolTip": "C:\\Users\\admin\\OneDrive\\M\u00E1y t\u00EDnh\\PRN222\\KaraokeManagement\\KaraokeManagement\\Controllers\\ManagerController.cs",
+              "RelativeToolTip": "KaraokeManagement\\Controllers\\ManagerController.cs",
+              "ViewState": "AgIAABEAAAAAAAAAAAAswCAAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-22T10:59:04.101Z",
+              "EditorCaption": ""
             }
           ]
         }

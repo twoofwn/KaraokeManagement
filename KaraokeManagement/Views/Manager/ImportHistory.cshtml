@@ -1,0 +1,392 @@
+﻿@{
+    Layout = "~/Views/Manager/_ManagerLayout.cshtml";
+    ViewData["Title"] = "Lịch sử nhập hàng";
+    ViewData["ActiveNav"] = "history";
+}
+
+<style>
+    /* Custom Theme & Colors */
+    :root {
+        --brand-pink: #b60056;
+        --brand-pink-light: #fdf2f6;
+        --text-main: #212529;
+        --text-muted: #6c757d;
+    }
+
+    /* Summary Cards */
+    .history-card {
+        border-radius: 12px;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        border: none;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .card-pink {
+        background-color: var(--brand-pink-light);
+    }
+
+    .card-gray {
+        background-color: #f8f9fa;
+    }
+
+    .history-card-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .history-card-icon {
+        width: 24px;
+        height: 24px;
+        background: #fff;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        color: var(--brand-pink);
+    }
+
+    .history-card-value {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--text-main);
+        line-height: 1.2;
+    }
+
+    .history-card-sub {
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+        font-weight: 500;
+    }
+
+    /* Abstract shapes in cards */
+    .card-shape {
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        opacity: 0.5;
+    }
+    .card-pink .card-shape { background-color: #fce4ec; }
+    .card-gray .card-shape { background-color: #e9ecef; }
+
+    /* Action Card */
+    .card-action {
+        background-color: var(--brand-pink-light);
+        text-decoration: none;
+        transition: transform 0.2s;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        border: 1px dashed #f8bbd0;
+    }
+    .card-action:hover {
+        transform: translateY(-3px);
+    }
+    .btn-circle-pink {
+        width: 45px;
+        height: 45px;
+        background-color: var(--brand-pink);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        margin-bottom: 0.8rem;
+    }
+    .card-action span {
+        color: var(--brand-pink);
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+        background: transparent;
+        margin-bottom: 1.5rem;
+    }
+    .filter-select {
+        border-radius: 20px;
+        border: 1px solid #e0e0e0;
+        background-color: #fff;
+        padding: 0.4rem 1.2rem;
+        font-size: 0.85rem;
+        color: var(--text-main);
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    /* Table Styles */
+    .table-container {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #f0f0f0;
+    }
+    .table-history th {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-weight: 600;
+        border-bottom: 1px solid #f0f0f0;
+        padding: 1.2rem 1rem;
+        background-color: transparent;
+    }
+    .table-history td {
+        vertical-align: middle;
+        padding: 1.2rem 1rem;
+        border-bottom: 1px solid #f8f9fa;
+        color: var(--text-main);
+        font-size: 0.9rem;
+    }
+    .table-history tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Supplier Avatar */
+    .supplier-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: white;
+        margin-right: 0.8rem;
+    }
+
+    /* Badges */
+    .badge-status {
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    .status-done {
+        background-color: #e6f4ea;
+        color: #1e8e3e;
+    }
+    .status-debt {
+        background-color: #fef7e0;
+        color: #f29900;
+    }
+
+    .page-info {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+</style>
+
+<div class="mb-4">
+    <h2 class="fw-bold mb-0">Lịch sử nhập hàng</h2>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="history-card card-pink">
+            <div class="card-shape"></div>
+            <div class="history-card-title">
+                Tổng chi tháng này
+                <div class="history-card-icon"><i class="fa-solid fa-wallet"></i></div>
+            </div>
+            <div class="history-card-value">
+                124.5 <span style="font-size: 1.2rem; font-weight: 600; color: #555;">Tr. VND</span>
+            </div>
+            <div class="history-card-sub text-danger">
+                <i class="fa-solid fa-arrow-trend-up"></i> +12.5% so với tháng trước
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="history-card card-gray">
+            <div class="card-shape"></div>
+            <div class="history-card-title">
+                Số phiếu nhập
+                <div class="history-card-icon text-secondary"><i class="fa-regular fa-file-lines"></i></div>
+            </div>
+            <div class="history-card-value">
+                42 <span style="font-size: 1.2rem; font-weight: 600; color: #555;">phiếu</span>
+            </div>
+            <div class="history-card-sub" style="color: var(--brand-pink);">
+                <i class="fa-regular fa-circle-check"></i> Đã thanh toán 38 phiếu
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <a href="/Manager/StockIn" class="history-card card-action">
+            <div class="btn-circle-pink">
+                <i class="fa-solid fa-plus"></i>
+            </div>
+            <span>Tạo Phiếu Nhập Mới</span>
+        </a>
+    </div>
+</div>
+
+<div class="filter-bar d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div class="d-flex gap-2">
+        <select class="filter-select">
+            <option><i class="fa-regular fa-calendar"></i> Tháng này</option>
+            <option>Tháng trước</option>
+            <option>Tất cả thời gian</option>
+        </select>
+
+        <select class="filter-select">
+            <option>Nhà cung cấp</option>
+            <option>Heineken</option>
+            <option>Thực Phẩm Tươi Sống</option>
+        </select>
+
+        <select class="filter-select" id="statusFilter">
+            <option value="all">Trạng thái</option>
+            <option value="done">Hoàn tất</option>
+            <option value="debt">Nợ NCC</option>
+        </select>
+    </div>
+
+    <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-light rounded-circle" style="width: 35px; height: 35px; padding: 0;"><i class="fa-solid fa-download text-muted"></i></button>
+        <div class="page-info">Hiển thị 1-10 / 42</div>
+        <div class="d-flex gap-1">
+            <button class="btn btn-sm btn-light border-0"><i class="fa-solid fa-chevron-left"></i></button>
+            <button class="btn btn-sm btn-light border-0"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+</div>
+
+<div class="table-container table-responsive">
+    <table class="table table-history mb-0 table-hover">
+        <thead>
+            <tr>
+                <th width="15%">MÃ PHIẾU</th>
+                <th width="18%">NGÀY NHẬP</th>
+                <th width="32%">NHÀ CUNG CẤP</th>
+                <th width="15%" class="text-end">TỔNG TIỀN (VND)</th>
+                <th width="15%" class="text-center">TRẠNG THÁI</th>
+                <th width="5%">HÀNH ĐỘNG</th>
+            </tr>
+        </thead>
+        <tbody id="historyTableBody">
+            <tr data-status="done">
+                <td class="text-muted">#NK-1042</td>
+                <td>
+                    <div>24/10/2023</div>
+                    <div class="text-muted" style="font-size: 0.8rem;">14:30</div>
+                </td>
+                <td class="fw-semibold">
+                    <span class="supplier-avatar" style="background-color: #f48fb1;">HB</span> Heineken Beverage VN
+                </td>
+                <td class="text-end fw-bold text-dark">45,000,000</td>
+                <td class="text-center">
+                    <span class="badge-status status-done">Hoàn tất</span>
+                </td>
+                <td class="text-center"></td>
+            </tr>
+
+            <tr data-status="done">
+                <td class="text-muted">#NK-1041</td>
+                <td>
+                    <div>22/10/2023</div>
+                    <div class="text-muted" style="font-size: 0.8rem;">09:15</div>
+                </td>
+                <td class="fw-semibold">
+                    <span class="supplier-avatar" style="background-color: #e0e0e0; color: #555;">TP</span> Thực Phẩm Tươi Sống Q1
+                </td>
+                <td class="text-end fw-bold text-dark">12,450,000</td>
+                <td class="text-center">
+                    <span class="badge-status status-done">Hoàn tất</span>
+                </td>
+                <td class="text-center"></td>
+            </tr>
+
+            <tr data-status="debt">
+                <td class="text-muted">#NK-1040</td>
+                <td>
+                    <div>20/10/2023</div>
+                    <div class="text-muted" style="font-size: 0.8rem;">16:45</div>
+                </td>
+                <td class="fw-semibold">
+                    <span class="supplier-avatar" style="background-color: #78909c;">CL</span> Công ty Cổ phần Lavie
+                </td>
+                <td class="text-end fw-bold text-dark">8,200,000</td>
+                <td class="text-center">
+                    <span class="badge-status status-debt">Nợ NCC</span>
+                </td>
+                <td class="text-center"></td>
+            </tr>
+
+            <tr data-status="done">
+                <td class="text-muted">#NK-1039</td>
+                <td>
+                    <div>18/10/2023</div>
+                    <div class="text-muted" style="font-size: 0.8rem;">10:00</div>
+                </td>
+                <td class="fw-semibold">
+                    <span class="supplier-avatar" style="background-color: #d81b60;">SV</span> Suntory PepsiCo VN
+                </td>
+                <td class="text-end fw-bold text-dark">25,800,000</td>
+                <td class="text-center">
+                    <span class="badge-status status-done">Hoàn tất</span>
+                </td>
+                <td class="text-center"></td>
+            </tr>
+
+            <tr data-status="done">
+                <td class="text-muted">#NK-1038</td>
+                <td>
+                    <div>15/10/2023</div>
+                    <div class="text-muted" style="font-size: 0.8rem;">13:20</div>
+                </td>
+                <td class="fw-semibold">
+                    <span class="supplier-avatar" style="background-color: #e0e0e0; color: #555;">TP</span> Thực Phẩm Tươi Sống Q1
+                </td>
+                <td class="text-end fw-bold text-dark">10,150,000</td>
+                <td class="text-center">
+                    <span class="badge-status status-done">Hoàn tất</span>
+                </td>
+                <td class="text-center"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // JS Thuần: Lọc bảng theo trạng thái
+            const statusFilter = document.getElementById('statusFilter');
+            const tableRows = document.querySelectorAll('#historyTableBody tr');
+
+            statusFilter.addEventListener('change', function (e) {
+                const selectedStatus = e.target.value;
+
+                tableRows.forEach(row => {
+                    const rowStatus = row.getAttribute('data-status');
+                    
+                    if (selectedStatus === 'all' || selectedStatus === rowStatus) {
+                        row.style.display = ''; // Hiện
+                    } else {
+                        row.style.display = 'none'; // Ẩn
+                    }
+                });
+            });
+        });
+    </script>
+}

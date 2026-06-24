@@ -1,0 +1,403 @@
+﻿@{
+    Layout = "~/Views/Manager/_ManagerLayout.cshtml";
+    ViewData["Title"] = "Quản lý chi phí";
+    ViewData["ActiveNav"] = "expenses";
+}
+
+<style>
+    /* Custom Soft UI Theme */
+    :root {
+        --brand-pink: #b60056;
+        --brand-pink-hover: #960046;
+        --card-bg: #f4f5f7; /* Nền xám nhạt cho các khối card */
+        --text-main: #212529;
+        --text-muted: #6c757d;
+        --border-radius-lg: 20px;
+        --border-radius-md: 12px;
+    }
+
+    /* Page Headers */
+    .page-title {
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 0.2rem;
+    }
+
+    /* Soft Cards */
+    .soft-card {
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+        border: none;
+        height: 100%;
+    }
+
+    /* Thống kê (Stat Cards) */
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+    .stat-icon {
+        width: 32px;
+        height: 32px;
+        background-color: #fce8f0;
+        color: var(--brand-pink);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .stat-icon.gray {
+        background-color: #e9ecef;
+        color: #495057;
+    }
+    .stat-value {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--text-main);
+        line-height: 1.2;
+        margin-bottom: 0.5rem;
+    }
+    .stat-sub {
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .stat-sub.text-red { color: #d32f2f; }
+
+    /* Bảng lịch sử chi phí */
+    .table-header-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    .table-soft {
+        width: 100%;
+        margin-bottom: 0;
+    }
+    .table-soft th {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        font-weight: 500;
+        border-bottom: 1px solid #e2e4e8;
+        padding-bottom: 1rem;
+        text-transform: none;
+    }
+    .table-soft td {
+        vertical-align: middle;
+        padding: 1.2rem 0;
+        border-bottom: 1px solid #e2e4e8;
+        font-size: 0.9rem;
+        color: var(--text-main);
+    }
+    .table-soft tr:last-child td {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    .btn-icon-only {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    /* Category Badges */
+    .badge-cat {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .cat-electricity { background-color: #fce8f0; color: #d81b60; } /* Pink */
+    .cat-maintenance { background-color: #ffebee; color: #c62828; } /* Red/Pink */
+    .cat-rent { background-color: #e9ecef; color: #495057; } /* Gray */
+    .cat-water { background-color: #e8f5e9; color: #2e7d32; } /* Green */
+
+    .badge-percent {
+        background-color: #e9ecef;
+        color: #495057;
+        font-size: 0.75rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 12px;
+        font-weight: 600;
+        margin-left: 10px;
+        vertical-align: middle;
+    }
+
+    /* Form Styles */
+    .form-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 2rem;
+    }
+    .form-header-icon {
+        width: 40px;
+        height: 40px;
+        background-color: #fce8f0;
+        color: var(--brand-pink);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+    .form-label-soft {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    .form-control-soft {
+        background-color: #fff;
+        border: none;
+        border-radius: var(--border-radius-md);
+        padding: 0.8rem 1rem;
+        font-size: 0.9rem;
+        color: var(--text-main);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    }
+    .form-control-soft:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px #f8bbd0;
+    }
+    
+    .input-currency-wrapper {
+        position: relative;
+    }
+    .input-currency-wrapper input {
+        padding-right: 2rem;
+    }
+    .input-currency-wrapper .currency-symbol {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-weight: 500;
+        pointer-events: none;
+    }
+
+    .btn-pink {
+        background-color: var(--brand-pink);
+        color: white;
+        font-weight: 500;
+        border: none;
+        padding: 0.8rem 1.5rem;
+        border-radius: var(--border-radius-md);
+        transition: 0.2s;
+    }
+    .btn-pink:hover {
+        background-color: var(--brand-pink-hover);
+        color: white;
+    }
+    .btn-light-gray {
+        background-color: #e2e4e8;
+        color: var(--text-main);
+        font-weight: 500;
+        border: none;
+        padding: 0.8rem 1.5rem;
+        border-radius: var(--border-radius-md);
+        transition: 0.2s;
+    }
+    .btn-light-gray:hover {
+        background-color: #d1d4d8;
+    }
+</style>
+
+<div class="mb-4">
+    <h2 class="page-title">Quản lý chi phí</h2>
+    <p class="text-muted mb-0">Theo dõi và ghi nhận chi phí hoạt động của quán.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="soft-card">
+                    <div class="stat-header">
+                        <span>Tổng chi phí tháng này</span>
+                        <div class="stat-icon"><i class="fa-solid fa-wallet"></i></div>
+                    </div>
+                    <div class="stat-value">45,200,000 ₫</div>
+                    <div class="stat-sub text-red">
+                        <i class="fa-solid fa-arrow-trend-up"></i> +12% so với tháng trước
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="soft-card">
+                    <div class="stat-header">
+                        <span>Danh mục cao nhất</span>
+                        <div class="stat-icon gray"><i class="fa-solid fa-shop"></i></div>
+                    </div>
+                    <div class="stat-value">Mặt bằng</div>
+                    <div class="text-muted" style="font-weight: 500;">
+                        25,000,000 ₫ <span class="badge-percent">55% tổng</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="soft-card">
+            <div class="table-header-flex">
+                <h5 class="fw-bold mb-0">Lịch sử chi phí gần đây</h5>
+                <a href="#" class="text-decoration-none fw-semibold" style="color: var(--brand-pink); font-size: 0.9rem;">
+                    Xem tất cả <i class="fa-solid fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table-soft">
+                    <thead>
+                        <tr>
+                            <th width="15%">Ngày</th>
+                            <th width="25%">Loại chi phí</th>
+                            <th width="35%">Mô tả</th>
+                            <th width="20%" class="text-end">Số tiền (VNĐ)</th>
+                            <th width="5%" class="text-center"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>15/10/23</td>
+                            <td>
+                                <span class="badge-cat cat-electricity"><i class="fa-solid fa-bolt"></i> Điện</span>
+                            </td>
+                            <td class="text-muted">Tiền điện tháng 9/2023</td>
+                            <td class="text-end fw-bold">5,400,000</td>
+                            <td class="text-center"><button class="btn-icon-only"><i class="fa-solid fa-ellipsis-vertical"></i></button></td>
+                        </tr>
+                        <tr>
+                            <td>14/10/23</td>
+                            <td>
+                                <span class="badge-cat cat-maintenance"><i class="fa-solid fa-screwdriver-wrench"></i> Bảo trì</span>
+                            </td>
+                            <td class="text-muted">Sửa mic phòng VIP 1 & 2</td>
+                            <td class="text-end fw-bold">2,100,000</td>
+                            <td class="text-center"><button class="btn-icon-only"><i class="fa-solid fa-ellipsis-vertical"></i></button></td>
+                        </tr>
+                        <tr>
+                            <td>01/10/23</td>
+                            <td>
+                                <span class="badge-cat cat-rent"><i class="fa-solid fa-shop"></i> Mặt bằng</span>
+                            </td>
+                            <td class="text-muted">Thuê mặt bằng tháng 10</td>
+                            <td class="text-end fw-bold">25,000,000</td>
+                            <td class="text-center"><button class="btn-icon-only"><i class="fa-solid fa-ellipsis-vertical"></i></button></td>
+                        </tr>
+                        <tr>
+                            <td>28/09/23</td>
+                            <td>
+                                <span class="badge-cat cat-water"><i class="fa-solid fa-droplet"></i> Nước</span>
+                            </td>
+                            <td class="text-muted">Tiền nước T9</td>
+                            <td class="text-end fw-bold">850,000</td>
+                            <td class="text-center"><button class="btn-icon-only"><i class="fa-solid fa-ellipsis-vertical"></i></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-lg-4">
+        <form class="soft-card" id="addExpenseForm">
+            <div class="form-header">
+                <div class="form-header-icon">
+                    <i class="fa-regular fa-credit-card"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-0">Thêm chi phí</h5>
+                    <div class="text-muted" style="font-size: 0.8rem;">Ghi nhận khoản chi mới</div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label-soft">Loại chi phí</label>
+                <select class="form-select form-control-soft w-100">
+                    <option value="" selected>Chọn danh mục...</option>
+                    <option value="dien">Điện</option>
+                    <option value="nuoc">Nước</option>
+                    <option value="matbang">Mặt bằng</option>
+                    <option value="baotri">Bảo trì</option>
+                    <option value="khac">Khác</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label-soft">Kỳ thanh toán (Tháng/Năm)</label>
+                <input type="month" class="form-control form-control-soft w-100" value="2023-10" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label-soft">Số tiền (VNĐ)</label>
+                <div class="input-currency-wrapper">
+                    <input type="text" id="amountInput" class="form-control form-control-soft w-100 text-end" value="0" />
+                    <span class="currency-symbol">₫</span>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label-soft">Ghi chú (Không bắt buộc)</label>
+                <textarea class="form-control form-control-soft w-100" rows="3" placeholder="Nhập mô tả ngắn..."></textarea>
+            </div>
+
+            <div class="d-flex gap-2 mt-2">
+                <button type="button" class="btn btn-light-gray flex-fill">Hủy</button>
+                <button type="submit" class="btn btn-pink flex-fill">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Lưu chi phí
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Xử lý tự động format số tiền khi nhập (thêm dấu phẩy)
+            const amountInput = document.getElementById('amountInput');
+
+            amountInput.addEventListener('input', function(e) {
+                // Xóa tất cả các ký tự không phải là số
+                let value = this.value.replace(/[^0-9]/g, '');
+                
+                if(value === '') {
+                    this.value = '0';
+                    return;
+                }
+
+                // Chuyển thành số nguyên để xóa các số 0 ở đầu (ví dụ 00123 -> 123)
+                value = parseInt(value, 10).toString();
+
+                // Format lại với dấu phẩy
+                this.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            });
+
+            // Focus vào input sẽ bôi đen toàn bộ số (dễ nhập đè)
+            amountInput.addEventListener('focus', function() {
+                if(this.value === '0') {
+                    this.select();
+                }
+            });
+
+            // Chặn submit form tạm thời để demo (bạn có thể xóa khi nối API)
+            document.getElementById('addExpenseForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('Đã lưu chi phí thành công (Demo)!');
+            });
+        });
+    </script>
+}

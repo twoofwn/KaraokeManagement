@@ -9,73 +9,105 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = KaraokeManagement
 build_property.RootNamespace = KaraokeManagement
-build_property.ProjectDir = D:\HocTap\Semester\Ky7\PRN222\Project\KaraokeManagement\KaraokeManagement\
+build_property.ProjectDir = C:\Users\admin\OneDrive\Máy tính\PRN222\KaraokeManagement\KaraokeManagement\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = D:\HocTap\Semester\Ky7\PRN222\Project\KaraokeManagement\KaraokeManagement
+build_property.MSBuildProjectDirectory = C:\Users\admin\OneDrive\Máy tính\PRN222\KaraokeManagement\KaraokeManagement
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 8.0
 build_property.EnableCodeStyleSeverity = 
 
-[D:/HocTap/Semester/Ky7/PRN222/Project/KaraokeManagement/KaraokeManagement/Views/Admin/Form.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRm9ybS5jc2h0bWw=
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Admin/Categories.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQ2F0ZWdvcmllcy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HocTap/Semester/Ky7/PRN222/Project/KaraokeManagement/KaraokeManagement/Views/Admin/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cSW5kZXguY3NodG1s
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Admin/CategoryForm.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQ2F0ZWdvcnlGb3JtLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HocTap/Semester/Ky7/PRN222/Project/KaraokeManagement/KaraokeManagement/Views/Admin/_AdminLayout.cshtml]
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Admin/Dashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cRGFzaGJvYXJkLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Admin/Inventory.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cSW52ZW50b3J5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Admin/InventoryForm.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cSW52ZW50b3J5Rm9ybS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Admin/UserForm.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cVXNlckZvcm0uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Admin/Users.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cVXNlcnMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Admin/_AdminLayout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cX0FkbWluTGF5b3V0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HocTap/Semester/Ky7/PRN222/Project/KaraokeManagement/KaraokeManagement/Views/Auth/Login.cshtml]
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Auth/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXV0aFxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HocTap/Semester/Ky7/PRN222/Project/KaraokeManagement/KaraokeManagement/Views/Categories/Form.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2F0ZWdvcmllc1xGb3JtLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/HocTap/Semester/Ky7/PRN222/Project/KaraokeManagement/KaraokeManagement/Views/Categories/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2F0ZWdvcmllc1xJbmRleC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/HocTap/Semester/Ky7/PRN222/Project/KaraokeManagement/KaraokeManagement/Views/Home/Index.cshtml]
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HocTap/Semester/Ky7/PRN222/Project/KaraokeManagement/KaraokeManagement/Views/Home/Privacy.cshtml]
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Home/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HocTap/Semester/Ky7/PRN222/Project/KaraokeManagement/KaraokeManagement/Views/Shared/Error.cshtml]
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Manager/Expenses.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFuYWdlclxFeHBlbnNlcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Manager/ImportHistory.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFuYWdlclxJbXBvcnRIaXN0b3J5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Manager/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFuYWdlclxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Manager/Inventory.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFuYWdlclxJbnZlbnRvcnkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Manager/Invoices.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFuYWdlclxJbnZvaWNlcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Manager/StockIn.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFuYWdlclxTdG9ja0luLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Manager/_ManagerLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFuYWdlclxfTWFuYWdlckxheW91dC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HocTap/Semester/Ky7/PRN222/Project/KaraokeManagement/KaraokeManagement/Views/Shared/_ValidationScriptsPartial.cshtml]
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HocTap/Semester/Ky7/PRN222/Project/KaraokeManagement/KaraokeManagement/Views/Users/Form.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlcnNcRm9ybS5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/HocTap/Semester/Ky7/PRN222/Project/KaraokeManagement/KaraokeManagement/Views/Users/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlcnNcSW5kZXguY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[D:/HocTap/Semester/Ky7/PRN222/Project/KaraokeManagement/KaraokeManagement/Views/_ViewImports.cshtml]
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HocTap/Semester/Ky7/PRN222/Project/KaraokeManagement/KaraokeManagement/Views/_ViewStart.cshtml]
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/HocTap/Semester/Ky7/PRN222/Project/KaraokeManagement/KaraokeManagement/Views/Shared/_Layout.cshtml]
+[C:/Users/admin/OneDrive/Máy tính/PRN222/KaraokeManagement/KaraokeManagement/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-2ovosncula

@@ -1,0 +1,373 @@
+﻿@{
+    Layout = "~/Views/Manager/_ManagerLayout.cshtml";
+    ViewData["Title"] = "Lịch sử hóa đơn";
+    ViewData["ActiveNav"] = "invoices";
+}
+
+<style>
+    /* Custom Theme & Colors cho Invoice Page */
+    :root {
+        --brand-pink: #b60056;
+        --text-main: #212529;
+        --text-muted: #6c757d;
+        --bg-light-grey: #f5f6f8;
+        --border-color: #eaeaea;
+    }
+
+    /* Page Titles */
+    .page-title {
+        font-weight: 700;
+        font-size: 1.8rem;
+        color: var(--text-main);
+        margin-bottom: 0.2rem;
+    }
+
+    /* Top Filter Bar */
+    .date-filter-container {
+        background-color: var(--bg-light-grey);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 0.3rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .date-input-wrapper {
+        display: flex;
+        align-items: center;
+        background: transparent;
+        padding: 0.2rem 0.5rem;
+    }
+
+    .date-input-wrapper input[type="date"] {
+        border: none;
+        background: transparent;
+        color: var(--text-main);
+        font-size: 0.85rem;
+        font-weight: 500;
+        outline: none;
+        cursor: pointer;
+    }
+    
+    /* Ẩn calendar icon mặc định của trình duyệt webkit để dùng icon fontawesome (tùy chọn) */
+    .date-input-wrapper input[type="date"]::-webkit-calendar-picker-indicator {
+        opacity: 0.6;
+        cursor: pointer;
+    }
+
+    .filter-btn {
+        background-color: #ffb1c8; /* Màu hồng nhạt cho nút filter */
+        color: var(--brand-pink);
+        border: none;
+        border-radius: 6px;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .filter-btn:hover {
+        background-color: #ff9eac;
+        color: #8c0042;
+    }
+
+    /* Main Table Card */
+    .invoice-card {
+        background-color: var(--bg-light-grey);
+        border-radius: 12px;
+        padding: 2rem 1.5rem 1rem 1.5rem;
+        border: 1px solid var(--border-color);
+    }
+
+    /* Table Styles */
+    .table-invoice {
+        margin-bottom: 2rem;
+    }
+
+    .table-invoice th {
+        color: var(--text-muted);
+        font-weight: 500;
+        font-size: 0.85rem;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 1.5rem;
+        padding-top: 0;
+        background: transparent;
+    }
+
+    .table-invoice td {
+        vertical-align: middle;
+        padding: 1.5rem 0.5rem;
+        border-bottom: none; /* Bỏ viền ngang như thiết kế */
+        background: transparent;
+    }
+
+    .invoice-id {
+        color: var(--brand-pink);
+        font-weight: 500;
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+
+    .date-text {
+        color: var(--text-main);
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .currency-val {
+        font-size: 0.95rem;
+        color: var(--text-main);
+        text-align: right;
+    }
+
+    .currency-symbol {
+        font-size: 0.8rem;
+        font-weight: normal;
+        margin-left: 2px;
+    }
+
+    .total-val {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #4a4a4a; /* Xám đậm */
+    }
+
+    .action-btn {
+        background: transparent;
+        border: none;
+        color: #555;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .action-btn:hover {
+        color: var(--brand-pink);
+    }
+
+    /* Pagination */
+    .pagination-wrapper {
+        border-top: 1px solid var(--border-color);
+        padding-top: 1.5rem;
+    }
+
+    .pagination-custom {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        gap: 5px;
+        align-items: center;
+    }
+
+    .pagination-custom li a,
+    .pagination-custom li span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        text-decoration: none;
+        color: var(--text-main);
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: 0.2s;
+        border: none;
+        background: transparent;
+    }
+
+    .pagination-custom li a:hover {
+        background-color: #e9ecef;
+    }
+
+    .pagination-custom li.active a {
+        background-color: var(--brand-pink);
+        color: white;
+    }
+
+    .pagination-info {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
+    <div>
+        <h1 class="page-title">Invoice History</h1>
+        <p class="text-muted mb-0">View and manage finalized reception invoices.</p>
+    </div>
+
+    <div class="date-filter-container shadow-sm">
+        <div class="date-input-wrapper">
+            <input type="date" id="fromDate" value="2024-05-01" />
+        </div>
+        <span class="text-muted" style="font-size: 0.85rem;">to</span>
+        <div class="date-input-wrapper">
+            <input type="date" id="toDate" value="2024-05-31" />
+        </div>
+        <button class="filter-btn" id="btnFilter" title="Lọc dữ liệu">
+            <i class="fa-solid fa-filter"></i>
+        </button>
+    </div>
+</div>
+
+<div class="invoice-card">
+    <div class="table-responsive">
+        <table class="table table-borderless table-invoice table-hover">
+            <thead>
+                <tr>
+                    <th width="15%">Mã HD</th>
+                    <th width="20%">Ngày</th>
+                    <th width="15%" class="text-end">Tiền hát</th>
+                    <th width="15%" class="text-end">Dịch vụ</th>
+                    <th width="20%" class="text-end">Tổng</th>
+                    <th width="15%" class="text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="invoice-id">#INV-<br>2049</div>
+                    </td>
+                    <td>
+                        <div class="date-text">
+                            May 12, 2024 <br>
+                            - 23:15
+                        </div>
+                    </td>
+                    <td>
+                        <div class="currency-val">450,000<br><span class="currency-symbol">₫</span></div>
+                    </td>
+                    <td>
+                        <div class="currency-val">1,200,000<br><span class="currency-symbol">₫</span></div>
+                    </td>
+                    <td>
+                        <div class="currency-val total-val">1,650,000 <span class="currency-symbol">₫</span></div>
+                    </td>
+                    <td class="text-center">
+                        <button class="action-btn view-invoice-btn" data-id="2049"><i class="fa-regular fa-eye"></i></button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <div class="invoice-id">#INV-<br>2048</div>
+                    </td>
+                    <td>
+                        <div class="date-text">
+                            May 12, 2024 <br>
+                            - 22:30
+                        </div>
+                    </td>
+                    <td>
+                        <div class="currency-val">600,000<br><span class="currency-symbol">₫</span></div>
+                    </td>
+                    <td>
+                        <div class="currency-val">850,000<br><span class="currency-symbol">₫</span></div>
+                    </td>
+                    <td>
+                        <div class="currency-val total-val">1,450,000 <span class="currency-symbol">₫</span></div>
+                    </td>
+                    <td class="text-center">
+                        <button class="action-btn view-invoice-btn" data-id="2048"><i class="fa-regular fa-eye"></i></button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <div class="invoice-id">#INV-<br>2047</div>
+                    </td>
+                    <td>
+                        <div class="date-text">
+                            May 12, 2024 <br>
+                            - 21:00
+                        </div>
+                    </td>
+                    <td>
+                        <div class="currency-val">300,000<br><span class="currency-symbol">₫</span></div>
+                    </td>
+                    <td>
+                        <div class="currency-val">400,000<br><span class="currency-symbol">₫</span></div>
+                    </td>
+                    <td>
+                        <div class="currency-val total-val">700,000 <span class="currency-symbol">₫</span></div>
+                    </td>
+                    <td class="text-center">
+                        <button class="action-btn view-invoice-btn" data-id="2047"><i class="fa-regular fa-eye"></i></button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <div class="invoice-id">#INV-<br>2046</div>
+                    </td>
+                    <td>
+                        <div class="date-text">
+                            May 11, 2024 <br>
+                            - 01:45
+                        </div>
+                    </td>
+                    <td>
+                        <div class="currency-val">900,000<br><span class="currency-symbol">₫</span></div>
+                    </td>
+                    <td>
+                        <div class="currency-val">2,100,000<br><span class="currency-symbol">₫</span></div>
+                    </td>
+                    <td>
+                        <div class="currency-val total-val">3,000,000 <span class="currency-symbol">₫</span></div>
+                    </td>
+                    <td class="text-center">
+                        <button class="action-btn view-invoice-btn" data-id="2046"><i class="fa-regular fa-eye"></i></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination-wrapper d-flex justify-content-between align-items-center flex-wrap">
+        <div class="pagination-info">
+            Showing 1 to 4 of 124 entries
+        </div>
+        <ul class="pagination-custom">
+            <li><a href="#" class="text-muted"><i class="fa-solid fa-chevron-left" style="font-size: 0.7rem;"></i></a></li>
+            <li class="active"><a href="#">1</a></li>
+            <li><a href="#">2</a></li>
+            <li><a href="#">3</a></li>
+            <li><span class="text-muted">...</span></li>
+            <li><a href="#" class="text-muted"><i class="fa-solid fa-chevron-right" style="font-size: 0.7rem;"></i></a></li>
+        </ul>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Xử lý sự kiện click nút xem chi tiết hóa đơn
+            const viewButtons = document.querySelectorAll('.view-invoice-btn');
+            viewButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const invoiceId = this.getAttribute('data-id');
+                    // Demo hành động - Ở thực tế bạn có thể gọi Modal hoặc chuyển trang
+                    alert('Chức năng xem chi tiết Hóa đơn #INV-' + invoiceId);
+                });
+            });
+
+            // Xử lý sự kiện nhấn nút Filter ngày
+            const btnFilter = document.getElementById('btnFilter');
+            btnFilter.addEventListener('click', function() {
+                const from = document.getElementById('fromDate').value;
+                const to = document.getElementById('toDate').value;
+                
+                if(from && to) {
+                    console.log(`Đang lọc dữ liệu từ ${from} đến ${to}...`);
+                    // Logic lọc dữ liệu của bạn ở đây
+                }
+            });
+        });
+    </script>
+}
