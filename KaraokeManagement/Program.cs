@@ -3,12 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<KaraokeManagementDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
-
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<KaraokeManagementDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DBContext")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
 
 builder.Services.AddAuthentication("CookieAuth")
     .AddCookie("CookieAuth", options =>
