@@ -1,4 +1,4 @@
-﻿/* =========================================
+/* =========================================
    Base Styles & Resets
 ========================================= */
 * {
@@ -291,74 +291,6 @@ body {
         color: #4b5563;
     }
 
-/* =========================================
-   Options (Checkbox & Forgot Password)
-========================================= */
-.form-options {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 0.25rem;
-}
-
-.remember-me {
-    display: flex;
-    align-items: center;
-    gap: 0.625rem;
-    cursor: pointer;
-}
-
-    .remember-me input[type="checkbox"] {
-        display: none;
-    }
-
-.checkbox-box {
-    width: 1.25rem;
-    height: 1.25rem;
-    border-radius: 50%;
-    border: 1px solid #d1d5db;
-    background-color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-}
-
-.check-icon {
-    font-size: 10px;
-    color: #ffffff;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-/* Checkbox Checked State */
-.remember-me input[type="checkbox"]:checked + .checkbox-box {
-    background-color: #ec008c;
-    border-color: #ec008c;
-}
-
-    .remember-me input[type="checkbox"]:checked + .checkbox-box .check-icon {
-        opacity: 1;
-    }
-
-.remember-text {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #6b7280;
-}
-
-.forgot-password {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #ec008c;
-    text-decoration: none;
-    transition: color 0.2s ease;
-}
-
-    .forgot-password:hover {
-        color: #c40072;
-    }
 
 /* =========================================
    Buttons
@@ -405,24 +337,4 @@ body {
     transform: translateX(6px);
 }
 
-/* =========================================
-   Footer
-========================================= */
-.card-footer {
-    margin-top: 2rem;
-    text-align: center;
-    font-size: 0.75rem;
-    color: #9ca3af;
-    font-weight: 500;
-}
 
-.request-access {
-    color: #ec008c;
-    font-weight: 700;
-    text-decoration: none;
-    margin-left: 0.25rem;
-}
-
-    .request-access:hover {
-        text-decoration: underline;
-    }

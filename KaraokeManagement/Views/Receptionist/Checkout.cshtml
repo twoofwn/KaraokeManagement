@@ -1,0 +1,344 @@
+@model KaraokeManagement.Models.CheckoutViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thanh toán - @Model.RoomName</title>
+    
+    <!-- CSS Dependencies -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/receptionist.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Checkout.css" asp-append-version="true" />
+    
+</head>
+<body>
+    <!-- Fixed Sidebar on the Left -->
+    <partial name="_ReceptionistSidebar" />
+
+    <!-- Main Content Area on the Right -->
+    <div class="reception-main">
+        <!-- Header Section -->
+        <header class="reception-header">
+            <div class="header-title-wrapper" style="margin-left: 0;">
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-dark);">Thanh toán hóa đơn</h1>
+                <p style="font-size: 0.85rem; color: var(--text-secondary-dark); margin-top: 2px;">Xem chi tiết và thực hiện thanh toán</p>
+            </div>
+
+            <div class="header-actions">
+                <div class="user-profile">
+                    <div class="avatar-container">
+                        <img src="~/img/receptionist_avatar.png" alt="Avatar" class="user-avatar" />
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <main class="reception-content" style="padding-top: 10px; overflow-y: auto; height: calc(100vh - 80px);">
+            <div class="checkout-container">
+                <!-- Header Section -->
+                <header class="checkout-header">
+                    <h1 class="checkout-title">Thanh toán & Xuất hóa đơn</h1>
+                    <p class="checkout-subtitle">@Model.RoomName - @Model.RoomTypeName</p>
+                </header>
+
+                <!-- Main Form Wrapper -->
+                <form id="checkoutForm" method="post" action="/Receptionist/Checkout">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="InvoiceId" value="@Model.InvoiceId" />
+            <input type="hidden" name="RoomId" value="@Model.RoomId" />
+            <input type="hidden" name="CheckInTime" value="@Model.CheckInTime.ToString("yyyy-MM-ddTHH:mm:ss")" />
+            <input type="hidden" name="CheckOutTime" value="@Model.CheckOutTime.ToString("yyyy-MM-ddTHH:mm:ss")" />
+            <input type="hidden" name="RoomTotal" value="@Model.RoomTotal" />
+            <input type="hidden" name="ServiceTotal" value="@Model.ServiceTotal" />
+            <input type="hidden" name="DiscountPercent" value="@Model.DiscountPercent" />
+            <input type="hidden" name="DiscountAmount" value="@Model.DiscountAmount" />
+            <input type="hidden" name="GrandTotal" value="@Model.GrandTotal" />
+
+            <div class="checkout-grid">
+                
+                <!-- COLUMN LEFT: Invoice Breakdown (60%) -->
+                <div class="checkout-left-col">
+                    
+                    <!-- Time Boxes -->
+                    <div class="time-grid">
+                        <div class="time-box">
+                            <div class="time-icon">
+                                <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                            </div>
+                            <div class="time-content">
+                                <span class="time-label">Giờ vào</span>
+                                <span class="time-value">@Model.CheckInTime.ToString("HH:mm - dd/MM/yyyy")</span>
+                            </div>
+                        </div>
+                        <div class="time-box">
+                            <div class="time-icon">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                            </div>
+                            <div class="time-content">
+                                <span class="time-label">Giờ ra</span>
+                                <span class="time-value">@Model.CheckOutTime.ToString("HH:mm - dd/MM/yyyy")</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Invoice Detail Table Card -->
+                    <div class="checkout-card" style="padding: 0; overflow: hidden;">
+                        <div class="invoice-detail-title-bar">
+                            <span class="invoice-detail-title"><i class="fa-solid fa-receipt" style="margin-right: 8px;"></i>Chi tiết hóa đơn #@Model.InvoiceId</span>
+                            <span class="duration-badge">Thời gian hát: @Model.DurationText</span>
+                        </div>
+                        
+                        <table class="invoice-table">
+                            <thead>
+                                <tr>
+                                    <th>Dịch vụ / Sản phẩm</th>
+                                    <th>SL / Giờ</th>
+                                    <th>Đơn giá</th>
+                                    <th class="item-total-header">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Section 1: Tiền phòng -->
+                                <tr>
+                                    <td colspan="4" class="invoice-section-header">Tiền phòng</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="item-name" style="color: var(--primary-magenta);">Giờ hát</span>
+                                        <div class="item-subtext">@Model.RoomTypeName - Đơn giá: @(Model.PricePerHour.ToString("N0"))đ/h</div>
+                                    </td>
+                                    <td class="item-numeric">@Model.DurationHours.ToString("F2") giờ</td>
+                                    <td class="item-numeric">@(Model.PricePerHour.ToString("N0"))đ</td>
+                                    <td class="item-total">@(Model.RoomTotal.ToString("N0"))đ</td>
+                                </tr>
+
+                                <!-- Section 2: Dịch vụ gọi món -->
+                                <tr>
+                                    <td colspan="4" class="invoice-section-header">Dịch vụ &amp; Đồ uống</td>
+                                </tr>
+                                @if (Model.OrderItems.Any())
+                                {
+                                    @foreach (var item in Model.OrderItems)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <span class="item-name">@item.ServiceName</span>
+                                                <div class="item-subtext">Đơn vị: @(item.Unit ?? "phần")</div>
+                                            </td>
+                                            <td class="item-numeric">@item.Quantity</td>
+                                            <td class="item-numeric">@(item.UnitPrice.ToString("N0"))đ</td>
+                                            <td class="item-total">@(item.TotalPrice.ToString("N0"))đ</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" style="text-align: center; color: var(--text-secondary-dark); padding: 30px 20px;">
+                                            <i class="fa-solid fa-cookie-bite" style="font-size: 1.5rem; color: #E6D4D8; margin-bottom: 8px; display: block;"></i>
+                                            Chưa gọi dịch vụ đồ ăn/đồ uống nào
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Membership Card Information -->
+                    <div class="membership-tier-card">
+                        <div class="membership-tier-info">
+                            <i class="fa-solid fa-id-card membership-tier-icon"></i>
+                            <div>
+                                <div class="membership-tier-label">Hạng thành viên</div>
+                                <div class="membership-tier-value">@Model.CustomerTier</div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary-dark);">Khách hàng: <strong>@Model.CustomerName</strong></div>
+                            @if (!string.IsNullOrEmpty(Model.CustomerPhone))
+                            {
+                                <div style="font-size: 0.75rem; color: var(--text-secondary-dark); margin-top: 2px;">SĐT: @Model.CustomerPhone</div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Totals breakdown -->
+                    <div class="totals-card">
+                        <div class="totals-area">
+                            <div class="totals-row">
+                                <span>Tổng tiền phòng hát</span>
+                                <span>@(Model.RoomTotal.ToString("N0"))đ</span>
+                            </div>
+                            <div class="totals-row">
+                                <span>Tổng dịch vụ gọi món</span>
+                                <span>@(Model.ServiceTotal.ToString("N0"))đ</span>
+                            </div>
+                            <div class="totals-row discount">
+                                <span>Chiết khấu thành viên (@Model.DiscountPercent.ToString("G0")%)</span>
+                                <span>-@(Model.DiscountAmount.ToString("N0"))đ</span>
+                            </div>
+                            <hr class="totals-divider" />
+                            <div class="totals-row grand-total">
+                                <span>TỔNG CỘNG THANH TOÁN</span>
+                                <span class="amount-large">@(Model.GrandTotal.ToString("N0")) VNĐ</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- COLUMN RIGHT: Payment Methods (40%) -->
+                <div class="checkout-right-col">
+                    <div class="checkout-card payment-card">
+                        <h2 class="payment-title">Thanh toán</h2>
+                        
+                        <!-- Toggle Buttons -->
+                        <div class="payment-toggle-container">
+                            <button type="button" class="payment-toggle-btn active" id="btnTabCash">
+                                <i class="fa-solid fa-money-bill-wave"></i>
+                                TIỀN MẶT
+                            </button>
+                            <button type="button" class="payment-toggle-btn" id="btnTabQR">
+                                <i class="fa-solid fa-qrcode"></i>
+                                VNPAY QR
+                            </button>
+                        </div>
+
+                        <!-- Cash Panel -->
+                        <div class="payment-panel show" id="panelCash">
+                            <div class="form-group" style="margin-bottom: 15px;">
+                                <label class="form-label" style="font-weight: 700;">Số tiền khách đưa (VNĐ)</label>
+                                <div class="cash-input-wrapper">
+                                    <input type="text" id="cashInput" class="form-input" placeholder="Nhập số tiền..." autocomplete="off" />
+                                    <div class="currency-symbol">đ</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Dynamic Change Due -->
+                            <div class="change-display-box">
+                                <span class="change-label">Tiền thừa trả khách</span>
+                                <span class="change-amount" id="changeOutput">0đ</span>
+                            </div>
+                        </div>
+
+                        <!-- QR code scan panel -->
+                        <div class="payment-panel" id="panelQR">
+                            <div class="qr-container">
+                                <div class="qr-image-wrapper">
+                                    <img src="" id="vietqrImage" class="qr-image" alt="Mã VNPAY QR" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div style="margin-top: 30px;">
+                            <button type="submit" class="btn-action-full btn-pay-submit">
+                                <i class="fa-solid fa-file-invoice-dollar"></i> Xác nhận &amp; In hóa đơn
+                            </button>
+                            <button type="button" class="btn-action-full btn-pay-cancel" onclick="window.location.href='/Receptionist/Detail?roomId=@Model.RoomId'">
+                                <i class="fa-solid fa-chevron-left"></i> Quay lại chi tiết phòng
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </form>
+        </div>
+        </main>
+    </div>
+
+    <!-- Script Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Context variables
+            const grandTotal = @Model.GrandTotal;
+            const roomName = "@Model.RoomName";
+            
+            // Elements
+            const btnTabCash = document.getElementById('btnTabCash');
+            const btnTabQR = document.getElementById('btnTabQR');
+            const panelCash = document.getElementById('panelCash');
+            const panelQR = document.getElementById('panelQR');
+            
+            const cashInput = document.getElementById('cashInput');
+            const changeOutput = document.getElementById('changeOutput');
+            const vietqrImage = document.getElementById('vietqrImage');
+
+            // 1. Setup payment tab toggles
+            btnTabCash.addEventListener('click', () => {
+                btnTabQR.classList.remove('active');
+                btnTabCash.classList.add('active');
+                panelQR.classList.remove('show');
+                panelCash.classList.add('show');
+            });
+
+            btnTabQR.addEventListener('click', () => {
+                btnTabCash.classList.remove('active');
+                btnTabQR.classList.add('active');
+                panelCash.classList.remove('show');
+                panelQR.classList.add('show');
+                
+                // Initialize/Render VietQR Image url dynamically
+                generateVietQRUrl();
+            });
+
+            // 2. Real-time cash change calculator
+            cashInput.addEventListener('input', () => {
+                // Clear out non-numeric characters for typing convenience
+                let rawVal = cashInput.value.replace(/[^0-9]/g, '');
+                
+                if (rawVal) {
+                    let numericVal = parseInt(rawVal);
+                    // Set formatted value back to input
+                    cashInput.value = formatCurrencyInput(numericVal);
+                    
+                    // Calculation
+                    let change = numericVal - grandTotal;
+                    if (change >= 0) {
+                        changeOutput.textContent = formatCurrencyText(change) + 'đ';
+                        changeOutput.style.color = '#22C55E'; // Green if enough or surplus
+                    } else {
+                        changeOutput.textContent = '-' + formatCurrencyText(Math.abs(change)) + 'đ (Thiếu)';
+                        changeOutput.style.color = '#DC2626'; // Red if lacking
+                    }
+                } else {
+                    changeOutput.textContent = '0đ';
+                    changeOutput.style.color = 'var(--primary-magenta)';
+                }
+            });
+
+            // Helper to format text representation of currency
+            function formatCurrencyText(val) {
+                return new Intl.NumberFormat('vi-VN').format(val);
+            }
+
+            // Helper to format currency inside inputs (adding dots/commas as user types)
+            function formatCurrencyInput(val) {
+                return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            }
+
+            // 3. VietQR dynamic generation helper
+            function generateVietQRUrl() {
+                const amount = grandTotal;
+                const description = `Minh Tuan KTV Thanh toan phong ${roomName}`;
+                const accountName = "Minh Tuan KTV";
+                
+                // VietQR API schema parameters
+                const encodedDesc = encodeURIComponent(description);
+                const encodedName = encodeURIComponent(accountName);
+                
+                const url = `https://img.vietqr.io/image/970422-0868754128-compact2.png?amount=${amount}&addInfo=${encodedDesc}&accountName=${encodedName}`;
+                vietqrImage.src = url;
+            }
+        });
+    </script>
+</body>
+</html>

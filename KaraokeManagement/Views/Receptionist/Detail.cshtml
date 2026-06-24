@@ -1,0 +1,603 @@
+@model KaraokeManagement.Models.RoomDetailPosViewModel
+@{
+    Layout = null;
+    var checkInTimeISO = Model.CheckInTime?.ToString("yyyy-MM-ddTHH:mm:ss.fff");
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>POS - @Model.RoomName</title>
+    
+    <!-- CSS Dependencies -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/DetailRoom.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="pos-container">
+        
+        <!-- ==================== COLUMN LEFT: INVOICE & ROOM ==================== -->
+        <aside class="billing-sidebar">
+            <!-- Header -->
+            <div class="sidebar-header">
+                <a href="/Receptionist" class="btn-back">
+                    <i class="fa-solid fa-chevron-left"></i>
+                    Quay lại
+                </a>
+                <div class="header-title-wrapper">
+                    <div class="brand-title">Minh Tuấn KTV</div>
+                    <div class="room-badge">
+                        <span class="dot"></span>
+                        @Model.RoomName
+                    </div>
+                </div>
+            </div>
+
+            <!-- Room info card -->
+            <div class="room-info-card">
+                <div class="room-card-header">
+                    <div>
+                        <div class="room-label-name">@Model.RoomName</div>
+                        <div style="font-size: 0.75rem; color: var(--text-gray); margin-top: 2px;">Trạng thái: Đang sử dụng</div>
+                    </div>
+                    <span class="room-label-type">@Model.RoomTypeName</span>
+                </div>
+                
+                <div class="room-metrics">
+                    <div class="metric-item">
+                        <span class="metric-label">Bắt đầu hát</span>
+                        <span class="metric-value">@(Model.CheckInTime?.ToString("HH:mm - dd/MM/yyyy") ?? "--:--")</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Thời gian đã hát</span>
+                        <span class="metric-value time-singing" id="singing-timer">00:00:00</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Đơn giá phòng</span>
+                        <span class="metric-value">@(Model.PricePerHour.ToString("N0")) đ/giờ</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Mã hóa đơn</span>
+                        <span class="metric-value">#@Model.InvoiceId</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice ordered item list -->
+            <div class="invoice-items-container" id="invoice-items-list">
+                @if (Model.OrderItems.Any())
+                {
+                    @foreach (var item in Model.OrderItems)
+                    {
+                        <div class="invoice-item-row" data-id="@item.InvoiceDetailId" data-service-id="@item.ServiceId">
+                            <div class="invoice-item-meta">
+                                <span class="invoice-item-name" title="@item.ServiceName">@item.ServiceName</span>
+                                <button type="button" class="btn-remove-item" onclick="removeItem(@item.InvoiceDetailId)" aria-label="Xóa món">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </div>
+                            <div class="invoice-item-actions">
+                                <div class="quantity-controller">
+                                    <button type="button" class="btn-qty minus" onclick="adjustQty(@item.InvoiceDetailId, @(item.Quantity - 1))">
+                                        <i class="fa-solid fa-minus"></i>
+                                    </button>
+                                    <span class="qty-val">@item.Quantity</span>
+                                    <button type="button" class="btn-qty plus" onclick="adjustQty(@item.InvoiceDetailId, @(item.Quantity + 1))">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </div>
+                                <div style="text-align: right">
+                                    <div class="invoice-item-price-unit">@(item.UnitPrice.ToString("N0")) đ/@(item.Unit ?? "món")</div>
+                                    <div class="item-subtotal-price" data-raw-subtotal="@(item.TotalPrice)">@(item.TotalPrice.ToString("N0")) đ</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-invoice-state">
+                        <i class="fa-solid fa-receipt"></i>
+                        <p>Chưa có dịch vụ nào được gọi</p>
+                        <p style="font-size: 0.75rem; margin-top: 4px; color: var(--text-muted);">Chọn các món ở cột bên phải để thêm</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Totals break down -->
+            <div class="billing-totals-section">
+                <div class="summary-row">
+                    <span>Tiền phòng tạm tính</span>
+                    <span id="room-charge-display" data-raw-price="@Model.PricePerHour">0 đ</span>
+                </div>
+                <div class="summary-row">
+                    <span>Tiền dịch vụ</span>
+                    <span id="service-charge-display" data-raw-val="@Model.OrderItems.Sum(o => o.TotalPrice)">@(Model.OrderItems.Sum(o => o.TotalPrice).ToString("N0")) đ</span>
+                </div>
+                <div class="summary-row">
+                    <span>Khuyến mãi / Giảm giá</span>
+                    <span>0 đ</span>
+                </div>
+                <div class="summary-row grand-total">
+                    <span>Tổng cộng tạm tính</span>
+                    <span class="price-tag" id="grand-total-display">0 đ</span>
+                </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="billing-actions-grid">
+                <button type="button" class="btn-action btn-transfer" onclick="openTransferModal()">
+                    <i class="fa-solid fa-right-left"></i>
+                    Đổi phòng
+                </button>
+                <button type="button" class="btn-action btn-preview" onclick="openDraftModal()">
+                    <i class="fa-solid fa-print"></i>
+                    Xem nháp
+                </button>
+                <button type="button" class="btn-action btn-pay" onclick="processPayment()">
+                    <i class="fa-solid fa-credit-card"></i>
+                    THANH TOÁN (XUẤT BILL)
+                </button>
+            </div>
+        </aside>
+
+        <!-- ==================== COLUMN RIGHT: SERVICE SELECTION ==================== -->
+        <main class="menu-main-panel">
+            <!-- Search top bar -->
+            <div class="menu-top-bar">
+                <div class="search-input-wrapper">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" class="menu-search-input" id="menu-search" placeholder="Tìm kiếm tên nước uống, đồ ăn, trái cây..." autocomplete="off" />
+                </div>
+            </div>
+
+            <!-- Category Tabs filters -->
+            <div class="category-tabs-container" id="category-tabs">
+                <div class="tab-item active" data-category-id="all">Tất cả</div>
+                @foreach (var cat in Model.Categories)
+                {
+                    <div class="tab-item" data-category-id="@cat.CategoryId">@cat.CategoryName</div>
+                }
+            </div>
+
+            <!-- Scrollable product grid -->
+            <div class="products-grid-scroll">
+                <div class="products-grid" id="products-list">
+                    @foreach (var prod in Model.ProductItems)
+                    {
+                        var isOutOfStock = prod.StockQuantity <= 0;
+                        <div class="product-card @(isOutOfStock ? "disabled" : "")" data-category="@prod.CategoryId" data-name="@prod.ServiceName.ToLower()">
+                            <div class="product-image-container">
+                                @if (prod.CategoryName.Contains("Bia") || prod.CategoryName.Contains("Rượu"))
+                                {
+                                    <i class="fa-solid fa-beer-mug-empty"></i>
+                                }
+                                else if (prod.CategoryName.Contains("Nước") || prod.CategoryName.Contains("Giải khát"))
+                                {
+                                    <i class="fa-solid fa-whiskey-glass"></i>
+                                }
+                                else if (prod.CategoryName.Contains("Trái cây") || prod.CategoryName.Contains("Ăn"))
+                                {
+                                    <i class="fa-solid fa-utensils"></i>
+                                }
+                                else
+                                {
+                                    <i class="fa-solid fa-bowl-food"></i>
+                                }
+                                
+                                @if (isOutOfStock)
+                                {
+                                    <span class="stock-badge outstock">Hết hàng</span>
+                                }
+                                else
+                                {
+                                    <span class="stock-badge instock">Còn: @prod.StockQuantity @prod.Unit</span>
+                                }
+                            </div>
+                            <div class="product-info">
+                                <div class="product-name" title="@prod.ServiceName">@prod.ServiceName</div>
+                                <div class="product-price-row">
+                                    <span class="product-price">@(prod.SellingPrice.ToString("N0")) đ</span>
+                                    <button type="button" class="btn-add-menu" onclick="addService(@prod.ServiceId)" aria-label="Thêm vào hóa đơn">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ==================== DIALOGS / MODALS ==================== -->
+    
+    <!-- Room Transfer Modal -->
+    <div class="modal-overlay" id="transfer-modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">Chuyển / Đổi phòng hát</h3>
+                <button type="button" class="btn-modal-close" onclick="closeTransferModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Phòng hiện tại</label>
+                    <input type="text" class="form-select" value="@Model.RoomName (@Model.RoomTypeName) - Đang sử dụng" disabled style="opacity: 0.7" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="new-room-select">Chọn phòng muốn chuyển đến</label>
+                    <select class="form-select" id="new-room-select">
+                        @if (Model.AvailableRooms.Any())
+                        {
+                            @foreach (var r in Model.AvailableRooms)
+                            {
+                                <option value="@r.RoomId">@r.RoomName - @r.RoomTypeName (@(r.PricePerHour.ToString("N0")) đ/giờ)</option>
+                            }
+                        }
+                        else
+                        {
+                            <option value="">Không có phòng trống nào sẵn sàng</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-action btn-transfer" onclick="closeTransferModal()" style="margin: 0; padding: 10px 20px;">Hủy bỏ</button>
+                <button type="button" class="btn-action btn-pay" onclick="submitTransfer()" style="margin: 0; padding: 10px 20px; grid-column: auto; width: auto;">Xác nhận đổi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Draft Bill Modal -->
+    <div class="modal-overlay" id="draft-modal">
+        <div class="modal-box" style="width: 440px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Xem nháp hóa đơn tạm tính</h3>
+                <button type="button" class="btn-modal-close" onclick="closeDraftModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="bill-preview-content" id="bill-preview-text">
+                    <!-- Loaded dynamically via JS -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-action btn-transfer" onclick="closeDraftModal()" style="margin: 0; padding: 10px 20px; flex-grow: 1;">Đóng</button>
+                <button type="button" class="btn-action btn-pay" onclick="window.print()" style="margin: 0; padding: 10px 20px; flex-grow: 1; grid-column: auto;">In hóa đơn nháp</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client-side Interactive Logic -->
+    <script>
+        // Global variables passed from server model
+        const checkInTimeISO = "@checkInTimeISO";
+        const roomId = @Model.RoomId;
+        const invoiceId = @(Model.InvoiceId ?? 0);
+        const pricePerHour = @Model.PricePerHour;
+        
+        let serviceSubtotal = @(Model.OrderItems.Sum(o => o.TotalPrice));
+        let roomCharge = 0;
+        let grandTotal = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Start the singing duration timer stopwatch
+            if (checkInTimeISO) {
+                initSingingTimer();
+            }
+
+            // Bind Category Filtering
+            initCategoryFilter();
+
+            // Bind Search Filter
+            initSearchFilter();
+        });
+
+        // ==================== STOPWATCH TIMER LOGIC ====================
+        function initSingingTimer() {
+            const checkInDate = new Date(checkInTimeISO);
+            const timerEl = document.getElementById('singing-timer');
+            const roomChargeEl = document.getElementById('room-charge-display');
+            const grandTotalEl = document.getElementById('grand-total-display');
+
+            // Calculate Room Charge and Grand Total ONCE on page load
+            const nowOnLoad = new Date();
+            const initialDiffMs = nowOnLoad - checkInDate;
+            if (initialDiffMs >= 0) {
+                const hoursFloat = initialDiffMs / (1000 * 60 * 60);
+                roomCharge = Math.round(hoursFloat * pricePerHour);
+                roomChargeEl.textContent = formatCurrency(roomCharge) + " đ";
+                
+                grandTotal = roomCharge + serviceSubtotal;
+                grandTotalEl.textContent = formatCurrency(grandTotal) + " đ";
+            } else {
+                roomChargeEl.textContent = "0 đ";
+                grandTotal = serviceSubtotal;
+                grandTotalEl.textContent = formatCurrency(grandTotal) + " đ";
+            }
+
+            function updateTime() {
+                const now = new Date();
+                const diffMs = now - checkInDate;
+
+                if (diffMs < 0) {
+                    timerEl.textContent = "00:00:00";
+                    return;
+                }
+
+                // Format Duration as HH:mm:ss (stopwatch display only)
+                const diffSecs = Math.floor(diffMs / 1000);
+                const hrs = Math.floor(diffSecs / 3600);
+                const mins = Math.floor((diffSecs % 3600) / 60);
+                const secs = diffSecs % 60;
+
+                const formattedTime = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                timerEl.textContent = formattedTime;
+            }
+
+            // Run immediately and then every second
+            updateTime();
+            setInterval(updateTime, 1000);
+        }
+
+        // ==================== SEARCH & CATEGORY FILTERING ====================
+        function initCategoryFilter() {
+            const tabs = document.querySelectorAll('#category-tabs .tab-item');
+            const cards = document.querySelectorAll('#products-list .product-card');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Toggle active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    const categoryId = tab.getAttribute('data-category-id');
+
+                    // Filter product cards
+                    cards.forEach(card => {
+                        const cardCategory = card.getAttribute('data-category');
+                        if (categoryId === 'all' || cardCategory === categoryId) {
+                            card.style.display = 'flex';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                    
+                    // Reset search input
+                    document.getElementById('menu-search').value = '';
+                });
+            });
+        }
+
+        function initSearchFilter() {
+            const searchInput = document.getElementById('menu-search');
+            
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.trim().toLowerCase();
+                const cards = document.querySelectorAll('#products-list .product-card');
+                const activeTab = document.querySelector('#category-tabs .tab-item.active');
+                const activeCategoryId = activeTab ? activeTab.getAttribute('data-category-id') : 'all';
+
+                cards.forEach(card => {
+                    const cardCategory = card.getAttribute('data-category');
+                    const name = card.getAttribute('data-name');
+                    
+                    const matchesCategory = (activeCategoryId === 'all' || cardCategory === activeCategoryId);
+                    const matchesSearch = name.includes(query);
+
+                    if (matchesCategory && matchesSearch) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // ==================== AJAX API CALLS ====================
+        
+        // Add service to invoice
+        function addService(serviceId) {
+            postData('/Receptionist/AddServiceItem', { roomId: roomId, serviceId: serviceId })
+                .then(res => {
+                    if (res.success) {
+                        showToast('Thêm sản phẩm thành công', 'success');
+                        setTimeout(() => window.location.reload(), 300);
+                    } else {
+                        showToast(res.message || 'Lỗi khi thêm sản phẩm', 'error');
+                    }
+                })
+                .catch(err => {
+                    showToast('Lỗi kết nối máy chủ', 'error');
+                    console.error(err);
+                });
+        }
+
+        // Adjust ordered quantity
+        function adjustQty(detailId, newQty) {
+            if (newQty <= 0) {
+                // If quantity reaches 0, remove the item
+                removeItem(detailId);
+                return;
+            }
+
+            postData('/Receptionist/UpdateServiceItem', { invoiceDetailId: detailId, quantity: newQty })
+                .then(res => {
+                    if (res.success) {
+                        showToast('Cập nhật số lượng thành công', 'success');
+                        setTimeout(() => window.location.reload(), 300);
+                    } else {
+                        showToast(res.message || 'Không thể cập nhật số lượng', 'error');
+                    }
+                })
+                .catch(err => {
+                    showToast('Lỗi kết nối máy chủ', 'error');
+                    console.error(err);
+                });
+        }
+
+        // Remove item entirely
+        function removeItem(detailId) {
+            if (!confirm('Bạn có muốn xóa món ăn này khỏi danh sách gọi dịch vụ?')) return;
+
+            postData('/Receptionist/RemoveServiceItem', { invoiceDetailId: detailId })
+                .then(res => {
+                    if (res.success) {
+                        showToast('Đã xóa món khỏi hóa đơn', 'success');
+                        setTimeout(() => window.location.reload(), 300);
+                    } else {
+                        showToast(res.message || 'Lỗi khi xóa món', 'error');
+                    }
+                })
+                .catch(err => {
+                    showToast('Lỗi kết nối máy chủ', 'error');
+                    console.error(err);
+                });
+        }
+
+        // Submit Room Transfer
+        function submitTransfer() {
+            const selectEl = document.getElementById('new-room-select');
+            const newRoomId = parseInt(selectEl.value);
+
+            if (!newRoomId) {
+                showToast('Vui lòng chọn phòng trống', 'error');
+                return;
+            }
+
+            postData('/Receptionist/ChangeRoom', { invoiceId: invoiceId, newRoomId: newRoomId })
+                .then(res => {
+                    if (res.success) {
+                        alert(res.message);
+                        window.location.href = `/Receptionist/Detail?roomId=${newRoomId}`;
+                    } else {
+                        showToast(res.message || 'Lỗi khi chuyển phòng', 'error');
+                    }
+                })
+                .catch(err => {
+                    showToast('Lỗi kết nối máy chủ', 'error');
+                    console.error(err);
+                });
+        }
+
+        // Submit Checkout Payment
+        function processPayment() {
+            if (invoiceId && invoiceId !== 0) {
+                window.location.href = `/Receptionist/Checkout?invoiceId=${invoiceId}`;
+            } else {
+                showToast('Không tìm thấy hóa đơn hoạt động cho phòng này.', 'error');
+            }
+        }
+
+        // ==================== MODALS MANAGER ====================
+        function openTransferModal() {
+            document.getElementById('transfer-modal').style.display = 'flex';
+        }
+        function closeTransferModal() {
+            document.getElementById('transfer-modal').style.display = 'none';
+        }
+
+        function openDraftModal() {
+            // Construct a beautiful draft receipt layout dynamically in text format
+            const now = new Date();
+            const timeSingingText = document.getElementById('singing-timer').textContent;
+            
+            let billText = ``;
+            billText += `==========================================\n`;
+            billText += `             LUMINA KARAOKE               \n`;
+            billText += `   Địa chỉ: 123 Đường Sông, TP. Đà Nẵng   \n`;
+            billText += `         Số điện thoại: 0987.654.321      \n`;
+            billText += `==========================================\n`;
+            billText += `HÓA ĐƠN TẠM TÍNH (BẢN NHÁP)\n`;
+            billText += `Mã hóa đơn: #\${invoiceId}         Phòng: @Model.RoomName\n`;
+            billText += `Giờ vào: @(Model.CheckInTime?.ToString("HH:mm:ss dd/MM/yyyy"))\n`;
+            billText += `Giờ ra (tạm tính): \${now.getHours().toString().padStart(2, '0')}:\${now.getMinutes().toString().padStart(2, '0')}:\${now.getSeconds().toString().padStart(2, '0')} \${now.getDate().toString().padStart(2, '0')}/\${(now.getMonth()+1).toString().padStart(2, '0')}/\${now.getFullYear()}\n`;
+            billText += `Thời lượng hát: \${timeSingingText}\n`;
+            billText += `------------------------------------------\n`;
+            billText += `Nội dung                    SL   Đ.Giá    T.Tiền\n`;
+            billText += `------------------------------------------\n`;
+            billText += `TIỀN PHÒNG HÁT\n`;
+            
+            // Format hours text
+            const checkInDate = new Date(checkInTimeISO);
+            const hoursSinged = (now - checkInDate) / (1000 * 3600);
+            billText += `Giờ hát (@(Model.PricePerHour.ToString("N0"))đ/h)       \${hoursSinged.toFixed(2)}h            \${formatCurrency(roomCharge)}đ\n\n`;
+            
+            billText += `DỊCH VỤ GỌI MÓN\n`;
+            // Get all items
+            const rows = document.querySelectorAll('#invoice-items-list .invoice-item-row');
+            if (rows.length > 0) {
+                rows.forEach(row => {
+                    const name = row.querySelector('.invoice-item-name').textContent;
+                    const qty = row.querySelector('.qty-val').textContent;
+                    const priceUnitText = row.querySelector('.invoice-item-price-unit').textContent; // "Price đ/unit"
+                    const subtotalText = row.querySelector('.item-subtotal-price').textContent;
+                    
+                    // Format strings nicely
+                    let padName = name.substring(0, 24);
+                    billText += `\${padName.padEnd(25)} \${qty.padStart(3)} \${subtotalText.padStart(12)}\n`;
+                });
+            } else {
+                billText += `  (Chưa gọi dịch vụ món nào)\n`;
+            }
+            
+            billText += `------------------------------------------\n`;
+            billText += `Tiền phòng tạm tính:             \${formatCurrency(roomCharge)} đ\n`;
+            billText += `Tiền dịch vụ tạm tính:           \${formatCurrency(serviceSubtotal)} đ\n`;
+            billText += `Khuyến mãi:                               0 đ\n`;
+            billText += `------------------------------------------\n`;
+            billText += `TỔNG CỘNG TẠM TÍNH:             \${formatCurrency(grandTotal)} đ\n`;
+            billText += `==========================================\n`;
+            billText += `      Xin cảm ơn quý khách và hẹn gặp lại!  \n`;
+            billText += `==========================================\n`;
+
+            document.getElementById('bill-preview-text').textContent = billText;
+            document.getElementById('draft-modal').style.display = 'flex';
+        }
+        
+        function closeDraftModal() {
+            document.getElementById('draft-modal').style.display = 'none';
+        }
+
+        // ==================== UTILITY FUNCTIONS ====================
+        
+        // Helper to format currency
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('vi-VN').format(value);
+        }
+
+        // Toast notifications maker
+        function showToast(message, type = 'success') {
+            // Remove existing toast if any
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) existingToast.remove();
+
+            const toast = document.createElement('div');
+            toast.className = `toast \${type}`;
+            toast.innerHTML = `
+                <i class="fa-solid \${type === 'success' ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
+                <span>\${message}</span>
+            `;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        // Fetch API helper
+        function postData(url = '', data = {}) {
+            return fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            }).then(response => response.json());
+        }
+    </script>
+</body>
+</html>

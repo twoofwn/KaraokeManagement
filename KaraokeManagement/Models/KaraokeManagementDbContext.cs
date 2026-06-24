@@ -55,10 +55,12 @@ public partial class KaraokeManagementDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+        var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
         if (!optionsBuilder.IsConfigured)
-            optionsBuilder.UseSqlServer("server=QUYNHNCHE190334;database=KaraokeManagementDB;uid=sa;pwd=123;TrustServerCertificate=True");
+        {
+            optionsBuilder.UseSqlServer(config.GetConnectionString("DBContext"));
+        }
     }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Account>(entity =>

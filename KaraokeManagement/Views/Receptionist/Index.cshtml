@@ -1,0 +1,333 @@
+@model KaraokeManagement.Controllers.ReceptionistDashboardViewModel
+@{
+    Layout = null;
+}
+@using System.Security.Claims
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sơ đồ phòng - Minh Tuấn KTV</title>
+    
+    <!-- CSS Dependencies -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/receptionist.css" asp-append-version="true" />
+</head>
+<body>
+    <!-- Fixed Sidebar on the Left -->
+    <partial name="_ReceptionistSidebar" />
+
+    <!-- Main Content Area on the Right -->
+    <div class="reception-main">
+        <!-- Header Section -->
+        <header class="reception-header">
+            <!-- Search Form -->
+            <form id="filterForm" method="get" action="/Receptionist">
+                <div class="header-search-container">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" name="searchString" value="@Model.SearchString" 
+                           placeholder="Tìm kiếm tên phòng hoặc số phòng..." 
+                           class="search-input" autocomplete="off" id="searchInput" />
+                </div>
+                <!-- Hidden inputs to preserve dropdown selections during search -->
+                <input type="hidden" name="roomType" value="@Model.SelectedRoomType" id="hiddenRoomType" />
+                <input type="hidden" name="status" value="@Model.SelectedStatus" id="hiddenStatus" />
+            </form>
+
+            <!-- User profile -->
+            <div class="header-actions">
+                <div class="user-profile">
+                    <div class="avatar-container">
+                        <img src="~/img/receptionist_avatar.png" alt="Avatar Minh Anh" class="user-avatar" />
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">@(User.Identity?.Name ?? "Chưa rõ")</span>
+                        <span class="user-role">@(User.FindFirst(ClaimTypes.Role)?.Value ?? "Chưa rõ")</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Viewport -->
+        <main class="reception-content">
+            <!-- Title and Filters -->
+            <div class="content-top">
+                <div class="title-section">
+                    <h1>Quản lý sơ đồ phòng</h1>
+                    <p class="subtitle">Cập nhật trạng thái phòng theo thời gian thực</p>
+                </div>
+
+                <!-- Dropdown Filters -->
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <span class="filter-label">Loại phòng</span>
+                        <select class="filter-dropdown" id="roomTypeSelect">
+                            @foreach (var type in Model.RoomTypes)
+                            {
+                                if (type == Model.SelectedRoomType)
+                                {
+                                    <option value="@type" selected>@type</option>
+                                }
+                                else
+                                {
+                                    <option value="@type">@type</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <span class="filter-label">Trạng thái</span>
+                        <select class="filter-dropdown" id="statusSelect">
+                            @foreach (var status in Model.Statuses)
+                            {
+                                if (status == Model.SelectedStatus)
+                                {
+                                    <option value="@status" selected>@status</option>
+                                }
+                                else
+                                {
+                                    <option value="@status">@status</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Counts Legend -->
+            <div class="legend-section">
+                <div class="legend-item">
+                    <span class="legend-dot green"></span>
+                    <span>Sẵn sàng (<span class="legend-count">@Model.ReadyCount</span>)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot red"></span>
+                    <span>Đang sử dụng (<span class="legend-count">@Model.UsingCount</span>)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot yellow"></span>
+                    <span>Chờ nhận phòng (<span class="legend-count">@Model.WaitingCount</span>)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot blue"></span>
+                    <span>Bảo trì (<span class="legend-count">@Model.MaintenanceCount</span>)</span>
+                </div>
+            </div>
+
+            <!-- Grid of Room Cards -->
+            <div class="room-grid">
+                @if (Model.RoomCards.Any())
+                {
+                    @foreach (var room in Model.RoomCards)
+                    {
+                        string statusClass = "";
+                        switch (room.Status)
+                        {
+                            case "SẴN SÀNG":
+                                statusClass = "status-ready";
+                                break;
+                            case "ĐANG SỬ DỤNG":
+                                statusClass = "status-using";
+                                break;
+                            case "CHỜ NHẬN PHÒNG":
+                                statusClass = "status-waiting";
+                                break;
+                            case "ĐANG BẢO TRÌ":
+                                statusClass = "status-maintenance";
+                                break;
+                        }
+
+                        <div class="room-card @statusClass" data-room-id="@room.RoomId">
+                            <div class="card-top">
+                                <!-- Room header: Name, type, status icon -->
+                                <div class="card-header-info">
+                                    <div class="room-name-wrapper">
+                                        <span class="room-number">@room.RoomName</span>
+                                        <span class="room-type-badge">@room.TypeName</span>
+                                    </div>
+                                    <div class="card-icon-container">
+                                        <i class="@room.IconClass"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Big Status Label -->
+                                <div class="card-status-display">
+                                    <h2 class="status-label-large">@room.Status</h2>
+                                </div>
+
+                                <!-- Dynamic Room Details -->
+                                <div class="card-details">
+                                    @if (room.Status == "ĐANG SỬ DỤNG")
+                                    {
+                                        <div class="detail-row">
+                                            <span class="detail-label">Thời gian còn lại:</span>
+                                            <span class="detail-value time-left time-left-countdown" data-seconds="@GetRemainingSeconds(room.TimeLeft)">@room.TimeLeft</span>
+                                        </div>
+                                    }
+                                    else if (room.Status == "SẴN SÀNG")
+                                    {
+                                        <div class="detail-row">
+                                            <span class="detail-label">Mô tả: Sẵn sàng vào hát</span>
+                                        </div>
+                                    }
+                                    else if (room.Status == "CHỜ NHẬN PHÒNG")
+                                    {
+                                        <div class="detail-row">
+                                            <span class="detail-label">Khách đặt:</span>
+                                            <span class="detail-value">@room.CustomerBooking</span>
+                                        </div>
+                                    }
+                                    else if (room.Status == "ĐANG BẢO TRÌ")
+                                    {
+                                        <div class="detail-row">
+                                            <span class="detail-label">Mô tả lỗi:</span>
+                                            <span class="detail-value maintenance-note">@room.MaintenanceDescription</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Card Footer: Pricing and actions -->
+                            <div class="card-footer">
+                                <div class="price-container">
+                                    <span class="price-label">Giá tiền</span>
+                                    <span class="price-amount">@(room.PricePerHour.ToString("N0"))đ/giờ</span>
+                                </div>
+                                <div class="card-actions-wrapper">
+                                    @if (room.ShowCheckInButton)
+                                    {
+                                        <button type="button" class="btn-check-in" onclick="checkInRoom(@room.RoomId, '@room.RoomName')">Nhận phòng</button>
+                                    }
+                                    @if (room.ShowMenuDots)
+                                    {
+                                        <button type="button" class="btn-menu-dots" aria-label="Room options">
+                                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="no-rooms-message">
+                        <i class="fa-solid fa-ghost"></i>
+                        <p>Không tìm thấy phòng nào phù hợp với bộ lọc tìm kiếm.</p>
+                    </div>
+                }
+            </div>
+        </main>
+    </div>
+
+    <!-- Client-side Interactive Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('filterForm');
+            const searchInput = document.getElementById('searchInput');
+            const roomTypeSelect = document.getElementById('roomTypeSelect');
+            const statusSelect = document.getElementById('statusSelect');
+            const hiddenRoomType = document.getElementById('hiddenRoomType');
+            const hiddenStatus = document.getElementById('hiddenStatus');
+
+            // Handle dropdown selection change
+            roomTypeSelect.addEventListener('change', () => {
+                hiddenRoomType.value = roomTypeSelect.value;
+                form.submit();
+            });
+
+            statusSelect.addEventListener('change', () => {
+                hiddenStatus.value = statusSelect.value;
+                form.submit();
+            });
+
+            // Trigger submit after typing in search (with a small debounce)
+            let timeout = null;
+            searchInput.addEventListener('input', () => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    form.submit();
+                }, 600);
+            });
+
+            // Focus cursor at the end of search input text
+            const searchVal = searchInput.value;
+            if (searchVal) {
+                searchInput.focus();
+                searchInput.setSelectionRange(searchVal.length, searchVal.length);
+            }
+
+            // Real-time Countdown Timer for "ĐANG SỬ DỤNG" Rooms
+            const timers = document.querySelectorAll('.time-left-countdown');
+            setInterval(() => {
+                timers.forEach(timer => {
+                    let seconds = parseInt(timer.getAttribute('data-seconds'));
+                    if (seconds > 0) {
+                        seconds--;
+                        timer.setAttribute('data-seconds', seconds);
+                        timer.textContent = formatSeconds(seconds);
+                    } else if (seconds === 0) {
+                        timer.textContent = "Hết giờ!";
+                        timer.style.color = "#EF4444";
+                    }
+                });
+            }, 1000);
+
+            // Redirect using cards to POS detail screen
+            const usingCards = document.querySelectorAll('.room-card.status-using');
+            usingCards.forEach(card => {
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', (e) => {
+                    // Prevent navigating if clicking nested buttons (like dots menu or check-in)
+                    if (e.target.closest('.btn-menu-dots') || e.target.closest('.btn-check-in')) {
+                        return;
+                    }
+                    const roomId = card.getAttribute('data-room-id');
+                    window.location.href = `/Receptionist/Detail?roomId=${roomId}`;
+                });
+            });
+        });
+
+        // Convert seconds into HH:MM:SS format
+        function formatSeconds(totalSecs) {
+            const hrs = Math.floor(totalSecs / 3600);
+            const mins = Math.floor((totalSecs % 3600) / 60);
+            const secs = totalSecs % 60;
+            return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        // Action function for Nhận phòng button click
+        function checkInRoom(roomId, roomName) {
+            window.location.href = `/Receptionist/CheckIn?roomId=${roomId}`;
+        }
+    </script>
+</body>
+</html>
+
+@functions {
+    // Helper function to convert dynamic remaining time string (HH:MM:SS) to total seconds
+    private int GetRemainingSeconds(string? timeStr)
+    {
+        if (string.IsNullOrEmpty(timeStr) || timeStr == "--:--:--")
+        {
+            return 0;
+        }
+
+        try
+        {
+            var parts = timeStr.Split(':');
+            if (parts.Length == 3)
+            {
+                int hours = int.Parse(parts[0]);
+                int minutes = int.Parse(parts[1]);
+                int seconds = int.Parse(parts[2]);
+                return hours * 3600 + minutes * 60 + seconds;
+            }
+        }
+        catch { }
+
+        return 0;
+    }
+}
