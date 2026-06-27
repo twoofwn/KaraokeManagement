@@ -507,10 +507,10 @@
             billText += `         Số điện thoại: 0987.654.321      \n`;
             billText += `==========================================\n`;
             billText += `HÓA ĐƠN TẠM TÍNH (BẢN NHÁP)\n`;
-            billText += `Mã hóa đơn: #\${invoiceId}         Phòng: @Model.RoomName\n`;
+            billText += `Mã hóa đơn: #${invoiceId}         Phòng: @Model.RoomName\n`;
             billText += `Giờ vào: @(Model.CheckInTime?.ToString("HH:mm:ss dd/MM/yyyy"))\n`;
-            billText += `Giờ ra (tạm tính): \${now.getHours().toString().padStart(2, '0')}:\${now.getMinutes().toString().padStart(2, '0')}:\${now.getSeconds().toString().padStart(2, '0')} \${now.getDate().toString().padStart(2, '0')}/\${(now.getMonth()+1).toString().padStart(2, '0')}/\${now.getFullYear()}\n`;
-            billText += `Thời lượng hát: \${timeSingingText}\n`;
+            billText += `Giờ ra (tạm tính): ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getFullYear()}\n`;
+            billText += `Thời lượng hát: ${timeSingingText}\n`;
             billText += `------------------------------------------\n`;
             billText += `Nội dung                    SL   Đ.Giá    T.Tiền\n`;
             billText += `------------------------------------------\n`;
@@ -519,7 +519,7 @@
             // Format hours text
             const checkInDate = new Date(checkInTimeISO);
             const hoursSinged = (now - checkInDate) / (1000 * 3600);
-            billText += `Giờ hát (@(Model.PricePerHour.ToString("N0"))đ/h)       \${hoursSinged.toFixed(2)}h            \${formatCurrency(roomCharge)}đ\n\n`;
+            billText += `Giờ hát (@(Model.PricePerHour.ToString("N0"))đ/h)       ${hoursSinged.toFixed(2)}h            ${formatCurrency(roomCharge)}đ\n\n`;
             
             billText += `DỊCH VỤ GỌI MÓN\n`;
             // Get all items
@@ -533,18 +533,18 @@
                     
                     // Format strings nicely
                     let padName = name.substring(0, 24);
-                    billText += `\${padName.padEnd(25)} \${qty.padStart(3)} \${subtotalText.padStart(12)}\n`;
+                    billText += `${padName.padEnd(25)} ${qty.padStart(3)} ${subtotalText.padStart(12)}\n`;
                 });
             } else {
                 billText += `  (Chưa gọi dịch vụ món nào)\n`;
             }
             
             billText += `------------------------------------------\n`;
-            billText += `Tiền phòng tạm tính:             \${formatCurrency(roomCharge)} đ\n`;
-            billText += `Tiền dịch vụ tạm tính:           \${formatCurrency(serviceSubtotal)} đ\n`;
+            billText += `Tiền phòng tạm tính:             ${formatCurrency(roomCharge)} đ\n`;
+            billText += `Tiền dịch vụ tạm tính:           ${formatCurrency(serviceSubtotal)} đ\n`;
             billText += `Khuyến mãi:                               0 đ\n`;
             billText += `------------------------------------------\n`;
-            billText += `TỔNG CỘNG TẠM TÍNH:             \${formatCurrency(grandTotal)} đ\n`;
+            billText += `TỔNG CỘNG TẠM TÍNH:             ${formatCurrency(grandTotal)} đ\n`;
             billText += `==========================================\n`;
             billText += `      Xin cảm ơn quý khách và hẹn gặp lại!  \n`;
             billText += `==========================================\n`;
@@ -571,10 +571,10 @@
             if (existingToast) existingToast.remove();
 
             const toast = document.createElement('div');
-            toast.className = `toast \${type}`;
+            toast.className = `toast ${type}`;
             toast.innerHTML = `
-                <i class="fa-solid \${type === 'success' ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
-                <span>\${message}</span>
+                <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
+                <span>${message}</span>
             `;
             document.body.appendChild(toast);
 

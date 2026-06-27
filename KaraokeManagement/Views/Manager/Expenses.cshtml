@@ -1,4 +1,6 @@
-﻿@{
+@model KaraokeManagement.Models.ExpensesViewModel
+
+@{
     Layout = "~/Views/Manager/_ManagerLayout.cshtml";
     ViewData["Title"] = "Quản lý chi phí";
     ViewData["ActiveNav"] = "expenses";
@@ -55,6 +57,10 @@
     .stat-icon.gray {
         background-color: #e9ecef;
         color: #495057;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     .stat-value {
         font-size: 2.2rem;
@@ -68,6 +74,7 @@
         font-weight: 600;
     }
     .stat-sub.text-red { color: #d32f2f; }
+    .stat-sub.text-success { color: #2e7d32; }
 
     /* Bảng lịch sử chi phí */
     .table-header-flex {
@@ -229,9 +236,10 @@
                         <span>Tổng chi phí tháng này</span>
                         <div class="stat-icon"><i class="fa-solid fa-wallet"></i></div>
                     </div>
-                    <div class="stat-value">45,200,000 ₫</div>
-                    <div class="stat-sub text-red">
-                        <i class="fa-solid fa-arrow-trend-up"></i> +12% so với tháng trước
+                    <div class="stat-value">@Model.TotalMonthExpense.ToString("N0") ₫</div>
+                    <div class="stat-sub @(Model.PercentChange >= 0 ? "text-red" : "text-success")">
+                        <i class="fa-solid @(Model.PercentChange >= 0 ? "fa-arrow-trend-up" : "fa-arrow-trend-down")"></i>
+                        @(Model.PercentChange >= 0 ? "+" : "")@Model.PercentChange.ToString("F1")% so với tháng trước
                     </div>
                 </div>
             </div>
@@ -241,9 +249,10 @@
                         <span>Danh mục cao nhất</span>
                         <div class="stat-icon gray"><i class="fa-solid fa-shop"></i></div>
                     </div>
-                    <div class="stat-value">Mặt bằng</div>
+                    <div class="stat-value">@Model.HighestCategoryName</div>
                     <div class="text-muted" style="font-weight: 500;">
-                        25,000,000 ₫ <span class="badge-percent">55% tổng</span>
+                        @Model.HighestCategoryAmount.ToString("N0") ₫ 
+                        <span class="badge-percent">@Model.HighestCategoryPercent.ToString("F0")% tổng</span>
                     </div>
                 </div>
             </div>
@@ -269,42 +278,32 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>15/10/23</td>
-                            <td>
-                                <span class="badge-cat cat-electricity"><i class="fa-solid fa-bolt"></i> Điện</span>
-                            </td>
-                            <td class="text-muted">Tiền điện tháng 9/2023</td>
-                            <td class="text-end fw-bold">5,400,000</td>
-                            <td class="text-center"><button class="btn-icon-only"><i class="fa-solid fa-ellipsis-vertical"></i></button></td>
-                        </tr>
-                        <tr>
-                            <td>14/10/23</td>
-                            <td>
-                                <span class="badge-cat cat-maintenance"><i class="fa-solid fa-screwdriver-wrench"></i> Bảo trì</span>
-                            </td>
-                            <td class="text-muted">Sửa mic phòng VIP 1 & 2</td>
-                            <td class="text-end fw-bold">2,100,000</td>
-                            <td class="text-center"><button class="btn-icon-only"><i class="fa-solid fa-ellipsis-vertical"></i></button></td>
-                        </tr>
-                        <tr>
-                            <td>01/10/23</td>
-                            <td>
-                                <span class="badge-cat cat-rent"><i class="fa-solid fa-shop"></i> Mặt bằng</span>
-                            </td>
-                            <td class="text-muted">Thuê mặt bằng tháng 10</td>
-                            <td class="text-end fw-bold">25,000,000</td>
-                            <td class="text-center"><button class="btn-icon-only"><i class="fa-solid fa-ellipsis-vertical"></i></button></td>
-                        </tr>
-                        <tr>
-                            <td>28/09/23</td>
-                            <td>
-                                <span class="badge-cat cat-water"><i class="fa-solid fa-droplet"></i> Nước</span>
-                            </td>
-                            <td class="text-muted">Tiền nước T9</td>
-                            <td class="text-end fw-bold">850,000</td>
-                            <td class="text-center"><button class="btn-icon-only"><i class="fa-solid fa-ellipsis-vertical"></i></button></td>
-                        </tr>
+                        @if (Model.RecentExpenses == null || !Model.RecentExpenses.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">Chưa có chi phí nào được ghi nhận.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var exp in Model.RecentExpenses)
+                            {
+                                <tr>
+                                    <td>@exp.ExpenseDate.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        <span class="badge-cat @KaraokeManagement.Models.ExpensesViewModel.GetCategoryBadgeClass(exp.Category)">
+                                            <i class="@KaraokeManagement.Models.ExpensesViewModel.GetCategoryIconClass(exp.Category)"></i> 
+                                            @KaraokeManagement.Models.ExpensesViewModel.GetCategoryDisplayName(exp.Category)
+                                        </span>
+                                    </td>
+                                    <td class="text-muted">@exp.Note</td>
+                                    <td class="text-end fw-bold">@exp.Amount.ToString("N0")</td>
+                                    <td class="text-center">
+                                        <button class="btn-icon-only"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                    </td>
+                                </tr>
+                            }
+                        }
                     </tbody>
                 </table>
             </div>
@@ -326,8 +325,8 @@
 
             <div class="mb-3">
                 <label class="form-label-soft">Loại chi phí</label>
-                <select class="form-select form-control-soft w-100">
-                    <option value="" selected>Chọn danh mục...</option>
+                <select class="form-select form-control-soft w-100" id="categorySelect" required>
+                    <option value="" selected disabled>Chọn danh mục...</option>
                     <option value="dien">Điện</option>
                     <option value="nuoc">Nước</option>
                     <option value="matbang">Mặt bằng</option>
@@ -338,24 +337,24 @@
 
             <div class="mb-3">
                 <label class="form-label-soft">Kỳ thanh toán (Tháng/Năm)</label>
-                <input type="month" class="form-control form-control-soft w-100" value="2023-10" />
+                <input type="month" class="form-control form-control-soft w-100" id="periodInput" value="@DateTime.Now.ToString("yyyy-MM")" required />
             </div>
 
             <div class="mb-3">
                 <label class="form-label-soft">Số tiền (VNĐ)</label>
                 <div class="input-currency-wrapper">
-                    <input type="text" id="amountInput" class="form-control form-control-soft w-100 text-end" value="0" />
+                    <input type="text" id="amountInput" class="form-control form-control-soft w-100 text-end" value="0" required />
                     <span class="currency-symbol">₫</span>
                 </div>
             </div>
 
             <div class="mb-4">
                 <label class="form-label-soft">Ghi chú (Không bắt buộc)</label>
-                <textarea class="form-control form-control-soft w-100" rows="3" placeholder="Nhập mô tả ngắn..."></textarea>
+                <textarea class="form-control form-control-soft w-100" id="noteInput" rows="3" placeholder="Nhập mô tả ngắn..."></textarea>
             </div>
 
             <div class="d-flex gap-2 mt-2">
-                <button type="button" class="btn btn-light-gray flex-fill">Hủy</button>
+                <button type="button" class="btn btn-light-gray flex-fill" id="btnCancel">Hủy</button>
                 <button type="submit" class="btn btn-pink flex-fill">
                     <i class="fa-solid fa-floppy-disk me-1"></i> Lưu chi phí
                 </button>
@@ -367,11 +366,11 @@
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Xử lý tự động format số tiền khi nhập (thêm dấu phẩy)
             const amountInput = document.getElementById('amountInput');
+            const btnCancel = document.getElementById('btnCancel');
 
+            // Xử lý tự động format số tiền khi nhập (thêm dấu phẩy)
             amountInput.addEventListener('input', function(e) {
-                // Xóa tất cả các ký tự không phải là số
                 let value = this.value.replace(/[^0-9]/g, '');
                 
                 if(value === '') {
@@ -379,24 +378,66 @@
                     return;
                 }
 
-                // Chuyển thành số nguyên để xóa các số 0 ở đầu (ví dụ 00123 -> 123)
                 value = parseInt(value, 10).toString();
-
-                // Format lại với dấu phẩy
                 this.value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             });
 
-            // Focus vào input sẽ bôi đen toàn bộ số (dễ nhập đè)
             amountInput.addEventListener('focus', function() {
                 if(this.value === '0') {
                     this.select();
                 }
             });
 
-            // Chặn submit form tạm thời để demo (bạn có thể xóa khi nối API)
+            // Cancel click clears inputs
+            btnCancel.addEventListener('click', function() {
+                document.getElementById('categorySelect').value = '';
+                document.getElementById('periodInput').value = '@DateTime.Now.ToString("yyyy-MM")';
+                amountInput.value = '0';
+                document.getElementById('noteInput').value = '';
+            });
+
+            // Submit form via AJAX
             document.getElementById('addExpenseForm').addEventListener('submit', function(e) {
                 e.preventDefault();
-                alert('Đã lưu chi phí thành công (Demo)!');
+
+                const category = document.getElementById('categorySelect').value;
+                const dateStr = document.getElementById('periodInput').value;
+                const rawAmount = amountInput.value.replace(/,/g, '');
+                const note = document.getElementById('noteInput').value;
+
+                if (!category) {
+                    alert('Vui lòng chọn loại chi phí.');
+                    return;
+                }
+
+                const amount = parseFloat(rawAmount);
+                if (isNaN(amount) || amount <= 0) {
+                    alert('Số tiền chi phí phải lớn hơn 0.');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/Manager/AddExpense',
+                    type: 'POST',
+                    data: {
+                        category: category,
+                        dateStr: dateStr,
+                        amount: amount,
+                        note: note
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            window.location.reload();
+                        } else {
+                            alert('Lỗi: ' + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Đã có lỗi xảy ra trong quá trình lưu chi phí.');
+                        console.error(error);
+                    }
+                });
             });
         });
     </script>

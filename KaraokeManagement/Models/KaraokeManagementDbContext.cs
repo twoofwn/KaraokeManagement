@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,6 +24,9 @@ public partial class KaraokeManagementDbContext : DbContext
     public virtual DbSet<Customer> Customers { get; set; }
 
     public virtual DbSet<Equipment> Equipment { get; set; }
+
+    public virtual DbSet<Expense> Expenses { get; set; }
+
 
     public virtual DbSet<Invoice> Invoices { get; set; }
 
@@ -481,8 +484,23 @@ public partial class KaraokeManagementDbContext : DbContext
             entity.Property(e => e.SupplierName).HasMaxLength(100);
         });
 
+        modelBuilder.Entity<Expense>(entity =>
+        {
+            entity.HasKey(e => e.ExpenseId);
+            entity.ToTable("Expense");
+            entity.Property(e => e.ExpenseId).HasColumnName("ExpenseID");
+            entity.Property(e => e.Category).HasMaxLength(50);
+            entity.Property(e => e.ExpenseDate).HasColumnType("date");
+            entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.Note).HasMaxLength(255);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+        });
+
         OnModelCreatingPartial(modelBuilder);
     }
+
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

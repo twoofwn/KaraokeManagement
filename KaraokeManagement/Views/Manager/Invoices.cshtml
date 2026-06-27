@@ -1,4 +1,6 @@
-﻿@{
+@model KaraokeManagement.Models.ManagerInvoicesViewModel
+
+@{
     Layout = "~/Views/Manager/_ManagerLayout.cshtml";
     ViewData["Title"] = "Lịch sử hóa đơn";
     ViewData["ActiveNav"] = "invoices";
@@ -8,10 +10,15 @@
     /* Custom Theme & Colors cho Invoice Page */
     :root {
         --brand-pink: #b60056;
+        --brand-pink-hover: #960046;
         --text-main: #212529;
         --text-muted: #6c757d;
         --bg-light-grey: #f5f6f8;
         --border-color: #eaeaea;
+    }
+
+    .text-pink {
+        color: var(--brand-pink) !important;
     }
 
     /* Page Titles */
@@ -50,7 +57,6 @@
         cursor: pointer;
     }
     
-    /* Ẩn calendar icon mặc định của trình duyệt webkit để dùng icon fontawesome (tùy chọn) */
     .date-input-wrapper input[type="date"]::-webkit-calendar-picker-indicator {
         opacity: 0.6;
         cursor: pointer;
@@ -190,6 +196,13 @@
         color: white;
     }
 
+    .pagination-custom li.disabled span,
+    .pagination-custom li.disabled a {
+        color: var(--text-muted);
+        pointer-events: none;
+        opacity: 0.5;
+    }
+
     .pagination-info {
         font-size: 0.85rem;
         color: var(--text-muted);
@@ -198,17 +211,17 @@
 
 <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
     <div>
-        <h1 class="page-title">Invoice History</h1>
-        <p class="text-muted mb-0">View and manage finalized reception invoices.</p>
+        <h1 class="page-title">Lịch sử hóa đơn</h1>
+        <p class="text-muted mb-0">Xem và quản lý các hóa đơn đã thanh toán hoàn tất.</p>
     </div>
 
     <div class="date-filter-container shadow-sm">
         <div class="date-input-wrapper">
-            <input type="date" id="fromDate" value="2024-05-01" />
+            <input type="date" id="fromDate" value="@Model.FromDate.ToString("yyyy-MM-dd")" />
         </div>
         <span class="text-muted" style="font-size: 0.85rem;">to</span>
         <div class="date-input-wrapper">
-            <input type="date" id="toDate" value="2024-05-31" />
+            <input type="date" id="toDate" value="@Model.ToDate.ToString("yyyy-MM-dd")" />
         </div>
         <button class="filter-btn" id="btnFilter" title="Lọc dữ liệu">
             <i class="fa-solid fa-filter"></i>
@@ -222,150 +235,265 @@
             <thead>
                 <tr>
                     <th width="15%">Mã HD</th>
-                    <th width="20%">Ngày</th>
+                    <th width="20%">Ngày thanh toán</th>
                     <th width="15%" class="text-end">Tiền hát</th>
                     <th width="15%" class="text-end">Dịch vụ</th>
                     <th width="20%" class="text-end">Tổng</th>
-                    <th width="15%" class="text-center">Action</th>
+                    <th width="15%" class="text-center">Chi tiết</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>
-                        <div class="invoice-id">#INV-<br>2049</div>
-                    </td>
-                    <td>
-                        <div class="date-text">
-                            May 12, 2024 <br>
-                            - 23:15
-                        </div>
-                    </td>
-                    <td>
-                        <div class="currency-val">450,000<br><span class="currency-symbol">₫</span></div>
-                    </td>
-                    <td>
-                        <div class="currency-val">1,200,000<br><span class="currency-symbol">₫</span></div>
-                    </td>
-                    <td>
-                        <div class="currency-val total-val">1,650,000 <span class="currency-symbol">₫</span></div>
-                    </td>
-                    <td class="text-center">
-                        <button class="action-btn view-invoice-btn" data-id="2049"><i class="fa-regular fa-eye"></i></button>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>
-                        <div class="invoice-id">#INV-<br>2048</div>
-                    </td>
-                    <td>
-                        <div class="date-text">
-                            May 12, 2024 <br>
-                            - 22:30
-                        </div>
-                    </td>
-                    <td>
-                        <div class="currency-val">600,000<br><span class="currency-symbol">₫</span></div>
-                    </td>
-                    <td>
-                        <div class="currency-val">850,000<br><span class="currency-symbol">₫</span></div>
-                    </td>
-                    <td>
-                        <div class="currency-val total-val">1,450,000 <span class="currency-symbol">₫</span></div>
-                    </td>
-                    <td class="text-center">
-                        <button class="action-btn view-invoice-btn" data-id="2048"><i class="fa-regular fa-eye"></i></button>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>
-                        <div class="invoice-id">#INV-<br>2047</div>
-                    </td>
-                    <td>
-                        <div class="date-text">
-                            May 12, 2024 <br>
-                            - 21:00
-                        </div>
-                    </td>
-                    <td>
-                        <div class="currency-val">300,000<br><span class="currency-symbol">₫</span></div>
-                    </td>
-                    <td>
-                        <div class="currency-val">400,000<br><span class="currency-symbol">₫</span></div>
-                    </td>
-                    <td>
-                        <div class="currency-val total-val">700,000 <span class="currency-symbol">₫</span></div>
-                    </td>
-                    <td class="text-center">
-                        <button class="action-btn view-invoice-btn" data-id="2047"><i class="fa-regular fa-eye"></i></button>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>
-                        <div class="invoice-id">#INV-<br>2046</div>
-                    </td>
-                    <td>
-                        <div class="date-text">
-                            May 11, 2024 <br>
-                            - 01:45
-                        </div>
-                    </td>
-                    <td>
-                        <div class="currency-val">900,000<br><span class="currency-symbol">₫</span></div>
-                    </td>
-                    <td>
-                        <div class="currency-val">2,100,000<br><span class="currency-symbol">₫</span></div>
-                    </td>
-                    <td>
-                        <div class="currency-val total-val">3,000,000 <span class="currency-symbol">₫</span></div>
-                    </td>
-                    <td class="text-center">
-                        <button class="action-btn view-invoice-btn" data-id="2046"><i class="fa-regular fa-eye"></i></button>
-                    </td>
-                </tr>
+                @if (Model.Invoices == null || !Model.Invoices.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">Không tìm thấy hóa đơn nào trong khoảng thời gian này.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var inv in Model.Invoices)
+                    {
+                        <tr>
+                            <td>
+                                <div class="invoice-id">#INV-<br>@inv.InvoiceId</div>
+                            </td>
+                            <td>
+                                <div class="date-text">
+                                    @inv.CheckOutTime?.ToString("dd/MM/yyyy") <br>
+                                    - @inv.CheckOutTime?.ToString("HH:mm")
+                                </div>
+                            </td>
+                            <td>
+                                <div class="currency-val">@((inv.RoomTotal ?? 0).ToString("N0"))<br><span class="currency-symbol">₫</span></div>
+                            </td>
+                            <td>
+                                <div class="currency-val">@((inv.ServiceTotal ?? 0).ToString("N0"))<br><span class="currency-symbol">₫</span></div>
+                            </td>
+                            <td>
+                                <div class="currency-val total-val text-pink">@((inv.GrandTotal ?? 0).ToString("N0")) <span class="currency-symbol">₫</span></div>
+                            </td>
+                            <td class="text-center">
+                                <button class="action-btn view-invoice-btn" data-id="@inv.InvoiceId"><i class="fa-regular fa-eye"></i></button>
+                            </td>
+                        </tr>
+                    }
+                }
             </tbody>
         </table>
     </div>
 
+    <!-- Phân trang -->
     <div class="pagination-wrapper d-flex justify-content-between align-items-center flex-wrap">
         <div class="pagination-info">
-            Showing 1 to 4 of 124 entries
+            Hiển thị @Model.StartEntry đến @Model.EndEntry trong tổng số @Model.TotalCount bản ghi
         </div>
         <ul class="pagination-custom">
-            <li><a href="#" class="text-muted"><i class="fa-solid fa-chevron-left" style="font-size: 0.7rem;"></i></a></li>
-            <li class="active"><a href="#">1</a></li>
-            <li><a href="#">2</a></li>
-            <li><a href="#">3</a></li>
-            <li><span class="text-muted">...</span></li>
-            <li><a href="#" class="text-muted"><i class="fa-solid fa-chevron-right" style="font-size: 0.7rem;"></i></a></li>
+            <!-- Nút Trước -->
+            <li class="@(Model.CurrentPage == 1 ? "disabled" : "")">
+                <a href="/Manager/Invoices?fromDate=@Model.FromDate.ToString("yyyy-MM-dd")&toDate=@Model.ToDate.ToString("yyyy-MM-dd")&page=@(Model.CurrentPage - 1)">
+                    <i class="fa-solid fa-chevron-left" style="font-size: 0.7rem;"></i>
+                </a>
+            </li>
+
+            <!-- Các số trang -->
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="@(Model.CurrentPage == i ? "active" : "")">
+                    <a href="/Manager/Invoices?fromDate=@Model.FromDate.ToString("yyyy-MM-dd")&toDate=@Model.ToDate.ToString("yyyy-MM-dd")&page=@i">@i</a>
+                </li>
+            }
+
+            <!-- Nút Sau -->
+            <li class="@(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                <a href="/Manager/Invoices?fromDate=@Model.FromDate.ToString("yyyy-MM-dd")&toDate=@Model.ToDate.ToString("yyyy-MM-dd")&page=@(Model.CurrentPage + 1)">
+                    <i class="fa-solid fa-chevron-right" style="font-size: 0.7rem;"></i>
+                </a>
+            </li>
         </ul>
+    </div>
+</div>
+
+<!-- Invoice Detail Modal -->
+<div class="modal fade" id="invoiceDetailModal" tabindex="-1" aria-labelledby="invoiceDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <div class="modal-header" style="background-color: var(--brand-pink); color: white; padding: 1.2rem 1.5rem;">
+                <h5 class="modal-title fw-bold" id="invoiceDetailModalLabel">Chi tiết Hóa đơn <span id="modalInvoiceId"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 2rem;">
+                <!-- Info Rows -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6 border-end">
+                        <h6 class="fw-bold text-pink mb-3"><i class="fa-solid fa-microphone-lines me-2"></i>Thông tin phòng</h6>
+                        <div class="mb-2"><strong>Phòng:</strong> <span id="modalRoomName"></span></div>
+                        <div class="mb-2"><strong>Loại phòng:</strong> <span id="modalRoomType"></span></div>
+                        <div class="mb-2"><strong>Đơn giá/Giờ:</strong> <span id="modalPricePerHour"></span> ₫</div>
+                        <div class="mb-2"><strong>Thời gian hát:</strong> <span id="modalDurationText"></span></div>
+                        <div class="mb-2"><small class="text-muted">Nhận: <span id="modalCheckIn"></span> | Trả: <span id="modalCheckOut"></span></small></div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="fw-bold text-pink mb-3"><i class="fa-solid fa-user me-2"></i>Thông tin khách hàng & NV</h6>
+                        <div class="mb-2"><strong>Khách hàng:</strong> <span id="modalCustomerName"></span></div>
+                        <div class="mb-2"><strong>Số điện thoại:</strong> <span id="modalCustomerPhone"></span></div>
+                        <div class="mb-2"><strong>Hạng thành viên:</strong> <span id="modalCustomerTier"></span></div>
+                        <div class="mb-2"><strong>Nhân viên thanh toán:</strong> <span id="modalReceptionistName"></span></div>
+                    </div>
+                </div>
+
+                <!-- Services Table -->
+                <h6 class="fw-bold text-pink mb-3"><i class="fa-solid fa-utensils me-2"></i>Dịch vụ đã sử dụng</h6>
+                <div class="table-responsive mb-4">
+                    <table class="table table-striped table-hover align-middle" style="font-size: 0.9rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tên dịch vụ</th>
+                                <th>ĐVT</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-end">Đơn giá (VND)</th>
+                                <th class="text-end">Thành tiền (VND)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalServicesBody">
+                            <!-- Dynamic Content -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Payment Transactions -->
+                <div id="modalPaymentSection" class="mb-4">
+                    <h6 class="fw-bold text-pink mb-2"><i class="fa-solid fa-wallet me-2"></i>Phương thức thanh toán</h6>
+                    <div class="bg-light p-3 rounded" style="font-size: 0.85rem;" id="modalPaymentDetails">
+                        <!-- Dynamic Content -->
+                    </div>
+                </div>
+
+                <!-- Summary Column -->
+                <div class="row justify-content-end">
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Tiền giờ:</span>
+                            <span class="fw-semibold" id="modalRoomTotal"></span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Tiền dịch vụ:</span>
+                            <span class="fw-semibold" id="modalServiceTotal"></span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Khấu trừ giảm giá:</span>
+                            <span class="fw-semibold text-danger" id="modalDiscountAmount"></span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-dark">Tổng cộng thanh toán:</span>
+                            <span class="fw-bold text-pink fs-4" id="modalGrandTotal"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="background-color: var(--bg-light-grey); border-top: 1px solid var(--border-color);">
+                <button type="button" class="btn btn-secondary px-4" style="border-radius: 8px;" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Xử lý sự kiện click nút xem chi tiết hóa đơn
+            // Click Handler for View Invoice Details
             const viewButtons = document.querySelectorAll('.view-invoice-btn');
             viewButtons.forEach(btn => {
                 btn.addEventListener('click', function() {
                     const invoiceId = this.getAttribute('data-id');
-                    // Demo hành động - Ở thực tế bạn có thể gọi Modal hoặc chuyển trang
-                    alert('Chức năng xem chi tiết Hóa đơn #INV-' + invoiceId);
+                    
+                    $.ajax({
+                        url: '/Manager/InvoiceDetails/' + invoiceId,
+                        type: 'GET',
+                        success: function(response) {
+                            if (response.success) {
+                                const data = response.data;
+                                
+                                // Set basic info
+                                document.getElementById('modalInvoiceId').innerText = '#INV-' + data.invoiceId;
+                                document.getElementById('modalRoomName').innerText = data.roomName;
+                                document.getElementById('modalRoomType').innerText = data.roomTypeName;
+                                document.getElementById('modalPricePerHour').innerText = parseFloat(data.pricePerHour).toLocaleString();
+                                document.getElementById('modalDurationText').innerText = data.durationText;
+                                document.getElementById('modalCheckIn').innerText = data.checkInTime;
+                                document.getElementById('modalCheckOut').innerText = data.checkOutTime;
+                                
+                                document.getElementById('modalCustomerName').innerText = data.customerName;
+                                document.getElementById('modalCustomerPhone').innerText = data.customerPhone;
+                                document.getElementById('modalCustomerTier').innerText = data.customerTier + ' (' + data.discountPercent + '% giảm giá)';
+                                document.getElementById('modalReceptionistName').innerText = data.receptionistName;
+
+                                // Set subtotals
+                                document.getElementById('modalRoomTotal').innerText = parseFloat(data.roomTotal).toLocaleString() + ' ₫';
+                                document.getElementById('modalServiceTotal').innerText = parseFloat(data.serviceTotal).toLocaleString() + ' ₫';
+                                document.getElementById('modalDiscountAmount').innerText = '-' + parseFloat(data.discountAmount).toLocaleString() + ' ₫';
+                                document.getElementById('modalGrandTotal').innerText = parseFloat(data.grandTotal).toLocaleString() + ' ₫';
+
+                                // Render services
+                                const servicesBody = document.getElementById('modalServicesBody');
+                                servicesBody.innerHTML = '';
+                                if (data.items.length === 0) {
+                                    servicesBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Không sử dụng dịch vụ nào.</td></tr>';
+                                } else {
+                                    data.items.forEach(item => {
+                                        servicesBody.innerHTML += `
+                                            <tr>
+                                                <td>${item.serviceName}</td>
+                                                <td>${item.unit || 'Chưa rõ'}</td>
+                                                <td class="text-center">${item.quantity}</td>
+                                                <td class="text-end">${parseFloat(item.unitPrice).toLocaleString()}</td>
+                                                <td class="text-end fw-bold">${parseFloat(item.total).toLocaleString()}</td>
+                                            </tr>
+                                        `;
+                                    });
+                                }
+
+                                // Render payment info
+                                const paymentDetails = document.getElementById('modalPaymentDetails');
+                                paymentDetails.innerHTML = '';
+                                if (data.payments.length === 0) {
+                                    paymentDetails.innerHTML = 'Chưa ghi nhận giao dịch thanh toán.';
+                                } else {
+                                    data.payments.forEach(pay => {
+                                        let refInfo = pay.refCode ? ` (Mã GD: <strong>${pay.refCode}</strong>)` : '';
+                                        paymentDetails.innerHTML += `
+                                            <div class="mb-1">
+                                                - Phương thức: <strong>${pay.methodName}</strong> | Số tiền: <strong>${parseFloat(pay.amount).toLocaleString()} ₫</strong> | Lúc: ${pay.date}${refInfo}
+                                            </div>
+                                        `;
+                                    });
+                                }
+
+                                // Show Modal
+                                var myModal = new bootstrap.Modal(document.getElementById('invoiceDetailModal'));
+                                myModal.show();
+                            } else {
+                                alert('Không thể lấy chi tiết hóa đơn: ' + response.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            alert('Đã xảy ra lỗi khi lấy dữ liệu hóa đơn.');
+                            console.error(error);
+                        }
+                    });
                 });
             });
 
-            // Xử lý sự kiện nhấn nút Filter ngày
+            // Date Range Filtering Action
             const btnFilter = document.getElementById('btnFilter');
             btnFilter.addEventListener('click', function() {
                 const from = document.getElementById('fromDate').value;
                 const to = document.getElementById('toDate').value;
                 
-                if(from && to) {
-                    console.log(`Đang lọc dữ liệu từ ${from} đến ${to}...`);
-                    // Logic lọc dữ liệu của bạn ở đây
+                if (from && to) {
+                    window.location.href = `/Manager/Invoices?fromDate=${from}&toDate=${to}&page=1`;
+                } else {
+                    alert('Vui lòng chọn khoảng thời gian hợp lệ.');
                 }
             });
         });
