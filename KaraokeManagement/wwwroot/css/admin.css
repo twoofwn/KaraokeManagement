@@ -1,4 +1,4 @@
-/* =============================================
+﻿/* =============================================
    ADMIN PANEL - Color Palette
    #F8F4EC  cream background
    #FF8FB7  light pink (hover, tints)
@@ -18,8 +18,38 @@ body {
 /* ---- Wrapper ---- */
 .admin-wrapper {
     display: flex;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
 }
+
+/* 1. Dành cho Firefox */
+* {
+    scrollbar-width: thin; /* Làm thanh cuộn nhỏ lại */
+    scrollbar-color: #FF8FB7 transparent; /* Màu thanh cuộn (Thumb) và nền (Track) */
+}
+
+/* 2. Dành cho Chrome, Edge, Safari... */
+::-webkit-scrollbar {
+    width: 6px; /* Chiều rộng của thanh cuộn dọc */
+    height: 6px; /* Chiều cao của thanh cuộn ngang (nếu có) */
+}
+
+/* Phần nền của thanh cuộn (Track) */
+::-webkit-scrollbar-track {
+    background: transparent; /* Để trong suốt cho gọn mắt, hoặc bạn có thể dùng #F8F4EC */
+    border-radius: 10px;
+}
+
+/* Phần tay cầm thanh cuộn (Thumb) */
+::-webkit-scrollbar-thumb {
+    background: #FF8FB7; /* Màu hồng nhạt thương hiệu */
+    border-radius: 10px;
+}
+
+    /* Tay cầm thanh cuộn khi di chuột vào (Hover) */
+    ::-webkit-scrollbar-thumb:hover {
+        background: #E83C91; /* Màu hồng đậm (Primary) khi di chuột vào */
+    }
 
 /* =============================================
    SIDEBAR
@@ -32,6 +62,7 @@ body {
     flex-direction: column;
     padding: 28px 0 24px;
     border-right: 1px solid #f0eae0;
+    height: 100vh;
 }
 
 .sidebar-brand {
@@ -75,6 +106,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    overflow-y: auto;
 }
 
 .nav-item {
@@ -176,6 +208,8 @@ body {
     display: flex;
     flex-direction: column;
     min-width: 0;
+    height: 100vh;
+    overflow-y: auto;
 }
 
 /* ---- Header ---- */
@@ -279,7 +313,7 @@ body {
 /* ---- Content ---- */
 .admin-content {
     padding: 28px 32px;
-    flex: 1;
+    flex: 1 0 auto;
 }
 
 /* =============================================

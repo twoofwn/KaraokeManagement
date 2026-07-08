@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -83,6 +83,7 @@ namespace KaraokeManagement.Controllers
 
         public IActionResult StockIn()
         {
+            ViewBag.Suppliers = _context.Suppliers.ToList();
             return View();
         }
 

@@ -150,9 +150,10 @@
             <div class="col-md-4">
                 <label class="form-label text-muted" style="font-size: 0.85rem;">Nhà cung cấp</label>
                 <select class="form-select">
-                    <option value="1" selected>Đại lý bia Heineken Q1</option>
-                    <option value="2">Nhà phân phối trái cây</option>
-                    <option value="3">Đại lý rượu ngoại</option>
+                    @foreach(var s in ViewBag.Suppliers)
+                    {
+                        <option value="@s.SupplierId" selected>@s.SupplierName</option>
+                    }
                 </select>
             </div>
         </div>
