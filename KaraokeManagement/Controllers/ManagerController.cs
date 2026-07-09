@@ -1,9 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using KaraokeManagement.Models;
+using KaraokeManagement.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using KaraokeManagement.Models;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace KaraokeManagement.Controllers
 {
@@ -86,15 +87,263 @@ namespace KaraokeManagement.Controllers
             ViewBag.Suppliers = _context.Suppliers.ToList();
             return View();
         }
+        [HttpGet]
+        public async Task<IActionResult> SearchServices(string term)
+        
+        {
+            var query = _context.ServiceItems.AsQueryable();
 
+            if (!string.IsNullOrWhiteSpace(term))
+            {
+                query = query.Where(s => s.ServiceName.Contains(term));
+            }
+
+            var services = await query
+                .Select(s => new
+                {
+                    serviceId = s.ServiceId,
+                    serviceName = s.ServiceName,
+                    unit = s.Unit
+                })
+                .Take(15)
+                .ToListAsync();
+
+            return Json(services);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveStockIn([FromBody] StockInRequestModel model)
+        {
+            if (model == null || !model.Items.Any())
+            {
+                return Json(new { success = false, message = "Vui lòng thêm ít nhất 1 sản phẩm." });
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 1. Tạo Purchase Order mới
+                var po = new PurchaseOrder
+                {
+                    SupplierId = model.SupplierId,
+                    OrderDate = model.OrderDate,
+                    CreatedById = 1, // FIX CỨNG TẠM: Thay bằng ID User đăng nhập thực tế của bạn
+                    TotalAmount = model.Items.Sum(i => i.Quantity * i.ImportPrice)
+                };
+
+                _context.PurchaseOrders.Add(po);
+                await _context.SaveChangesAsync(); // Lưu để lấy PoId
+
+                // 2. Thêm Chi tiết và Cập nhật Tồn kho
+                foreach (var item in model.Items)
+                {
+                    var detail = new PurchaseOrderDetail
+                    {
+                        PoId = po.PoId,
+                        ServiceId = item.ServiceId,
+                        Quantity = item.Quantity,
+                        ImportPrice = item.ImportPrice
+                    };
+                    _context.PurchaseOrderDetails.Add(detail);
+
+                    // Cập nhật số lượng tồn trong ServiceItem
+                    var service = await _context.ServiceItems.FindAsync(item.ServiceId);
+                    if (service != null)
+                    {
+                        service.StockQuantity = (service.StockQuantity ?? 0) + item.Quantity;
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Json(new { success = true, message = "Lưu phiếu nhập thành công!" });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
         public IActionResult Inventory()
         {
             return View();
         }
 
-        public IActionResult ImportHistory()
+        [HttpGet]
+        public async Task<IActionResult> ImportHistory(int? supplierId, string? timeFilter, int page = 1)
         {
-            return View();
+            var now = DateTime.Now;
+            var startOfCurrentMonth = new DateTime(now.Year, now.Month, 1);
+            var endOfCurrentMonth = startOfCurrentMonth.AddMonths(1).AddTicks(-1);
+
+            var startOfLastMonth = startOfCurrentMonth.AddMonths(-1);
+            var endOfLastMonth = startOfCurrentMonth.AddTicks(-1);
+
+            // 1. Tính toán thống kê chung
+            var currentMonthTotal = await _context.PurchaseOrders
+                .Where(po => po.OrderDate >= startOfCurrentMonth && po.OrderDate <= endOfCurrentMonth)
+                .SumAsync(po => po.TotalAmount ?? 0);
+
+            var lastMonthTotal = await _context.PurchaseOrders
+                .Where(po => po.OrderDate >= startOfLastMonth && po.OrderDate <= endOfLastMonth)
+                .SumAsync(po => po.TotalAmount ?? 0);
+
+            double percentChange = 0;
+            if (lastMonthTotal > 0)
+            {
+                percentChange = (double)((currentMonthTotal - lastMonthTotal) / lastMonthTotal) * 100;
+            }
+            else if (currentMonthTotal > 0)
+            {
+                percentChange = 100; // Tăng 100% nếu tháng trước bằng 0 mà tháng này có
+            }
+
+            var totalOrdersCount = await _context.PurchaseOrders.CountAsync();
+
+            // 2. Xây dựng Query danh sách
+            var query = _context.PurchaseOrders
+                .Include(po => po.Supplier)
+                .AsQueryable();
+
+            // Áp dụng bộ lọc Nhà cung cấp
+            if (supplierId.HasValue && supplierId.Value > 0)
+            {
+                query = query.Where(po => po.SupplierId == supplierId.Value);
+            }
+
+            // Áp dụng bộ lọc Thời gian
+            if (!string.IsNullOrEmpty(timeFilter))
+            {
+                if (timeFilter == "month")
+                    query = query.Where(po => po.OrderDate >= startOfCurrentMonth && po.OrderDate <= endOfCurrentMonth);
+                else if (timeFilter == "lastmonth")
+                    query = query.Where(po => po.OrderDate >= startOfLastMonth && po.OrderDate <= endOfLastMonth);
+            }
+
+            // 3. Phân trang (Server-side)
+            int pageSize = 10;
+            int totalCount = await query.CountAsync();
+            int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+            if (totalPages == 0) totalPages = 1;
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+
+            var purchaseOrders = await query
+                .OrderByDescending(po => po.OrderDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // 4. Lấy danh sách nhà cung cấp cho Dropdown
+            var suppliers = await _context.Suppliers.ToListAsync();
+
+            var viewModel = new KaraokeManagement.ViewModel.ImportHistoryViewModel
+            {
+                TotalSpentThisMonth = currentMonthTotal,
+                PercentChange = percentChange,
+                TotalOrders = totalOrdersCount,
+                PurchaseOrders = purchaseOrders,
+                Suppliers = suppliers,
+                CurrentPage = page,
+                TotalPages = totalPages,
+                TotalCount = totalCount,
+                SelectedSupplierId = supplierId,
+                TimeFilter = timeFilter
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ImportHistoryDetail(int id)
+        {
+            var po = await _context.PurchaseOrders
+                .Include(p => p.PurchaseOrderDetails)
+                    .ThenInclude(d => d.Service)
+                .Include(p => p.Supplier)
+                .FirstOrDefaultAsync(p => p.PoId == id);
+
+            if (po == null)
+            {
+                return RedirectToAction("ImportHistory");
+            }
+
+            var viewModel = new KaraokeManagement.ViewModel.ImportHistoryDetailViewModel
+            {
+                PurchaseOrder = po,
+                Suppliers = await _context.Suppliers.ToListAsync()
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateStockIn([FromBody] KaraokeManagement.ViewModel.UpdateStockInRequestModel model)
+        {
+            if (model == null || !model.Items.Any())
+            {
+                return Json(new { success = false, message = "Vui lòng thêm ít nhất 1 sản phẩm." });
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var existingPo = await _context.PurchaseOrders
+                    .Include(p => p.PurchaseOrderDetails)
+                    .FirstOrDefaultAsync(p => p.PoId == model.PoId);
+
+                if (existingPo == null)
+                    return Json(new { success = false, message = "Không tìm thấy phiếu nhập." });
+
+                // 1. Hoàn trả Tồn kho cũ (Trừ đi số lượng đã nhập lúc trước)
+                foreach (var oldItem in existingPo.PurchaseOrderDetails)
+                {
+                    var service = await _context.ServiceItems.FindAsync(oldItem.ServiceId);
+                    if (service != null)
+                    {
+                        service.StockQuantity = (service.StockQuantity ?? 0) - oldItem.Quantity;
+                    }
+                }
+
+                // 2. Xóa chi tiết phiếu cũ
+                _context.PurchaseOrderDetails.RemoveRange(existingPo.PurchaseOrderDetails);
+
+                // 3. Cập nhật thông tin phiếu nhập
+                existingPo.SupplierId = model.SupplierId;
+                existingPo.OrderDate = model.OrderDate;
+                existingPo.TotalAmount = model.Items.Sum(i => i.Quantity * i.ImportPrice);
+
+                // 4. Thêm chi tiết mới và Cập nhật Tồn kho mới
+                foreach (var item in model.Items)
+                {
+                    var detail = new PurchaseOrderDetail
+                    {
+                        PoId = existingPo.PoId,
+                        ServiceId = item.ServiceId,
+                        Quantity = item.Quantity,
+                        ImportPrice = item.ImportPrice
+                    };
+                    _context.PurchaseOrderDetails.Add(detail);
+
+                    // Cộng thêm số lượng mới
+                    var service = await _context.ServiceItems.FindAsync(item.ServiceId);
+                    if (service != null)
+                    {
+                        service.StockQuantity = (service.StockQuantity ?? 0) + item.Quantity;
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Json(new { success = true, message = "Cập nhật phiếu nhập thành công!" });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
         }
 
         [HttpGet]

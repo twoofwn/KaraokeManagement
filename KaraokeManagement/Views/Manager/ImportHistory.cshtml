@@ -1,4 +1,5 @@
-﻿@{
+﻿@model KaraokeManagement.ViewModel.ImportHistoryViewModel
+@{
     Layout = "~/Views/Manager/_ManagerLayout.cshtml";
     ViewData["Title"] = "Lịch sử nhập hàng";
     ViewData["ActiveNav"] = "history";
@@ -206,10 +207,11 @@
                 <div class="history-card-icon"><i class="fa-solid fa-wallet"></i></div>
             </div>
             <div class="history-card-value">
-                124.5 <span style="font-size: 1.2rem; font-weight: 600; color: #555;">Tr. VND</span>
+                @((Model.TotalSpentThisMonth / 1000000).ToString("0.##")) <span style="font-size: 1.2rem; font-weight: 600; color: #555;">Tr. VND</span>
             </div>
-            <div class="history-card-sub text-danger">
-                <i class="fa-solid fa-arrow-trend-up"></i> +12.5% so với tháng trước
+            <div class="history-card-sub @(Model.PercentChange >= 0 ? "text-danger" : "text-success")">
+                <i class="fa-solid @(Model.PercentChange >= 0 ? "fa-arrow-trend-up" : "fa-arrow-trend-down")"></i> 
+                @(Model.PercentChange >= 0 ? "+" : "")@Model.PercentChange.ToString("0.#")% so với tháng trước
             </div>
         </div>
     </div>
@@ -222,10 +224,10 @@
                 <div class="history-card-icon text-secondary"><i class="fa-regular fa-file-lines"></i></div>
             </div>
             <div class="history-card-value">
-                42 <span style="font-size: 1.2rem; font-weight: 600; color: #555;">phiếu</span>
+                @Model.TotalOrders <span style="font-size: 1.2rem; font-weight: 600; color: #555;">phiếu</span>
             </div>
             <div class="history-card-sub" style="color: var(--brand-pink);">
-                <i class="fa-regular fa-circle-check"></i> Đã thanh toán 38 phiếu
+                <i class="fa-regular fa-circle-check"></i> Đã ghi nhận vào hệ thống
             </div>
         </div>
     </div>
@@ -240,36 +242,56 @@
     </div>
 </div>
 
-<div class="filter-bar d-flex justify-content-between align-items-center flex-wrap gap-3">
-    <div class="d-flex gap-2">
-        <select class="filter-select">
-            <option><i class="fa-regular fa-calendar"></i> Tháng này</option>
-            <option>Tháng trước</option>
-            <option>Tất cả thời gian</option>
-        </select>
+<form method="get" action="/Manager/ImportHistory" id="filterForm">
+    <div class="filter-bar d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div class="d-flex gap-2">
+            <select name="timeFilter" class="filter-select" onchange="document.getElementById('filterForm').submit();">
+                <option value="all" selected="@(Model.TimeFilter == "all")">Tất cả thời gian</option>
+                <option value="month" selected="@(Model.TimeFilter == "month")">Tháng này</option>
+                <option value="lastmonth" selected="@(Model.TimeFilter == "lastmonth")">Tháng trước</option>
+            </select>
 
-        <select class="filter-select">
-            <option>Nhà cung cấp</option>
-            <option>Heineken</option>
-            <option>Thực Phẩm Tươi Sống</option>
-        </select>
+            <select name="supplierId" class="filter-select" onchange="document.getElementById('filterForm').submit();">
+                <option value="">Tất cả nhà cung cấp</option>
+                @foreach (var sup in Model.Suppliers)
+                {
+                    <option value="@sup.SupplierId" selected="@(Model.SelectedSupplierId == sup.SupplierId)">@sup.SupplierName</option>
+                }
+            </select>
+            
+            </div>
 
-        <select class="filter-select" id="statusFilter">
-            <option value="all">Trạng thái</option>
-            <option value="done">Hoàn tất</option>
-            <option value="debt">Nợ NCC</option>
-        </select>
-    </div>
+        <div class="d-flex align-items-center gap-3">
+            <button type="button" class="btn btn-light rounded-circle" style="width: 35px; height: 35px; padding: 0;"><i class="fa-solid fa-download text-muted"></i></button>
+            
+            @{
+                int startEntry = Model.TotalCount == 0 ? 0 : (Model.CurrentPage - 1) * 10 + 1;
+                int endEntry = Math.Min(Model.CurrentPage * 10, Model.TotalCount);
+            }
+            <div class="page-info">Hiển thị @startEntry-@endEntry / @Model.TotalCount</div>
+            
+            <div class="d-flex gap-1">
+                @if (Model.CurrentPage > 1)
+                {
+                    <button type="submit" name="page" value="@(Model.CurrentPage - 1)" class="btn btn-sm btn-light border-0"><i class="fa-solid fa-chevron-left"></i></button>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-sm btn-light border-0" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                }
 
-    <div class="d-flex align-items-center gap-3">
-        <button class="btn btn-light rounded-circle" style="width: 35px; height: 35px; padding: 0;"><i class="fa-solid fa-download text-muted"></i></button>
-        <div class="page-info">Hiển thị 1-10 / 42</div>
-        <div class="d-flex gap-1">
-            <button class="btn btn-sm btn-light border-0"><i class="fa-solid fa-chevron-left"></i></button>
-            <button class="btn btn-sm btn-light border-0"><i class="fa-solid fa-chevron-right"></i></button>
+                @if (Model.CurrentPage < Model.TotalPages)
+                {
+                    <button type="submit" name="page" value="@(Model.CurrentPage + 1)" class="btn btn-sm btn-light border-0"><i class="fa-solid fa-chevron-right"></i></button>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-sm btn-light border-0" disabled><i class="fa-solid fa-chevron-right"></i></button>
+                }
+            </div>
         </div>
     </div>
-</div>
+</form>
 
 <div class="table-container table-responsive">
     <table class="table table-history mb-0 table-hover">
@@ -283,86 +305,45 @@
                 <th width="5%">HÀNH ĐỘNG</th>
             </tr>
         </thead>
-        <tbody id="historyTableBody">
-            <tr data-status="done">
-                <td class="text-muted">#NK-1042</td>
-                <td>
-                    <div>24/10/2023</div>
-                    <div class="text-muted" style="font-size: 0.8rem;">14:30</div>
-                </td>
-                <td class="fw-semibold">
-                    <span class="supplier-avatar" style="background-color: #f48fb1;">HB</span> Heineken Beverage VN
-                </td>
-                <td class="text-end fw-bold text-dark">45,000,000</td>
-                <td class="text-center">
-                    <span class="badge-status status-done">Hoàn tất</span>
-                </td>
-                <td class="text-center"></td>
-            </tr>
+        <tbody>
+            @if (Model.PurchaseOrders.Any())
+            {
+                var colors = new[] { "#f48fb1", "#78909c", "#d81b60", "#4db6ac", "#7986cb" }; // Màu avatar ngẫu nhiên
+                
+                foreach (var po in Model.PurchaseOrders)
+                {
+                    var color = colors[po.SupplierId % colors.Length];
+                    var avatarText = !string.IsNullOrEmpty(po.Supplier.SupplierName) 
+                        ? po.Supplier.SupplierName.Substring(0, 2).ToUpper() 
+                        : "NC";
 
-            <tr data-status="done">
-                <td class="text-muted">#NK-1041</td>
-                <td>
-                    <div>22/10/2023</div>
-                    <div class="text-muted" style="font-size: 0.8rem;">09:15</div>
-                </td>
-                <td class="fw-semibold">
-                    <span class="supplier-avatar" style="background-color: #e0e0e0; color: #555;">TP</span> Thực Phẩm Tươi Sống Q1
-                </td>
-                <td class="text-end fw-bold text-dark">12,450,000</td>
-                <td class="text-center">
-                    <span class="badge-status status-done">Hoàn tất</span>
-                </td>
-                <td class="text-center"></td>
-            </tr>
-
-            <tr data-status="debt">
-                <td class="text-muted">#NK-1040</td>
-                <td>
-                    <div>20/10/2023</div>
-                    <div class="text-muted" style="font-size: 0.8rem;">16:45</div>
-                </td>
-                <td class="fw-semibold">
-                    <span class="supplier-avatar" style="background-color: #78909c;">CL</span> Công ty Cổ phần Lavie
-                </td>
-                <td class="text-end fw-bold text-dark">8,200,000</td>
-                <td class="text-center">
-                    <span class="badge-status status-debt">Nợ NCC</span>
-                </td>
-                <td class="text-center"></td>
-            </tr>
-
-            <tr data-status="done">
-                <td class="text-muted">#NK-1039</td>
-                <td>
-                    <div>18/10/2023</div>
-                    <div class="text-muted" style="font-size: 0.8rem;">10:00</div>
-                </td>
-                <td class="fw-semibold">
-                    <span class="supplier-avatar" style="background-color: #d81b60;">SV</span> Suntory PepsiCo VN
-                </td>
-                <td class="text-end fw-bold text-dark">25,800,000</td>
-                <td class="text-center">
-                    <span class="badge-status status-done">Hoàn tất</span>
-                </td>
-                <td class="text-center"></td>
-            </tr>
-
-            <tr data-status="done">
-                <td class="text-muted">#NK-1038</td>
-                <td>
-                    <div>15/10/2023</div>
-                    <div class="text-muted" style="font-size: 0.8rem;">13:20</div>
-                </td>
-                <td class="fw-semibold">
-                    <span class="supplier-avatar" style="background-color: #e0e0e0; color: #555;">TP</span> Thực Phẩm Tươi Sống Q1
-                </td>
-                <td class="text-end fw-bold text-dark">10,150,000</td>
-                <td class="text-center">
-                    <span class="badge-status status-done">Hoàn tất</span>
-                </td>
-                <td class="text-center"></td>
-            </tr>
+                    <tr>
+                        <td class="text-muted">#PO-@po.PoId.ToString("D4")</td>
+                        <td>
+                            <div>@(po.OrderDate?.ToString("dd/MM/yyyy") ?? "N/A")</div>
+                            <div class="text-muted" style="font-size: 0.8rem;">@(po.OrderDate?.ToString("HH:mm") ?? "")</div>
+                        </td>
+                        <td class="fw-semibold">
+                            <span class="supplier-avatar" style="background-color: @color;">@avatarText</span> @po.Supplier.SupplierName
+                        </td>
+                        <td class="text-end fw-bold text-dark">@(po.TotalAmount?.ToString("N0") ?? "0")</td>
+                        <td class="text-center">
+                            <span class="badge-status status-done">Hoàn tất</span>
+                        </td>
+                        <td class="text-center">
+    <a href="/Manager/ImportHistoryDetail/@po.PoId" class="btn btn-sm btn-light" title="Xem chi tiết">
+        <i class="fa-regular fa-eye"></i>
+    </a>
+</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">Không tìm thấy phiếu nhập nào.</td>
+                </tr>
+            }
         </tbody>
     </table>
 </div>
