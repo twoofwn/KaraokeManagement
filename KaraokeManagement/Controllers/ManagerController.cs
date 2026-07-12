@@ -1,4 +1,4 @@
-﻿using KaraokeManagement.Models;
+using KaraokeManagement.Models;
 using KaraokeManagement.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -165,9 +165,125 @@ namespace KaraokeManagement.Controllers
                 return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
             }
         }
-        public IActionResult Inventory()
+
+        public async Task<IActionResult> Inventory()
         {
-            return View();
+            var items = await _context.ServiceItems
+                .Include(s => s.Category)
+                .ToListAsync();
+
+            var latestImportPrices = await _context.PurchaseOrderDetails
+                .Include(pod => pod.Po)
+                .GroupBy(pod => pod.ServiceId)
+                .Select(g => new
+                {
+                    ServiceId = g.Key,
+                    LatestPrice = g.OrderByDescending(pod => pod.Po.OrderDate).Select(pod => pod.ImportPrice).FirstOrDefault()
+                })
+                .ToDictionaryAsync(x => x.ServiceId, x => x.LatestPrice);
+
+            var vmItems = items.Select(item => {
+                decimal importPrice = latestImportPrices.TryGetValue(item.ServiceId, out var price) ? price : 0;
+                string status = "In Stock";
+                if ((item.StockQuantity ?? 0) <= 0) status = "Out of Stock";
+                else if ((item.StockQuantity ?? 0) <= 10) status = "Low Stock";
+
+                return new InventoryItemViewModel
+                {
+                    ServiceId = item.ServiceId,
+                    ServiceName = item.ServiceName,
+                    CategoryName = item.Category.CategoryName,
+                    SellingPrice = item.SellingPrice,
+                    Unit = item.Unit,
+                    StockQuantity = item.StockQuantity ?? 0,
+                    ImportPrice = importPrice,
+                    Status = status
+                };
+            }).ToList();
+
+            decimal totalValue = vmItems.Sum(x => x.StockQuantity * x.ImportPrice);
+            int lowStockCount = vmItems.Count(x => x.Status == "Low Stock");
+            int activeCategoriesCount = await _context.Categories.CountAsync();
+            var categories = await _context.Categories.ToListAsync();
+
+            var viewModel = new InventoryViewModel
+            {
+                Items = vmItems,
+                TotalValue = totalValue,
+                LowStockCount = lowStockCount,
+                ActiveCategoriesCount = activeCategoriesCount,
+                Categories = categories
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddInventoryItem(string serviceName, int categoryId, decimal sellingPrice, string unit, int stockQuantity, decimal importPrice)
+        {
+            if (string.IsNullOrWhiteSpace(serviceName))
+            {
+                return Json(new { success = false, message = "Tên sản phẩm không được để trống." });
+            }
+            if (sellingPrice < 0)
+            {
+                return Json(new { success = false, message = "Giá bán không được nhỏ hơn 0." });
+            }
+            if (stockQuantity < 0)
+            {
+                return Json(new { success = false, message = "Số lượng tồn kho không được nhỏ hơn 0." });
+            }
+            if (importPrice < 0)
+            {
+                return Json(new { success = false, message = "Giá nhập không được nhỏ hơn 0." });
+            }
+
+            bool exists = await _context.ServiceItems.AnyAsync(s => s.ServiceName.ToLower() == serviceName.ToLower() && s.CategoryId == categoryId);
+            if (exists)
+            {
+                return Json(new { success = false, message = "Sản phẩm này đã tồn tại trong danh mục này." });
+            }
+
+            var newItem = new ServiceItem
+            {
+                ServiceName = serviceName,
+                CategoryId = categoryId,
+                SellingPrice = sellingPrice,
+                Unit = unit,
+                StockQuantity = stockQuantity
+            };
+
+            _context.ServiceItems.Add(newItem);
+            await _context.SaveChangesAsync();
+
+            // If initial stock and import price are provided, create a PurchaseOrder record
+            if (stockQuantity > 0 && importPrice > 0)
+            {
+                var defaultSupplier = await _context.Suppliers.FirstOrDefaultAsync();
+                int supplierId = defaultSupplier?.SupplierId ?? 1;
+
+                var po = new PurchaseOrder
+                {
+                    SupplierId = supplierId,
+                    CreatedById = 2, // Hung Manager
+                    OrderDate = DateTime.Now,
+                    TotalAmount = stockQuantity * importPrice
+                };
+                _context.PurchaseOrders.Add(po);
+                await _context.SaveChangesAsync();
+
+                var pod = new PurchaseOrderDetail
+                {
+                    PoId = po.PoId,
+                    ServiceId = newItem.ServiceId,
+                    ImportPrice = importPrice,
+                    Quantity = stockQuantity
+                };
+                _context.PurchaseOrderDetails.Add(pod);
+                await _context.SaveChangesAsync();
+            }
+
+            return Json(new { success = true, message = "Thêm hàng mới thành công!" });
         }
 
         [HttpGet]

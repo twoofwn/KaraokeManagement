@@ -1,4 +1,4 @@
-namespace KaraokeManagement.Models
+namespace KaraokeManagement.ViewModel
 {
     public class ErrorViewModel
     {

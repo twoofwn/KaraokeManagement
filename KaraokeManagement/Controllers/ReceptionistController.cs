@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using KaraokeManagement.Models;
+using KaraokeManagement.ViewModel;
 
 namespace KaraokeManagement.Controllers
 {

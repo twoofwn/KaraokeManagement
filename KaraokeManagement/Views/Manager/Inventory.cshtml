@@ -1,4 +1,5 @@
-﻿@{
+@model KaraokeManagement.ViewModel.InventoryViewModel
+@{
     Layout = "~/Views/Manager/_ManagerLayout.cshtml";
     ViewData["Title"] = "Quản lý hàng hóa";
     ViewData["ActiveNav"] = "inventory";
@@ -55,7 +56,7 @@
     }
 
     .stat-card-value {
-        font-size: 2rem;
+        font-size: 1.8rem;
         font-weight: 700;
         color: #212529;
         margin-bottom: 0.2rem;
@@ -137,6 +138,11 @@
         color: #991b1b;
     }
 
+    .badge-outofstock {
+        background-color: #e9ecef;
+        color: #495057;
+    }
+
     .badge-count {
         background-color: #e9ecef;
         color: #495057;
@@ -200,9 +206,9 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="fw-bold mb-1">Quản lý hàng hóa</h1>
-        <p class="text-muted mb-0">Real-time inventory control and pricing management.</p>
+        <p class="text-muted mb-0">Kiểm soát tồn kho và quản lý giá bán thời gian thực.</p>
     </div>
-    <button class="btn btn-pink">
+    <button class="btn btn-pink" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
         <i class="fa-solid fa-circle-plus me-2"></i> Thêm hàng mới
     </button>
 </div>
@@ -211,36 +217,36 @@
     <div class="col-md-4">
         <div class="stat-card">
             <div class="stat-card-title">
-                Total Value
+                Tổng Giá Trị Tồn Kho
                 <i class="fa-solid fa-wallet"></i>
             </div>
-            <div class="stat-card-value">45.2M ₫</div>
-            <div class="stat-card-sub text-success">
-                <i class="fa-solid fa-arrow-trend-up me-1"></i> +2.4% this week
+            <div class="stat-card-value">@(Model.TotalValue.ToString("N0")) ₫</div>
+            <div class="stat-card-sub text-muted">
+                Dựa trên giá nhập gần nhất của sản phẩm
             </div>
         </div>
     </div>
     <div class="col-md-4">
         <div class="stat-card">
             <div class="stat-card-title">
-                Low Stock Items
+                Sản Phẩm Sắp Hết Hàng
                 <i class="fa-solid fa-triangle-exclamation text-danger"></i>
             </div>
-            <div class="stat-card-value">12</div>
+            <div class="stat-card-value">@Model.LowStockCount</div>
             <div class="stat-card-sub text-muted">
-                Requires immediate attention
+                Số lượng tồn kho dưới mức tối thiểu (10)
             </div>
         </div>
     </div>
     <div class="col-md-4">
         <div class="stat-card">
             <div class="stat-card-title">
-                Active Categories
+                Số Danh Mục Hoạt Động
                 <i class="fa-solid fa-shapes"></i>
             </div>
-            <div class="stat-card-value">8</div>
+            <div class="stat-card-value">@Model.ActiveCategoriesCount</div>
             <div class="stat-card-sub text-muted">
-                Beverages, Snacks, Alcohol...
+                Bia, Nước ngọt, Trái cây, Đồ ăn...
             </div>
         </div>
     </div>
@@ -249,20 +255,21 @@
 <div class="main-card">
     <div class="p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div class="d-flex align-items-center gap-2">
-            <h5 class="fw-bold mb-0">Current Stock List</h5>
-            <span class="badge-count">248 Items</span>
+            <h5 class="fw-bold mb-0">Danh sách hàng hóa</h5>
+            <span class="badge-count">@Model.Items.Count Mặt hàng</span>
         </div>
         
         <div class="d-flex gap-2">
             <div class="filter-input-wrapper">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="searchInput" class="form-control" placeholder="Filter items..." />
+                <input type="text" id="searchInput" class="form-control" placeholder="Tìm sản phẩm..." />
             </div>
-            <select class="form-select filter-select" style="width: auto;">
-                <option selected><i class="fa-solid fa-filter"></i> All Categories</option>
-                <option value="1">Alcohol</option>
-                <option value="2">Beverages</option>
-                <option value="3">Snacks</option>
+            <select class="form-select filter-select" id="categoryFilter" style="width: auto;">
+                <option value="all" selected>Tất cả danh mục</option>
+                @foreach (var cat in Model.Categories)
+                {
+                    <option value="@cat.CategoryName">@cat.CategoryName</option>
+                }
             </select>
         </div>
     </div>
@@ -275,137 +282,124 @@
                         <input class="form-check-input" type="checkbox" id="checkAll">
                     </th>
                     <th width="32%">Tên hàng & Phân loại</th>
-                    <th width="12%">Giá nhập</th>
-                    <th width="12%">Giá bán</th>
-                    <th width="15%">Tồn kho</th>
-                    <th width="15%">Trạng thái</th>
+                    <th width="15%">Giá nhập</th>
+                    <th width="15%">Giá bán</th>
+                    <th width="12%">Tồn kho</th>
+                    <th width="12%">Trạng thái</th>
                     <th width="10%">Thao tác</th>
                 </tr>
             </thead>
             <tbody id="inventoryTable">
-                <tr>
-                    <td class="text-center"><input class="form-check-input row-checkbox" type="checkbox"></td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <div class="product-icon-box">
-                                <i class="fa-solid fa-beer-mug-empty"></i>
-                            </div>
-                            <div>
-                                <div class="fw-bold text-dark">Bia Tiger Nâu (Chai)</div>
-                                <div class="text-muted" style="font-size: 0.75rem; font-weight: normal;">
-                                    <i class="fa-solid fa-circle text-pink" style="font-size: 0.3rem; vertical-align: middle;"></i> Alcohol / Beer
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>15,000 ₫</td>
-                    <td class="text-pink fw-bold">25,000 ₫</td>
-                    <td>
-                        <div class="fw-bold">120</div>
-                        <div class="text-muted" style="font-size: 0.7rem; font-weight: normal;">/ 500 max</div>
-                    </td>
-                    <td><span class="badge-status badge-instock">In Stock</span></td>
-                    <td>
+                @foreach (var item in Model.Items)
+                {
+                    var rowClass = item.Status == "Low Stock" ? "row-warning" : "";
+                    var badgeClass = item.Status == "In Stock" ? "badge-instock" : (item.Status == "Low Stock" ? "badge-lowstock" : "badge-outofstock");
+                    
+                    var iconClass = "fa-solid fa-box";
+                    var catNameLower = item.CategoryName.ToLower();
+                    if (catNameLower.Contains("bia")) iconClass = "fa-solid fa-beer-mug-empty";
+                    else if (catNameLower.Contains("rượu")) iconClass = "fa-solid fa-wine-bottle";
+                    else if (catNameLower.Contains("nước") || catNameLower.Contains("khát")) iconClass = "fa-solid fa-droplet";
+                    else if (catNameLower.Contains("ăn") || catNameLower.Contains("snack")) iconClass = "fa-solid fa-cookie";
+                    else if (catNameLower.Contains("trái cây")) iconClass = "fa-solid fa-apple-whole";
+                    else if (catNameLower.Contains("combo")) iconClass = "fa-solid fa-gift";
+
+                    <tr class="@rowClass" data-category="@item.CategoryName">
+                        <td class="text-center">
+                            <input class="form-check-input row-checkbox" type="checkbox">
                         </td>
-                </tr>
-
-                <tr>
-                    <td class="text-center"><input class="form-check-input row-checkbox" type="checkbox"></td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <div class="product-icon-box">
-                                <i class="fa-solid fa-droplet"></i>
-                            </div>
-                            <div>
-                                <div class="fw-bold text-dark">Nước suối Aquafina 500ml</div>
-                                <div class="text-muted" style="font-size: 0.75rem; font-weight: normal;">
-                                    <i class="fa-solid fa-circle text-secondary" style="font-size: 0.3rem; vertical-align: middle;"></i> Beverages / Water
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="product-icon-box @(item.Status == "Low Stock" ? "pink-tint" : "")">
+                                    <i class="@iconClass"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark">@item.ServiceName</div>
+                                    <div class="text-muted" style="font-size: 0.75rem; font-weight: normal;">
+                                        <i class="fa-solid fa-circle text-pink" style="font-size: 0.3rem; vertical-align: middle;"></i> @item.CategoryName
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </td>
-                    <td>5,000 ₫</td>
-                    <td class="text-pink fw-bold">15,000 ₫</td>
-                    <td>
-                        <div class="fw-bold">350</div>
-                        <div class="text-muted" style="font-size: 0.7rem; font-weight: normal;">/ 500 max</div>
-                    </td>
-                    <td><span class="badge-status badge-instock">In Stock</span></td>
-                    <td></td>
-                </tr>
-
-                <tr class="row-warning">
-                    <td class="text-center"><input class="form-check-input row-checkbox" type="checkbox"></td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <div class="product-icon-box pink-tint">
-                                <i class="fa-solid fa-wine-glass"></i>
-                            </div>
-                            <div>
-                                <div class="fw-bold text-dark">Snack Khoai Tây O'Star</div>
-                                <div class="text-muted" style="font-size: 0.75rem; font-weight: normal;">
-                                    <i class="fa-solid fa-circle text-pink" style="font-size: 0.3rem; vertical-align: middle;"></i> Snacks / Chips
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>12,000 ₫</td>
-                    <td class="text-pink fw-bold">25,000 ₫</td>
-                    <td>
-                        <div class="fw-bold text-danger">5</div>
-                        <div class="text-muted" style="font-size: 0.7rem; font-weight: normal; color: #dc3545 !important;">Critical</div>
-                    </td>
-                    <td><span class="badge-status badge-lowstock">Low Stock</span></td>
-                    <td></td>
-                </tr>
-
-                <tr>
-                    <td class="text-center"><input class="form-check-input row-checkbox" type="checkbox"></td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <div class="product-icon-box">
-                                <i class="fa-solid fa-wine-bottle"></i>
-                            </div>
-                            <div>
-                                <div class="fw-bold text-dark">Chivas Regal 18 (Bottle)</div>
-                                <div class="text-muted" style="font-size: 0.75rem; font-weight: normal;">
-                                    <i class="fa-solid fa-circle text-secondary" style="font-size: 0.3rem; vertical-align: middle;"></i> Premium Alcohol
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>1,200,000 ₫</td>
-                    <td class="text-pink fw-bold">2,500,000 ₫</td>
-                    <td>
-                        <div class="fw-bold">15</div>
-                        <div class="text-muted" style="font-size: 0.7rem; font-weight: normal;">/ 20 max</div>
-                    </td>
-                    <td><span class="badge-status badge-instock">In Stock</span></td>
-                    <td></td>
-                </tr>
+                        </td>
+                        <td>@(item.ImportPrice > 0 ? $"{item.ImportPrice.ToString("N0")} ₫" : "0 ₫")</td>
+                        <td class="text-pink fw-bold">@(item.SellingPrice.ToString("N0")) ₫</td>
+                        <td>
+                            <div class="fw-bold @(item.Status == "Low Stock" ? "text-danger" : (item.Status == "Out of Stock" ? "text-muted" : ""))">@item.StockQuantity</div>
+                            <div class="text-muted" style="font-size: 0.7rem; font-weight: normal;">/ @(item.Unit ?? "Đơn vị")</div>
+                        </td>
+                        <td><span class="badge-status @badgeClass">@(item.Status == "In Stock" ? "Còn hàng" : (item.Status == "Low Stock" ? "Sắp hết" : "Hết hàng"))</span></td>
+                        <td>
+                            <!-- Thao tác bổ sung nếu có -->
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>
 
     <div class="p-3 border-top d-flex justify-content-between align-items-center flex-wrap">
         <div class="text-muted" style="font-size: 0.85rem;">
-            Showing <span id="showingCount">1 to 4</span> of 248 items
+            Hiển thị <span id="showingCount">1 to @Model.Items.Count</span> trong tổng số @Model.Items.Count mặt hàng
         </div>
-        <nav aria-label="Page navigation">
-            <ul class="pagination pagination-custom mb-0">
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true"><i class="fa-solid fa-chevron-left me-1" style="font-size: 0.7rem"></i> Prev</a>
-                </li>
-                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
-                <li class="page-item"><a class="page-link" href="#">25</a></li>
-                <li class="page-item">
-                    <a class="page-link" href="#">Next <i class="fa-solid fa-chevron-right ms-1" style="font-size: 0.7rem"></i></a>
-                </li>
-            </ul>
-        </nav>
+    </div>
+</div>
+
+<!-- Modal Thêm hàng mới -->
+<div class="modal fade" id="addInventoryModal" tabindex="-1" aria-labelledby="addInventoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-pink text-white border-0" style="background-color: var(--brand-pink);">
+                <h5 class="modal-title fw-bold" id="addInventoryModalLabel" style="color: white;">
+                    <i class="fa-solid fa-circle-plus me-2"></i> Thêm hàng mới
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="addInventoryForm">
+                    <div class="mb-3">
+                        <label for="newServiceName" class="form-label fw-semibold">Tên hàng hóa <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control border-secondary-subtle" id="newServiceName" required placeholder="Nhập tên sản phẩm..." />
+                    </div>
+                    <div class="mb-3">
+                        <label for="newCategoryId" class="form-label fw-semibold">Danh mục <span class="text-danger">*</span></label>
+                        <select class="form-select border-secondary-subtle" id="newCategoryId" required>
+                            <option value="" disabled selected>-- Chọn danh mục --</option>
+                            @foreach (var cat in Model.Categories)
+                            {
+                                <option value="@cat.CategoryId">@cat.CategoryName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="newUnit" class="form-label fw-semibold">Đơn vị tính</label>
+                            <input type="text" class="form-control border-secondary-subtle" id="newUnit" placeholder="Ví dụ: Lon, Chai, Đĩa..." />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="newSellingPrice" class="form-label fw-semibold">Giá bán (VNĐ) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control border-secondary-subtle" id="newSellingPrice" min="0" required placeholder="Giá bán lẻ..." />
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="newStockQuantity" class="form-label fw-semibold">Tồn kho ban đầu</label>
+                            <input type="number" class="form-control border-secondary-subtle" id="newStockQuantity" min="0" value="0" />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="newImportPrice" class="form-label fw-semibold">Giá nhập ban đầu (VNĐ)</label>
+                            <input type="number" class="form-control border-secondary-subtle" id="newImportPrice" min="0" value="0" placeholder="Giá nhập kho..." />
+                        </div>
+                    </div>
+                    <div id="addErrorMsg" class="alert alert-danger d-none py-2" role="alert"></div>
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="button" class="btn btn-light border px-4" data-bs-dismiss="modal">Hủy bỏ</button>
+                        <button type="submit" class="btn btn-pink px-4">
+                            <i class="fa-solid fa-floppy-disk me-2"></i> Lưu sản phẩm
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -416,35 +410,45 @@
             const checkAll = document.getElementById('checkAll');
             const rowCheckboxes = document.querySelectorAll('.row-checkbox');
 
-            checkAll.addEventListener('change', function() {
-                rowCheckboxes.forEach(checkbox => {
-                    checkbox.checked = checkAll.checked;
+            if (checkAll) {
+                checkAll.addEventListener('change', function() {
+                    rowCheckboxes.forEach(checkbox => {
+                        checkbox.checked = checkAll.checked;
+                    });
                 });
-            });
+            }
 
             rowCheckboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
                     const allChecked = Array.from(rowCheckboxes).every(c => c.checked);
                     const someChecked = Array.from(rowCheckboxes).some(c => c.checked);
-                    checkAll.checked = allChecked;
-                    checkAll.indeterminate = !allChecked && someChecked;
+                    if (checkAll) {
+                        checkAll.checked = allChecked;
+                        checkAll.indeterminate = !allChecked && someChecked;
+                    }
                 });
             });
 
-            // 2. Chức năng Live Search (Vanilla JS)
+            // 2. Chức năng Live Search & Lọc theo Danh mục
             const searchInput = document.getElementById('searchInput');
+            const categoryFilter = document.getElementById('categoryFilter');
             const tableRows = document.querySelectorAll('#inventoryTable tr');
             const showingCountText = document.getElementById('showingCount');
+            const totalCount = @Model.Items.Count;
 
-            searchInput.addEventListener('input', function(e) {
-                const searchTerm = e.target.value.toLowerCase();
+            function filterTable() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                const selectedCategory = categoryFilter.value;
                 let visibleCount = 0;
 
                 tableRows.forEach(row => {
-                    // Lấy text của cả dòng (tên, danh mục, trạng thái...)
                     const rowText = row.textContent.toLowerCase();
+                    const rowCategory = row.getAttribute('data-category');
                     
-                    if(rowText.includes(searchTerm)) {
+                    const matchesSearch = rowText.includes(searchTerm);
+                    const matchesCategory = selectedCategory === 'all' || rowCategory === selectedCategory;
+
+                    if (matchesSearch && matchesCategory) {
                         row.style.display = '';
                         visibleCount++;
                     } else {
@@ -452,13 +456,60 @@
                     }
                 });
 
-                // Cập nhật text showing ở footer (demo logic nhỏ)
-                if(searchTerm.trim() !== '') {
+                if (showingCountText) {
                     showingCountText.innerText = `1 to ${visibleCount}`;
-                } else {
-                    showingCountText.innerText = `1 to 4`;
                 }
-            });
+            }
+
+            if (searchInput) searchInput.addEventListener('input', filterTable);
+            if (categoryFilter) categoryFilter.addEventListener('change', filterTable);
+
+            // 3. Chức năng Thêm hàng mới qua AJAX
+            const addForm = document.getElementById('addInventoryForm');
+            const errorMsg = document.getElementById('addErrorMsg');
+
+            if (addForm) {
+                addForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    errorMsg.classList.add('d-none');
+                    errorMsg.innerText = '';
+
+                    const serviceName = document.getElementById('newServiceName').value;
+                    const categoryId = parseInt(document.getElementById('newCategoryId').value);
+                    const unit = document.getElementById('newUnit').value;
+                    const sellingPrice = parseFloat(document.getElementById('newSellingPrice').value);
+                    const stockQuantity = parseInt(document.getElementById('newStockQuantity').value) || 0;
+                    const importPrice = parseFloat(document.getElementById('newImportPrice').value) || 0;
+
+                    const formData = new FormData();
+                    formData.append('serviceName', serviceName);
+                    formData.append('categoryId', categoryId);
+                    formData.append('unit', unit);
+                    formData.append('sellingPrice', sellingPrice);
+                    formData.append('stockQuantity', stockQuantity);
+                    formData.append('importPrice', importPrice);
+
+                    fetch('/Manager/AddInventoryItem', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                            location.reload(); // Reload page to show new item
+                        } else {
+                            errorMsg.innerText = data.message;
+                            errorMsg.classList.remove('d-none');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        errorMsg.innerText = 'Đã xảy ra lỗi kết nối. Vui lòng thử lại.';
+                        errorMsg.classList.remove('d-none');
+                    });
+                });
+            }
         });
     </script>
 }

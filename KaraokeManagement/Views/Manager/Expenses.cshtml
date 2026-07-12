@@ -1,4 +1,4 @@
-@model KaraokeManagement.Models.ExpensesViewModel
+@model KaraokeManagement.ViewModel.ExpensesViewModel
 
 @{
     Layout = "~/Views/Manager/_ManagerLayout.cshtml";
@@ -291,9 +291,9 @@
                                 <tr>
                                     <td>@exp.ExpenseDate.ToString("dd/MM/yyyy")</td>
                                     <td>
-                                        <span class="badge-cat @KaraokeManagement.Models.ExpensesViewModel.GetCategoryBadgeClass(exp.Category)">
-                                            <i class="@KaraokeManagement.Models.ExpensesViewModel.GetCategoryIconClass(exp.Category)"></i> 
-                                            @KaraokeManagement.Models.ExpensesViewModel.GetCategoryDisplayName(exp.Category)
+                                        <span class="badge-cat @ExpensesViewModel.GetCategoryBadgeClass(exp.Category)">
+                                            <i class="@ExpensesViewModel.GetCategoryIconClass(exp.Category)"></i> 
+                                            @ExpensesViewModel.GetCategoryDisplayName(exp.Category)
                                         </span>
                                     </td>
                                     <td class="text-muted">@exp.Note</td>
