@@ -1,4 +1,4 @@
-@model KaraokeManagement.Models.CheckoutViewModel
+@model KaraokeManagement.ViewModel.CheckoutViewModel
 @{
     Layout = null;
 }
@@ -9,7 +9,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Thanh toán - @Model.RoomName</title>
     
-    <!-- CSS Dependencies -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/receptionist.css" asp-append-version="true" />
@@ -17,12 +16,9 @@
     
 </head>
 <body>
-    <!-- Fixed Sidebar on the Left -->
     <partial name="_ReceptionistSidebar" />
 
-    <!-- Main Content Area on the Right -->
     <div class="reception-main">
-        <!-- Header Section -->
         <header class="reception-header">
             <div class="header-title-wrapper" style="margin-left: 0;">
                 <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-dark);">Thanh toán hóa đơn</h1>
@@ -38,16 +34,13 @@
             </div>
         </header>
 
-        <!-- Content Area -->
         <main class="reception-content" style="padding-top: 10px; overflow-y: auto; height: calc(100vh - 80px);">
             <div class="checkout-container">
-                <!-- Header Section -->
                 <header class="checkout-header">
                     <h1 class="checkout-title">Thanh toán & Xuất hóa đơn</h1>
                     <p class="checkout-subtitle">@Model.RoomName - @Model.RoomTypeName</p>
                 </header>
 
-                <!-- Main Form Wrapper -->
                 <form id="checkoutForm" method="post" action="/Receptionist/Checkout">
             @Html.AntiForgeryToken()
             <input type="hidden" name="InvoiceId" value="@Model.InvoiceId" />
@@ -62,10 +55,8 @@
 
             <div class="checkout-grid">
                 
-                <!-- COLUMN LEFT: Invoice Breakdown (60%) -->
                 <div class="checkout-left-col">
                     
-                    <!-- Time Boxes -->
                     <div class="time-grid">
                         <div class="time-box">
                             <div class="time-icon">
@@ -87,7 +78,6 @@
                         </div>
                     </div>
 
-                    <!-- Invoice Detail Table Card -->
                     <div class="checkout-card" style="padding: 0; overflow: hidden;">
                         <div class="invoice-detail-title-bar">
                             <span class="invoice-detail-title"><i class="fa-solid fa-receipt" style="margin-right: 8px;"></i>Chi tiết hóa đơn #@Model.InvoiceId</span>
@@ -104,7 +94,6 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Section 1: Tiền phòng -->
                                 <tr>
                                     <td colspan="4" class="invoice-section-header">Tiền phòng</td>
                                 </tr>
@@ -118,7 +107,6 @@
                                     <td class="item-total">@(Model.RoomTotal.ToString("N0"))đ</td>
                                 </tr>
 
-                                <!-- Section 2: Dịch vụ gọi món -->
                                 <tr>
                                     <td colspan="4" class="invoice-section-header">Dịch vụ &amp; Đồ uống</td>
                                 </tr>
@@ -150,7 +138,6 @@
                         </table>
                     </div>
 
-                    <!-- Membership Card Information -->
                     <div class="membership-tier-card">
                         <div class="membership-tier-info">
                             <i class="fa-solid fa-id-card membership-tier-icon"></i>
@@ -168,7 +155,6 @@
                         </div>
                     </div>
 
-                    <!-- Totals breakdown -->
                     <div class="totals-card">
                         <div class="totals-area">
                             <div class="totals-row">
@@ -193,12 +179,10 @@
 
                 </div>
 
-                <!-- COLUMN RIGHT: Payment Methods (40%) -->
                 <div class="checkout-right-col">
                     <div class="checkout-card payment-card">
                         <h2 class="payment-title">Thanh toán</h2>
                         
-                        <!-- Toggle Buttons -->
                         <div class="payment-toggle-container">
                             <button type="button" class="payment-toggle-btn active" id="btnTabCash">
                                 <i class="fa-solid fa-money-bill-wave"></i>
@@ -210,7 +194,6 @@
                             </button>
                         </div>
 
-                        <!-- Cash Panel -->
                         <div class="payment-panel show" id="panelCash">
                             <div class="form-group" style="margin-bottom: 15px;">
                                 <label class="form-label" style="font-weight: 700;">Số tiền khách đưa (VNĐ)</label>
@@ -220,14 +203,12 @@
                                 </div>
                             </div>
                             
-                            <!-- Dynamic Change Due -->
                             <div class="change-display-box">
                                 <span class="change-label">Tiền thừa trả khách</span>
                                 <span class="change-amount" id="changeOutput">0đ</span>
                             </div>
                         </div>
 
-                        <!-- QR code scan panel -->
                         <div class="payment-panel" id="panelQR">
                             <div class="qr-container">
                                 <div class="qr-image-wrapper">
@@ -236,7 +217,6 @@
                             </div>
                         </div>
 
-                        <!-- Submit Buttons -->
                         <div style="margin-top: 30px;">
                             <button type="submit" class="btn-action-full btn-pay-submit">
                                 <i class="fa-solid fa-file-invoice-dollar"></i> Xác nhận &amp; In hóa đơn
@@ -255,14 +235,11 @@
         </main>
     </div>
 
-    <!-- Script Logic -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Context variables
             const grandTotal = @Model.GrandTotal;
             const roomName = "@Model.RoomName";
             
-            // Elements
             const btnTabCash = document.getElementById('btnTabCash');
             const btnTabQR = document.getElementById('btnTabQR');
             const panelCash = document.getElementById('panelCash');
@@ -272,7 +249,6 @@
             const changeOutput = document.getElementById('changeOutput');
             const vietqrImage = document.getElementById('vietqrImage');
 
-            // 1. Setup payment tab toggles
             btnTabCash.addEventListener('click', () => {
                 btnTabQR.classList.remove('active');
                 btnTabCash.classList.add('active');
@@ -286,28 +262,23 @@
                 panelCash.classList.remove('show');
                 panelQR.classList.add('show');
                 
-                // Initialize/Render VietQR Image url dynamically
                 generateVietQRUrl();
             });
 
-            // 2. Real-time cash change calculator
             cashInput.addEventListener('input', () => {
-                // Clear out non-numeric characters for typing convenience
                 let rawVal = cashInput.value.replace(/[^0-9]/g, '');
                 
                 if (rawVal) {
                     let numericVal = parseInt(rawVal);
-                    // Set formatted value back to input
                     cashInput.value = formatCurrencyInput(numericVal);
                     
-                    // Calculation
                     let change = numericVal - grandTotal;
                     if (change >= 0) {
                         changeOutput.textContent = formatCurrencyText(change) + 'đ';
-                        changeOutput.style.color = '#22C55E'; // Green if enough or surplus
+                        changeOutput.style.color = '#22C55E';
                     } else {
                         changeOutput.textContent = '-' + formatCurrencyText(Math.abs(change)) + 'đ (Thiếu)';
-                        changeOutput.style.color = '#DC2626'; // Red if lacking
+                        changeOutput.style.color = '#DC2626';
                     }
                 } else {
                     changeOutput.textContent = '0đ';
@@ -315,23 +286,19 @@
                 }
             });
 
-            // Helper to format text representation of currency
             function formatCurrencyText(val) {
                 return new Intl.NumberFormat('vi-VN').format(val);
             }
 
-            // Helper to format currency inside inputs (adding dots/commas as user types)
             function formatCurrencyInput(val) {
                 return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
             }
 
-            // 3. VietQR dynamic generation helper
             function generateVietQRUrl() {
                 const amount = grandTotal;
                 const description = `Minh Tuan KTV Thanh toan phong ${roomName}`;
                 const accountName = "Minh Tuan KTV";
                 
-                // VietQR API schema parameters
                 const encodedDesc = encodeURIComponent(description);
                 const encodedName = encodeURIComponent(accountName);
                 
@@ -342,3 +309,4 @@
     </script>
 </body>
 </html>
+

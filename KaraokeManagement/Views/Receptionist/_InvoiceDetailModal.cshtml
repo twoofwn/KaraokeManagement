@@ -1,6 +1,5 @@
-@model KaraokeManagement.Models.CheckoutViewModel
+@model KaraokeManagement.ViewModel.CheckoutViewModel
 
-<!-- Time Boxes -->
 <div class="time-grid">
     <div class="time-box">
         <div class="time-icon">
@@ -22,7 +21,6 @@
     </div>
 </div>
 
-<!-- Invoice Detail Table Card -->
 <div class="checkout-card" style="padding: 0; overflow: hidden; margin-top: 15px; margin-bottom: 15px;">
     <div class="invoice-detail-title-bar">
         <span class="invoice-detail-title"><i class="fa-solid fa-receipt" style="margin-right: 8px;"></i>Chi tiết hóa đơn #@Model.InvoiceId</span>
@@ -39,7 +37,6 @@
             </tr>
         </thead>
         <tbody>
-            <!-- Section 1: Tiền phòng -->
             <tr>
                 <td colspan="4" class="invoice-section-header">Tiền phòng</td>
             </tr>
@@ -53,7 +50,6 @@
                 <td class="item-total">@(Model.RoomTotal.ToString("N0"))đ</td>
             </tr>
 
-            <!-- Section 2: Dịch vụ gọi món -->
             <tr>
                 <td colspan="4" class="invoice-section-header">Dịch vụ &amp; Đồ uống</td>
             </tr>
@@ -85,7 +81,6 @@
     </table>
 </div>
 
-<!-- Membership Card Information -->
 <div class="membership-tier-card" style="margin-top: 15px; margin-bottom: 15px;">
     <div class="membership-tier-info">
         <i class="fa-solid fa-id-card membership-tier-icon"></i>
@@ -103,7 +98,6 @@
     </div>
 </div>
 
-<!-- Totals breakdown -->
 <div class="totals-card" style="margin-top: 15px;">
     <div class="totals-area">
         <div class="totals-row">
@@ -125,3 +119,4 @@
         </div>
     </div>
 </div>
+

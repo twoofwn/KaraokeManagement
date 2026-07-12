@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using KaraokeManagement.Models;
+using KaraokeManagement.Helpers;
 
 namespace KaraokeManagement.Controllers
 {
@@ -21,10 +22,11 @@ namespace KaraokeManagement.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            // If already logged in, redirect to Home
-            if (Request.Cookies.ContainsKey("UserSession") || User.Identity?.IsAuthenticated == true)
+            if (User.Identity?.IsAuthenticated == true)
             {
-                return RedirectToAction("Index", "Admin");
+                if (User.IsInRole("Admin")) return RedirectToAction("Index", "Admin");
+                if (User.IsInRole("Manager")) return RedirectToAction("Index", "Manager");
+                if (User.IsInRole("Receptionist")) return RedirectToAction("Index", "Receptionist");
             }
             return View();
         }
@@ -56,7 +58,20 @@ namespace KaraokeManagement.Controllers
 
             if (account != null)
             {
-                isValidUser = VerifyPassword(model.Password, account.PasswordHash);
+                isValidUser = PasswordHelper.VerifyPassword(model.Password, account.PasswordHash);
+                if (isValidUser && !PasswordHelper.IsBCryptHash(account.PasswordHash))
+                {
+                    try
+                    {
+                        account.PasswordHash = PasswordHelper.HashPassword(model.Password);
+                        _context.Accounts.Update(account);
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Failed to auto-upgrade password hash: {ex.Message}");
+                    }
+                }
             }
             else
             {
@@ -68,8 +83,8 @@ namespace KaraokeManagement.Controllers
 
             if (isValidUser)
             {
-                string username = account?.FullName ?? "Chua ro";
-                string role = account?.Role?.RoleName ?? "Chua ro";
+                string username = account?.FullName ?? "Admin";
+                string role = account?.Role?.RoleName ?? "Admin";
 
                 var claims = new List<Claim>
                     {
@@ -90,6 +105,9 @@ namespace KaraokeManagement.Controllers
 
                 await HttpContext.SignInAsync("CookieAuth", new ClaimsPrincipal(claimsIdentity), authProperties);
 
+                if (role == "Admin") return RedirectToAction("Index", "Admin");
+                if (role == "Manager") return RedirectToAction("Index", "Manager");
+                if (role == "Receptionist") return RedirectToAction("Index", "Receptionist");
 
                 return RedirectToAction("Index", "Admin");
             }
@@ -113,13 +131,15 @@ namespace KaraokeManagement.Controllers
             return RedirectToAction("Login");
         }
 
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+
         private bool VerifyPassword(string inputPassword, string storedPasswordHash)
         {
-            if (inputPassword == storedPasswordHash)
-            {
-                return true;
-            }
-            return false;
+            return PasswordHelper.VerifyPassword(inputPassword, storedPasswordHash);
         }
     }
 

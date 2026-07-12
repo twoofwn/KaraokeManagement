@@ -2,17 +2,17 @@
     var currentPath = Context.Request.Path.Value ?? "";
     var isRoomMapActive = currentPath.Contains("/Receptionist/Index") || currentPath.EndsWith("/Receptionist") || currentPath.EndsWith("/Receptionist/") || currentPath.Contains("/Receptionist/Checkout") || currentPath.Contains("/Receptionist/Detail");
     var isCheckInActive = currentPath.Contains("/Receptionist/CheckIn");
-    var isInvoiceHistoryActive = currentPath.Contains("/InvoiceHistory");
+    var isInvoiceHistoryActive = currentPath.Contains("/Receptionist/InvoiceHistory");
 }
 <aside class="reception-sidebar">
     <div class="sidebar-logo">
-        <div class="logo-main">Minh Tuấn KTV</div>
+        <div class="logo-main">Minh Tuấn Karaoke</div>
         <div class="logo-sub">Reception</div>
     </div>
 
     <ul class="sidebar-menu">
         <li class="menu-item @(isRoomMapActive ? "active" : "")">
-            <a href="/Receptionist">
+            <a href="/Receptionist/Index">
                 <i class="fa-solid fa-shapes"></i>
                 <span>Quản lý phòng</span>
             </a>
@@ -24,7 +24,7 @@
             </a>
         </li>
         <li class="menu-item @(isInvoiceHistoryActive ? "active" : "")">
-            <a href="/InvoiceHistory/Index">
+            <a href="/Receptionist/InvoiceHistory">
                 <i class="fa-solid fa-clock-rotate-left"></i>
                 <span>Lịch sử hóa đơn</span>
             </a>

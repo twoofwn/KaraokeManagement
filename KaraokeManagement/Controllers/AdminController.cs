@@ -1,10 +1,13 @@
 using KaraokeManagement.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using KaraokeManagement.Helpers;
 
 namespace KaraokeManagement.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
         private readonly KaraokeManagementDbContext _context;
@@ -166,7 +169,7 @@ namespace KaraokeManagement.Controllers
             if (string.IsNullOrWhiteSpace(Password))
                 ModelState.AddModelError("Password", "Password is required.");
             if (!ModelState.IsValid) { LoadRoles(); return View("UserForm", model); }
-            model.PasswordHash = HashPassword(Password);
+            model.PasswordHash = PasswordHelper.HashPassword(Password);
             model.CreatedAt = DateTime.Now;
             _context.Accounts.Add(model);
             _context.SaveChanges();
@@ -197,7 +200,7 @@ namespace KaraokeManagement.Controllers
             existing.Phone = model.Phone;
             existing.RoleId = model.RoleId;
             if (!string.IsNullOrWhiteSpace(Password))
-                existing.PasswordHash = HashPassword(Password);
+                existing.PasswordHash = PasswordHelper.HashPassword(Password);
             _context.SaveChanges();
             return RedirectToAction("Users");
         }
@@ -225,11 +228,5 @@ namespace KaraokeManagement.Controllers
             ViewBag.Roles = new SelectList(_context.Roles.ToList(), "RoleId", "RoleName", selectedId);
         }
 
-        private static string HashPassword(string password)
-        {
-            using var sha256 = System.Security.Cryptography.SHA256.Create();
-            var bytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-            return Convert.ToHexString(bytes).ToLower();
-        }
     }
 }

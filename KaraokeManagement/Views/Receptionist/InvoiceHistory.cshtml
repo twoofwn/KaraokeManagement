@@ -1,4 +1,4 @@
-@model KaraokeManagement.Models.InvoiceHistoryViewModel
+@model KaraokeManagement.ViewModel.InvoiceHistoryViewModel
 @{
     Layout = null;
 }
@@ -8,30 +8,24 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lịch sử hóa đơn - Minh Tuấn KTV</title>
+    <title>Lịch sử hóa đơn - Minh Tuấn Karaoke</title>
     
-    <!-- CSS Dependencies -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/receptionist.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/Checkout.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/InvoiceHistory.css" asp-append-version="true" />
 </head>
 <body class="invoice-history-page">
-    <!-- Fixed Sidebar on the Left -->
     <partial name="_ReceptionistSidebar" />
 
-    <!-- Main Content Area on the Right -->
     <div class="reception-main">
-        <form id="historyForm" method="get" action="/InvoiceHistory" style="display: contents;">
-            <!-- Hidden input for pagination page number -->
+        <form id="historyForm" method="get" action="/Receptionist/InvoiceHistory" style="display: contents;">
             <input type="hidden" name="page" id="pageNumberInput" value="@Model.CurrentPage" />
 
-            <!-- Header Section -->
             <header class="reception-header">
                 <div class="header-title-wrapper" style="margin-left: 0; display: flex; align-items: center; gap: 16px; flex-grow: 1;">
                     <h1 class="header-title-text" style="font-size: 1.5rem; font-weight: 800; color: var(--primary-magenta); margin: 0;">Lịch sử hóa đơn</h1>
                     
-                    <!-- Search bar (Tìm kiếm nhanh) -->
                     <div style="position: relative; width: 280px; margin-left: 10px;">
                         <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem;"></i>
                         <input type="text" name="searchString" value="@Model.SearchString" placeholder="Tìm nhanh hóa đơn..." 
@@ -53,35 +47,29 @@
                 </div>
             </header>
 
-            <!-- Main Scrollable Dashboard Viewport -->
             <main class="history-container">
                 
-                <!-- CARD 1: CÔNG CỤ TRA CỨU (Filters) -->
                 <div class="history-card">
                     <h2 class="card-title">
                         <i class="fa-solid fa-magnifying-glass"></i> CÔNG CỤ TRA CỨU
                     </h2>
                     
                     <div class="filter-grid">
-                        <!-- Cột 1: Khách hàng / Số điện thoại -->
                         <div class="filter-input-group">
                             <label>Khách hàng / Số điện thoại</label>
                             <input type="text" name="customerFilter" value="@Model.CustomerFilter" placeholder="Tìm theo tên hoặc SĐT..." class="filter-control" autocomplete="off" />
                         </div>
 
-                        <!-- Cột 2: Từ ngày -->
                         <div class="filter-input-group">
                             <label>Từ ngày</label>
                             <input type="date" name="fromDate" value="@(Model.FromDate?.ToString("yyyy-MM-dd"))" class="filter-control" />
                         </div>
 
-                        <!-- Cột 3: Đến ngày -->
                         <div class="filter-input-group">
                             <label>Đến ngày</label>
                             <input type="date" name="toDate" value="@(Model.ToDate?.ToString("yyyy-MM-dd"))" class="filter-control" />
                         </div>
 
-                        <!-- Cột 4: Trạng thái -->
                         <div class="filter-input-group">
                             <label>Trạng thái</label>
                             <select name="status" class="filter-control">
@@ -92,7 +80,6 @@
                         </div>
                     </div>
 
-                    <!-- Bottom Right buttons -->
                     <div class="filter-actions">
                         <button type="button" class="btn-filter btn-filter-reset" onclick="resetFilters()">
                             <i class="fa-solid fa-rotate-right"></i> Đặt lại
@@ -103,7 +90,6 @@
                     </div>
                 </div>
 
-                <!-- CARD 2: DANH SÁCH GIAO DỊCH (Data Table) -->
                 <div class="history-card">
                     <h2 class="card-title">
                         <i class="fa-solid fa-file-invoice"></i> Danh sách giao dịch
@@ -129,15 +115,12 @@
                                     @foreach (var invoice in Model.Invoices)
                                     {
                                         <tr>
-                                            <!-- Cột 1: Mã hóa đơn -->
                                             <td class="col-invoice-code">#LUM-@invoice.InvoiceId.ToString("D4")</td>
 
-                                            <!-- Cột 2: Tên phòng -->
                                             <td>
                                                 <span class="badge-room">@invoice.RoomName</span>
                                             </td>
 
-                                            <!-- Cột 3: Khách hàng -->
                                             <td>
                                                 <div class="customer-name">@invoice.CustomerName</div>
                                                 @if (!string.IsNullOrEmpty(invoice.CustomerPhone))
@@ -146,10 +129,8 @@
                                                 }
                                             </td>
 
-                                            <!-- Cột 4: Tiếp tân -->
                                             <td class="staff-name">@invoice.ReceptionistName</td>
 
-                                            <!-- Cột 5: Giờ vào/ra -->
                                             <td>
                                                 <div class="time-entry-row">
                                                     <span class="status-dot in"></span>
@@ -161,10 +142,8 @@
                                                 </div>
                                             </td>
 
-                                            <!-- Cột 6: Tổng tiền -->
                                             <td class="total-amount-cell">@invoice.TotalAmount.ToString("N0")đ</td>
 
-                                            <!-- Cột 7: Trạng thái -->
                                             <td>
                                                 @if (invoice.Status == "Paid")
                                                 {
@@ -180,7 +159,6 @@
                                                 }
                                             </td>
 
-                                            <!-- Cột 8: Hành động -->
                                             <td style="text-align: center;">
                                                 <button type="button" class="btn-action-view" onclick="viewInvoiceDetail(@invoice.InvoiceId)" title="Xem chi tiết">
                                                     <i class="fa-solid fa-eye"></i>
@@ -202,12 +180,10 @@
                         </table>
                     </div>
 
-                    <!-- Pagination -->
                     @if (Model.TotalPages > 1)
                     {
                         <div class="pagination-container">
                             <ul class="pagination-list">
-                                <!-- Previous page -->
                                 <li>
                                     <button type="button" class="page-item-link @(Model.CurrentPage == 1 ? "disabled" : "")" 
                                             onclick="submitForm(@(Model.CurrentPage - 1))" aria-label="Previous page">
@@ -225,7 +201,6 @@
                                     </li>
                                 }
                                 
-                                <!-- Next page -->
                                 <li>
                                     <button type="button" class="page-item-link @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")" 
                                             onclick="submitForm(@(Model.CurrentPage + 1))" aria-label="Next page">
@@ -241,7 +216,6 @@
         </form>
     </div>
 
-    <!-- Modal backdrop shell -->
     <div class="modal-backdrop" id="invoiceDetailModal">
         <div class="modal-container">
             <div class="modal-header">
@@ -249,24 +223,19 @@
                 <button type="button" class="modal-close-btn" id="closeModalBtn" aria-label="Close modal">&times;</button>
             </div>
             <div class="modal-body" id="modalContent">
-                <!-- Inner details loaded via AJAX will populate here -->
             </div>
         </div>
     </div>
 
-    <!-- Client-side Scripts -->
     <script>
-        // Form submits with selected page
         function submitForm(page) {
             document.getElementById('pageNumberInput').value = page;
             document.getElementById('historyForm').submit();
         }
 
-        // Reset all search criteria
         function resetFilters() {
             const form = document.getElementById('historyForm');
             
-            // Clear inputs
             const quickSearch = document.getElementById('quickSearchInput');
             if (quickSearch) quickSearch.value = '';
             
@@ -280,13 +249,11 @@
             if (toDate) toDate.value = '';
             
             const status = form.querySelector('select[name="status"]');
-            if (status) status.selectedIndex = 0; // 'All'
+            if (status) status.selectedIndex = 0;
 
-            // Submit resetting to first page
             submitForm(1);
         }
 
-        // AJAX loader for invoice details popup
         function viewInvoiceDetail(invoiceId) {
             const modalContent = document.getElementById('modalContent');
             modalContent.innerHTML = `
@@ -297,7 +264,7 @@
             `;
             document.getElementById('invoiceDetailModal').classList.add('show');
 
-            fetch(`/InvoiceHistory/GetInvoiceDetail?invoiceId=${invoiceId}`)
+            fetch(`/Receptionist/GetInvoiceDetail?invoiceId=${invoiceId}`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Không thể tải chi tiết hóa đơn. Vui lòng thử lại.');
@@ -317,14 +284,12 @@
                 });
         }
 
-        // Modal opening/closing logic
         document.addEventListener('DOMContentLoaded', () => {
             const modal = document.getElementById('invoiceDetailModal');
             const closeBtn = document.getElementById('closeModalBtn');
 
             function closeModal() {
                 modal.classList.remove('show');
-                // Give animation some time before wiping contents
                 setTimeout(() => {
                     document.getElementById('modalContent').innerHTML = '';
                 }, 300);
@@ -337,14 +302,12 @@
                 }
             });
 
-            // Handle ESC key to close modal
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && modal.classList.contains('show')) {
                     closeModal();
                 }
             });
 
-            // Header quick search auto-submit after typing (debounce 800ms)
             const quickSearch = document.getElementById('quickSearchInput');
             let timeout = null;
             quickSearch.addEventListener('input', () => {
@@ -354,7 +317,6 @@
                 }, 800);
             });
 
-            // Focus quick search field if it has query text and place cursor at the end
             if (quickSearch.value) {
                 quickSearch.focus();
                 quickSearch.setSelectionRange(quickSearch.value.length, quickSearch.value.length);
@@ -363,3 +325,4 @@
     </script>
 </body>
 </html>
+

@@ -1,4 +1,4 @@
-@model KaraokeManagement.Models.RoomDetailPosViewModel
+@model KaraokeManagement.ViewModel.RoomDetailPosViewModel
 @{
     Layout = null;
     var checkInTimeISO = Model.CheckInTime?.ToString("yyyy-MM-ddTHH:mm:ss.fff");
@@ -17,7 +17,6 @@
 <body>
     <div class="pos-container">
         <aside class="billing-sidebar">
-            <!-- Header -->
             <div class="sidebar-header">
                 <a href="/Receptionist/Index" class="btn-back">
                     <i class="fa-solid fa-chevron-left"></i>
@@ -32,7 +31,6 @@
                 </div>
             </div>
 
-            <!-- Room info card -->
             <div class="room-info-card">
                 <div class="room-card-header">
                     <div>
@@ -62,7 +60,6 @@
                 </div>
             </div>
 
-            <!-- Invoice ordered item list -->
             <div class="invoice-items-container" id="invoice-items-list">
                 @if (Model.OrderItems.Any())
                 {
@@ -103,7 +100,6 @@
                 }
             </div>
 
-            <!-- Totals break down -->
             <div class="billing-totals-section">
                 <div class="summary-row">
                     <span>Tiền phòng tạm tính</span>
@@ -123,7 +119,6 @@
                 </div>
             </div>
 
-            <!-- Action buttons -->
             <div class="billing-actions-grid">
                 <button type="button" class="btn-action btn-transfer" onclick="openTransferModal()">
                     <i class="fa-solid fa-right-left"></i>
@@ -140,9 +135,7 @@
             </div>
         </aside>
 
-        <!-- ==================== COLUMN RIGHT: SERVICE SELECTION ==================== -->
         <main class="menu-main-panel">
-            <!-- Search top bar -->
             <div class="menu-top-bar">
                 <div class="search-input-wrapper">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -150,7 +143,6 @@
                 </div>
             </div>
 
-            <!-- Category Tabs filters -->
             <div class="category-tabs-container" id="category-tabs">
                 <div class="tab-item active" data-category-id="all">Tất cả</div>
                 @foreach (var cat in Model.Categories)
@@ -159,7 +151,6 @@
                 }
             </div>
 
-            <!-- Scrollable product grid -->
             <div class="products-grid-scroll">
                 <div class="products-grid" id="products-list">
                     @foreach (var prod in Model.ProductItems)
@@ -209,9 +200,7 @@
         </main>
     </div>
 
-    <!-- ==================== DIALOGS / MODALS ==================== -->
     
-    <!-- Room Transfer Modal -->
     <div class="modal-overlay" id="transfer-modal">
         <div class="modal-box">
             <div class="modal-header">
@@ -247,7 +236,6 @@
         </div>
     </div>
 
-    <!-- Draft Bill Modal -->
     <div class="modal-overlay" id="draft-modal">
         <div class="modal-box" style="width: 440px;">
             <div class="modal-header">
@@ -256,7 +244,6 @@
             </div>
             <div class="modal-body">
                 <div class="bill-preview-content" id="bill-preview-text">
-                    <!-- Loaded dynamically via JS -->
                 </div>
             </div>
             <div class="modal-footer">
@@ -266,9 +253,7 @@
         </div>
     </div>
 
-    <!-- Client-side Interactive Logic -->
     <script>
-        // Global variables passed from server model
         const checkInTimeISO = "@checkInTimeISO";
         const roomId = @Model.RoomId;
         const invoiceId = @(Model.InvoiceId ?? 0);
@@ -279,26 +264,21 @@
         let grandTotal = 0;
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Start the singing duration timer stopwatch
             if (checkInTimeISO) {
                 initSingingTimer();
             }
 
-            // Bind Category Filtering
             initCategoryFilter();
 
-            // Bind Search Filter
             initSearchFilter();
         });
 
-        // ==================== STOPWATCH TIMER LOGIC ====================
         function initSingingTimer() {
             const checkInDate = new Date(checkInTimeISO);
             const timerEl = document.getElementById('singing-timer');
             const roomChargeEl = document.getElementById('room-charge-display');
             const grandTotalEl = document.getElementById('grand-total-display');
 
-            // Calculate Room Charge and Grand Total ONCE on page load
             const nowOnLoad = new Date();
             const initialDiffMs = nowOnLoad - checkInDate;
             if (initialDiffMs >= 0) {
@@ -323,7 +303,6 @@
                     return;
                 }
 
-                // Format Duration as HH:mm:ss (stopwatch display only)
                 const diffSecs = Math.floor(diffMs / 1000);
                 const hrs = Math.floor(diffSecs / 3600);
                 const mins = Math.floor((diffSecs % 3600) / 60);
@@ -333,25 +312,21 @@
                 timerEl.textContent = formattedTime;
             }
 
-            // Run immediately and then every second
             updateTime();
             setInterval(updateTime, 1000);
         }
 
-        // ==================== SEARCH & CATEGORY FILTERING ====================
         function initCategoryFilter() {
             const tabs = document.querySelectorAll('#category-tabs .tab-item');
             const cards = document.querySelectorAll('#products-list .product-card');
 
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
-                    // Toggle active tab
                     tabs.forEach(t => t.classList.remove('active'));
                     tab.classList.add('active');
 
                     const categoryId = tab.getAttribute('data-category-id');
 
-                    // Filter product cards
                     cards.forEach(card => {
                         const cardCategory = card.getAttribute('data-category');
                         if (categoryId === 'all' || cardCategory === categoryId) {
@@ -361,7 +336,6 @@
                         }
                     });
                     
-                    // Reset search input
                     document.getElementById('menu-search').value = '';
                 });
             });
@@ -392,9 +366,7 @@
             });
         }
 
-        // ==================== AJAX API CALLS ====================
         
-        // Add service to invoice
         function addService(serviceId) {
             postData('/Receptionist/AddServiceItem', { roomId: roomId, serviceId: serviceId })
                 .then(res => {
@@ -411,10 +383,8 @@
                 });
         }
 
-        // Adjust ordered quantity
         function adjustQty(detailId, newQty) {
             if (newQty <= 0) {
-                // If quantity reaches 0, remove the item
                 removeItem(detailId);
                 return;
             }
@@ -434,7 +404,6 @@
                 });
         }
 
-        // Remove item entirely
         function removeItem(detailId) {
             if (!confirm('Bạn có muốn xóa món ăn này khỏi danh sách gọi dịch vụ?')) return;
 
@@ -453,7 +422,6 @@
                 });
         }
 
-        // Submit Room Transfer
         function submitTransfer() {
             const selectEl = document.getElementById('new-room-select');
             const newRoomId = parseInt(selectEl.value);
@@ -478,7 +446,6 @@
                 });
         }
 
-        // Submit Checkout Payment
         function processPayment() {
             if (invoiceId && invoiceId !== 0) {
                 window.location.href = `/Receptionist/Checkout?invoiceId=${invoiceId}`;
@@ -487,7 +454,6 @@
             }
         }
 
-        // ==================== MODALS MANAGER ====================
         function openTransferModal() {
             document.getElementById('transfer-modal').style.display = 'flex';
         }
@@ -496,7 +462,6 @@
         }
 
         function openDraftModal() {
-            // Construct a beautiful draft receipt layout dynamically in text format
             const now = new Date();
             const timeSingingText = document.getElementById('singing-timer').textContent;
             
@@ -516,22 +481,19 @@
             billText += `------------------------------------------\n`;
             billText += `TIỀN PHÒNG HÁT\n`;
             
-            // Format hours text
             const checkInDate = new Date(checkInTimeISO);
             const hoursSinged = (now - checkInDate) / (1000 * 3600);
             billText += `Giờ hát (@(Model.PricePerHour.ToString("N0"))đ/h)       ${hoursSinged.toFixed(2)}h            ${formatCurrency(roomCharge)}đ\n\n`;
             
             billText += `DỊCH VỤ GỌI MÓN\n`;
-            // Get all items
             const rows = document.querySelectorAll('#invoice-items-list .invoice-item-row');
             if (rows.length > 0) {
                 rows.forEach(row => {
                     const name = row.querySelector('.invoice-item-name').textContent;
                     const qty = row.querySelector('.qty-val').textContent;
-                    const priceUnitText = row.querySelector('.invoice-item-price-unit').textContent; // "Price đ/unit"
+                    const priceUnitText = row.querySelector('.invoice-item-price-unit').textContent;
                     const subtotalText = row.querySelector('.item-subtotal-price').textContent;
                     
-                    // Format strings nicely
                     let padName = name.substring(0, 24);
                     billText += `${padName.padEnd(25)} ${qty.padStart(3)} ${subtotalText.padStart(12)}\n`;
                 });
@@ -557,16 +519,12 @@
             document.getElementById('draft-modal').style.display = 'none';
         }
 
-        // ==================== UTILITY FUNCTIONS ====================
         
-        // Helper to format currency
         function formatCurrency(value) {
             return new Intl.NumberFormat('vi-VN').format(value);
         }
 
-        // Toast notifications maker
         function showToast(message, type = 'success') {
-            // Remove existing toast if any
             const existingToast = document.querySelector('.toast');
             if (existingToast) existingToast.remove();
 
@@ -585,7 +543,6 @@
             }, 2500);
         }
 
-        // Fetch API helper
         function postData(url = '', data = {}) {
             return fetch(url, {
                 method: 'POST',
@@ -598,3 +555,4 @@
     </script>
 </body>
 </html>
+

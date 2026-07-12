@@ -1,4 +1,4 @@
-@model KaraokeManagement.Controllers.ReceptionistDashboardViewModel
+﻿@model KaraokeManagement.Controllers.ReceptionistDashboardViewModel
 @{
     Layout = null;
 }
@@ -8,21 +8,16 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sơ đồ phòng - Minh Tuấn KTV</title>
+    <title>Sơ đồ phòng - Minh Tuấn Karaoke</title>
     
-    <!-- CSS Dependencies -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/receptionist.css" asp-append-version="true" />
 </head>
 <body>
-    <!-- Fixed Sidebar on the Left -->
     <partial name="_ReceptionistSidebar" />
 
-    <!-- Main Content Area on the Right -->
     <div class="reception-main">
-        <!-- Header Section -->
         <header class="reception-header">
-            <!-- Search Form -->
             <form id="filterForm" method="get" action="/Receptionist">
                 <div class="header-search-container">
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
@@ -30,12 +25,10 @@
                            placeholder="Tìm kiếm tên phòng hoặc số phòng..." 
                            class="search-input" autocomplete="off" id="searchInput" />
                 </div>
-                <!-- Hidden inputs to preserve dropdown selections during search -->
                 <input type="hidden" name="roomType" value="@Model.SelectedRoomType" id="hiddenRoomType" />
                 <input type="hidden" name="status" value="@Model.SelectedStatus" id="hiddenStatus" />
             </form>
 
-            <!-- User profile -->
             <div class="header-actions">
                 <div class="user-profile">
                     <div class="avatar-container">
@@ -49,16 +42,13 @@
             </div>
         </header>
 
-        <!-- Main Dashboard Viewport -->
         <main class="reception-content">
-            <!-- Title and Filters -->
             <div class="content-top">
                 <div class="title-section">
                     <h1>Quản lý sơ đồ phòng</h1>
                     <p class="subtitle">Cập nhật trạng thái phòng theo thời gian thực</p>
                 </div>
 
-                <!-- Dropdown Filters -->
                 <div class="filter-section">
                     <div class="filter-group">
                         <span class="filter-label">Loại phòng</span>
@@ -96,7 +86,6 @@
                 </div>
             </div>
 
-            <!-- Counts Legend -->
             <div class="legend-section">
                 <div class="legend-item">
                     <span class="legend-dot green"></span>
@@ -116,7 +105,6 @@
                 </div>
             </div>
 
-            <!-- Grid of Room Cards -->
             <div class="room-grid">
                 @if (Model.RoomCards.Any())
                 {
@@ -141,7 +129,6 @@
 
                         <div class="room-card @statusClass" data-room-id="@room.RoomId">
                             <div class="card-top">
-                                <!-- Room header: Name, type, status icon -->
                                 <div class="card-header-info">
                                     <div class="room-name-wrapper">
                                         <span class="room-number">@room.RoomName</span>
@@ -152,12 +139,10 @@
                                     </div>
                                 </div>
 
-                                <!-- Big Status Label -->
                                 <div class="card-status-display">
                                     <h2 class="status-label-large">@room.Status</h2>
                                 </div>
 
-                                <!-- Dynamic Room Details -->
                                 <div class="card-details">
                                     @if (room.Status == "ĐANG SỬ DỤNG")
                                     {
@@ -189,7 +174,6 @@
                                 </div>
                             </div>
 
-                            <!-- Card Footer: Pricing and actions -->
                             <div class="card-footer">
                                 <div class="price-container">
                                     <span class="price-label">Giá tiền</span>
@@ -222,7 +206,6 @@
         </main>
     </div>
 
-    <!-- Client-side Interactive Logic -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('filterForm');
@@ -232,7 +215,6 @@
             const hiddenRoomType = document.getElementById('hiddenRoomType');
             const hiddenStatus = document.getElementById('hiddenStatus');
 
-            // Handle dropdown selection change
             roomTypeSelect.addEventListener('change', () => {
                 hiddenRoomType.value = roomTypeSelect.value;
                 form.submit();
@@ -243,7 +225,6 @@
                 form.submit();
             });
 
-            // Trigger submit after typing in search (with a small debounce)
             let timeout = null;
             searchInput.addEventListener('input', () => {
                 clearTimeout(timeout);
@@ -252,14 +233,12 @@
                 }, 600);
             });
 
-            // Focus cursor at the end of search input text
             const searchVal = searchInput.value;
             if (searchVal) {
                 searchInput.focus();
                 searchInput.setSelectionRange(searchVal.length, searchVal.length);
             }
 
-            // Real-time Countdown Timer for "ĐANG SỬ DỤNG" Rooms
             const timers = document.querySelectorAll('.time-left-countdown');
             setInterval(() => {
                 timers.forEach(timer => {
@@ -275,12 +254,10 @@
                 });
             }, 1000);
 
-            // Redirect using cards to POS detail screen
             const usingCards = document.querySelectorAll('.room-card.status-using');
             usingCards.forEach(card => {
                 card.style.cursor = 'pointer';
                 card.addEventListener('click', (e) => {
-                    // Prevent navigating if clicking nested buttons (like dots menu or check-in)
                     if (e.target.closest('.btn-menu-dots') || e.target.closest('.btn-check-in')) {
                         return;
                     }
@@ -290,7 +267,6 @@
             });
         });
 
-        // Convert seconds into HH:MM:SS format
         function formatSeconds(totalSecs) {
             const hrs = Math.floor(totalSecs / 3600);
             const mins = Math.floor((totalSecs % 3600) / 60);
@@ -298,7 +274,6 @@
             return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
         }
 
-        // Action function for Nhận phòng button click
         function checkInRoom(roomId, roomName) {
             window.location.href = `/Receptionist/CheckIn?roomId=${roomId}`;
         }
@@ -307,7 +282,6 @@
 </html>
 
 @functions {
-    // Helper function to convert dynamic remaining time string (HH:MM:SS) to total seconds
     private int GetRemainingSeconds(string? timeStr)
     {
         if (string.IsNullOrEmpty(timeStr) || timeStr == "--:--:--")
@@ -331,3 +305,4 @@
         return 0;
     }
 }
+

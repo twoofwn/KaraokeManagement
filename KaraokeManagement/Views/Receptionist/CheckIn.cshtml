@@ -1,4 +1,4 @@
-@model KaraokeManagement.Models.CheckInViewModel
+@model KaraokeManagement.ViewModel.CheckInViewModel
 @{
     Layout = null;
 }
@@ -8,21 +8,17 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nhận phòng - Minh Tuấn KTV</title>
+    <title>Nhận phòng - Minh Tuấn Karaoke</title>
     
-    <!-- CSS Dependencies -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/receptionist.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/CheckIn.css" asp-append-version="true" />
 </head>
 <body>
-    <!-- Fixed Sidebar on the Left -->
     <partial name="_ReceptionistSidebar" />
 
-    <!-- Main Content Area on the Right -->
     <div class="reception-main">
-        <!-- Header Section -->
         <header class="reception-header">
             <div class="header-title-wrapper" style="margin-left: 0;">
                 <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-dark);">Check-in</h1>
@@ -42,22 +38,18 @@
             </div>
         </header>
 
-        <!-- Content Area -->
         <main class="reception-content" style="padding-top: 10px; overflow-y: auto; height: calc(100vh - 80px);">
 
-            <!-- ASP.NET Checkin Form -->
             <form id="checkInForm" method="post" action="/Receptionist/CheckIn">
                 @Html.AntiForgeryToken()
                 <input type="hidden" id="hiddenCustomerId" name="CustomerId" value="@Model.CustomerId" />
                 <input type="hidden" id="hiddenGuestCount" name="GuestCount" value="@Model.GuestCount" />
 
-                <!-- Display Model Validation Summary if any -->
                 <div class="validation-alert" id="formValidationError" @(ViewData.ModelState.IsValid ? "" : "style=display:block")>
                     @Html.ValidationSummary(false, "", new { @class = "text-danger" })
                 </div>
 
                 <div class="checkin-layout">
-                    <!-- Column 1: Customer Profile Search -->
                     <div class="checkin-card">
                         <div class="checkin-card-title">
                             <i class="fa-solid fa-user-tag"></i>
@@ -78,9 +70,7 @@
                             </div>
                         </div>
 
-                        <!-- Customer Profile Dynamic Card -->
                         <div class="customer-profile-card" id="customerProfileCard">
-                            <!-- JS will dynamically swap this content -->
                             <div class="customer-profile-empty" id="customerProfileEmpty">
                                 <i class="fa-solid fa-address-card"></i>
                                 <div>
@@ -91,7 +81,6 @@
                         </div>
                     </div>
 
-                    <!-- Column 2: Check-in Details -->
                     <div class="checkin-card">
                         <div class="checkin-card-title">
                             <i class="fa-solid fa-microphone-lines"></i>
@@ -143,7 +132,6 @@
                                    value="@(Model.CheckOutTimeEstimated?.ToString("yyyy-MM-ddTHH:mm") ?? "")" 
                                    class="form-input" />
                             
-                            <!-- Quick selectors -->
                             <div class="quick-time-grid">
                                 <button type="button" class="btn-quick-time" data-hours="1">1 Giờ</button>
                                 <button type="button" class="btn-quick-time active" data-hours="2">2 Giờ</button>
@@ -170,7 +158,6 @@
         </main>
     </div>
 
-    <!-- Modal: New Customer Dialog -->
     <div class="modal-overlay" id="newCustomerModal">
         <div class="modal-container">
             <div class="modal-header">
@@ -204,16 +191,13 @@
         </div>
     </div>
 
-    <!-- Script Interactions -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Element variables
             const phoneSearchInput = document.getElementById('phoneSearchInput');
             const btnPhoneSearch = document.getElementById('btnPhoneSearch');
             const customerProfileCard = document.getElementById('customerProfileCard');
             const hiddenCustomerId = document.getElementById('hiddenCustomerId');
             
-            // Modal Elements
             const newCustomerModal = document.getElementById('newCustomerModal');
             const btnCancelModal = document.getElementById('btnCancelModal');
             const btnCancelModalForm = document.getElementById('btnCancelModalForm');
@@ -223,25 +207,21 @@
             const modalEmail = document.getElementById('modalEmail');
             const modalValidationError = document.getElementById('modalValidationError');
 
-            // Guest Count elements
             const btnDecGuest = document.getElementById('btnDecGuest');
             const btnIncGuest = document.getElementById('btnIncGuest');
             const guestCountDisplay = document.getElementById('guestCountDisplay');
             const hiddenGuestCount = document.getElementById('hiddenGuestCount');
 
-            // Time estimate elements
             const checkInTimeInput = document.getElementById('CheckInTime');
             const checkOutTimeEstimatedInput = document.getElementById('CheckOutTimeEstimated');
             const quickTimeButtons = document.querySelectorAll('.btn-quick-time');
 
-            // 1. Initialize Default Estimated Checkout Time (+2 hours)
             function updateEstimatedCheckoutTime(hours) {
                 const checkInVal = checkInTimeInput.value;
                 if (checkInVal) {
                     const checkInDate = new Date(checkInVal);
                     checkInDate.setHours(checkInDate.getHours() + parseInt(hours));
                     
-                    // Format to local ISO (YYYY-MM-DDTHH:mm)
                     const pad = (num) => String(num).padStart(2, '0');
                     const formattedDate = checkInDate.getFullYear() + '-' +
                                           pad(checkInDate.getMonth() + 1) + '-' +
@@ -252,12 +232,10 @@
                 }
             }
 
-            // Set default estimated checkout time on load
             if (!checkOutTimeEstimatedInput.value) {
                 updateEstimatedCheckoutTime(2);
             }
 
-            // Check-in time manual change triggers checkout time update based on currently active quick-time button
             checkInTimeInput.addEventListener('change', () => {
                 const activeBtn = document.querySelector('.btn-quick-time.active');
                 if (activeBtn) {
@@ -266,7 +244,6 @@
                 }
             });
 
-            // Quick checkout hours selection click handlers
             quickTimeButtons.forEach(btn => {
                 btn.addEventListener('click', () => {
                     quickTimeButtons.forEach(b => b.classList.remove('active'));
@@ -276,7 +253,6 @@
                 });
             });
 
-            // 2. Guest Count Actions
             btnDecGuest.addEventListener('click', () => {
                 let currentVal = parseInt(guestCountDisplay.textContent);
                 if (currentVal > 1) {
@@ -293,10 +269,8 @@
                 hiddenGuestCount.value = currentVal;
             });
 
-            // 3. Customer Search via phone logic
             let searchTimeout = null;
             
-            // Live typing debounce search
             phoneSearchInput.addEventListener('input', () => {
                 clearTimeout(searchTimeout);
                 const query = phoneSearchInput.value.trim();
@@ -308,7 +282,6 @@
             });
 
 
-            // Manual button click search
             btnPhoneSearch.addEventListener('click', () => {
                 const query = phoneSearchInput.value.trim();
                 if (query) {
@@ -318,7 +291,6 @@
                 }
             });
 
-            // Trigger search on Enter key
             phoneSearchInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -327,7 +299,6 @@
             });
 
             function performCustomerLookup(phone) {
-                // Show a loading indicator inside the customer profile card
                 customerProfileCard.innerHTML = `
                     <div style="text-align: center; color: var(--primary-magenta); padding: 20px;">
                         <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem;"></i>
@@ -358,7 +329,6 @@
             function renderCustomerProfile(customer) {
                 hiddenCustomerId.value = customer.customerId;
                 
-                // Add specific styling based on tier
                 let badgeClass = '';
                 const tier = customer.tierName.toUpperCase();
                 if (tier.includes('KIM CƯƠNG') || tier.includes('DIAMOND')) {
@@ -391,14 +361,13 @@
                     </div>
                 `;
 
-                // Wire clear click
                 document.getElementById('btnClearCustomerSelection').addEventListener('click', () => {
                     resetToGuestCustomer();
                 });
             }
 
             function renderNotFoundState(searchedPhone) {
-                hiddenCustomerId.value = ''; // clears to guest customer
+                hiddenCustomerId.value = '';
                 customerProfileCard.innerHTML = `
                     <div style="text-align: center; padding: 10px 0;">
                         <i class="fa-solid fa-user-slash" style="font-size: 2rem; color: #DC2626; margin-bottom: 12px;"></i>
@@ -413,7 +382,6 @@
                     </div>
                 `;
 
-                // Setup actions
                 document.getElementById('btnQuickGuest').addEventListener('click', () => {
                     resetToGuestCustomer();
                 });
@@ -440,7 +408,6 @@
                 `;
             }
 
-            // 4. Modal Operations
             function closeModal() {
                 newCustomerModal.classList.remove('show');
                 newCustomerForm.reset();
@@ -449,7 +416,6 @@
             btnCancelModal.addEventListener('click', closeModal);
             btnCancelModalForm.addEventListener('click', closeModal);
 
-            // Submit customer form via AJAX
             newCustomerForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 modalValidationError.style.display = 'none';
@@ -472,7 +438,6 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        // Prefill search input and select new customer
                         phoneSearchInput.value = data.phone;
                         renderCustomerProfile(data);
                         closeModal();
@@ -488,7 +453,6 @@
                 });
             });
 
-            // Helper to escape HTML tags to avoid XSS in dynamically injected properties
             function escapeHtml(text) {
                 if (!text) return '';
                 const map = {
@@ -504,3 +468,4 @@
     </script>
 </body>
 </html>
+

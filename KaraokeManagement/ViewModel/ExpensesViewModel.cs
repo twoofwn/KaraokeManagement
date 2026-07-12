@@ -1,7 +1,8 @@
+using KaraokeManagement.Models;
 using System;
 using System.Collections.Generic;
 
-namespace KaraokeManagement.Models;
+namespace KaraokeManagement.ViewModel;
 
 public class ExpensesViewModel
 {

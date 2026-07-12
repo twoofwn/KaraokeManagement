@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using KaraokeManagement.Models;
+using KaraokeManagement.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KaraokeManagement.Controllers
