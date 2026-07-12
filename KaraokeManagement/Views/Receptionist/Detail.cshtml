@@ -23,7 +23,7 @@
                     Quay lại
                 </a>
                 <div class="header-title-wrapper">
-                    <div class="brand-title">Minh Tuấn KTV</div>
+                    <div class="brand-title">Minh Tuấn Karaoke</div>
                     <div class="room-badge">
                         <span class="dot"></span>
                         @Model.RoomName
@@ -120,13 +120,9 @@
             </div>
 
             <div class="billing-actions-grid">
-                <button type="button" class="btn-action btn-transfer" onclick="openTransferModal()">
+                <button type="button" class="btn-action btn-transfer" onclick="openTransferModal()" style="grid-column: span 2;">
                     <i class="fa-solid fa-right-left"></i>
                     Đổi phòng
-                </button>
-                <button type="button" class="btn-action btn-preview" onclick="openDraftModal()">
-                    <i class="fa-solid fa-print"></i>
-                    Xem nháp
                 </button>
                 <button type="button" class="btn-action btn-pay" onclick="processPayment()">
                     <i class="fa-solid fa-credit-card"></i>
@@ -158,34 +154,36 @@
                         var isOutOfStock = prod.StockQuantity <= 0;
                         <div class="product-card @(isOutOfStock ? "disabled" : "")" data-category="@prod.CategoryId" data-name="@prod.ServiceName.ToLower()">
                             <div class="product-image-container">
-                                @if (prod.CategoryName.Contains("Bia") || prod.CategoryName.Contains("Rượu"))
-                                {
-                                    <i class="fa-solid fa-beer-mug-empty"></i>
+                                @{
+                                    string imgPath = "/img/Reception_img/";
+                                    string prodName = prod.ServiceName;
+                                    string imgFile = "";
+                                    if (prodName.Contains("Heineken")) {
+                                        imgFile = "bia_heineken.jpg";
+                                    } else if (prodName.Contains("Tiger")) {
+                                        imgFile = "bia_tiger.jpg";
+                                    } else if (prodName.Contains("Chivas 12")) {
+                                        imgFile = "chivas12.jpg";
+                                    } else if (prodName.Contains("Aquafina")) {
+                                        imgFile = "aquafina.jpg";
+                                    } else if (prodName.Contains("Khô Bò")) {
+                                        imgFile = "kho_bo.jpg";
+                                    } else if (prodName.Contains("Trái Cây VIP")) {
+                                        imgFile = "dia_trai_cay.jpg";
+                                    } else if (prodName.Contains("Combo Sinh Nhật")) {
+                                        imgFile = "combo_sinh_nhat.jpg";
+                                    } else {
+                                        imgFile = "dia_trai_cay.jpg";
+                                    }
                                 }
-                                else if (prod.CategoryName.Contains("Nước") || prod.CategoryName.Contains("Giải khát"))
-                                {
-                                    <i class="fa-solid fa-whiskey-glass"></i>
-                                }
-                                else if (prod.CategoryName.Contains("Trái cây") || prod.CategoryName.Contains("Ăn"))
-                                {
-                                    <i class="fa-solid fa-utensils"></i>
-                                }
-                                else
-                                {
-                                    <i class="fa-solid fa-bowl-food"></i>
-                                }
-                                
-                                @if (isOutOfStock)
-                                {
-                                    <span class="stock-badge outstock">Hết hàng</span>
-                                }
-                                else
-                                {
-                                    <span class="stock-badge instock">Còn: @prod.StockQuantity @prod.Unit</span>
-                                }
+                                <img src="@(imgPath + imgFile)" alt="@prod.ServiceName" />
                             </div>
+                            <div style="border-top: 1px solid #f0eae0;"></div>
                             <div class="product-info">
                                 <div class="product-name" title="@prod.ServiceName">@prod.ServiceName</div>
+                                <div class="product-stock" style="font-size: 0.75rem; color: @(isOutOfStock ? "#DC2626" : "#059669"); margin-top: 2px; font-weight: 500;">
+                                    @(isOutOfStock ? "Hết hàng" : $"Còn: {prod.StockQuantity} {prod.Unit}")
+                                </div>
                                 <div class="product-price-row">
                                     <span class="product-price">@(prod.SellingPrice.ToString("N0")) đ</span>
                                     <button type="button" class="btn-add-menu" onclick="addService(@prod.ServiceId)" aria-label="Thêm vào hóa đơn">
@@ -236,22 +234,6 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="draft-modal">
-        <div class="modal-box" style="width: 440px;">
-            <div class="modal-header">
-                <h3 class="modal-title">Xem nháp hóa đơn tạm tính</h3>
-                <button type="button" class="btn-modal-close" onclick="closeDraftModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="bill-preview-content" id="bill-preview-text">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-action btn-transfer" onclick="closeDraftModal()" style="margin: 0; padding: 10px 20px; flex-grow: 1;">Đóng</button>
-                <button type="button" class="btn-action btn-pay" onclick="window.print()" style="margin: 0; padding: 10px 20px; flex-grow: 1; grid-column: auto;">In hóa đơn nháp</button>
-            </div>
-        </div>
-    </div>
 
     <script>
         const checkInTimeISO = "@checkInTimeISO";
@@ -460,65 +442,7 @@
         function closeTransferModal() {
             document.getElementById('transfer-modal').style.display = 'none';
         }
-
-        function openDraftModal() {
-            const now = new Date();
-            const timeSingingText = document.getElementById('singing-timer').textContent;
-            
-            let billText = ``;
-            billText += `==========================================\n`;
-            billText += `             LUMINA KARAOKE               \n`;
-            billText += `   Địa chỉ: 123 Đường Sông, TP. Đà Nẵng   \n`;
-            billText += `         Số điện thoại: 0987.654.321      \n`;
-            billText += `==========================================\n`;
-            billText += `HÓA ĐƠN TẠM TÍNH (BẢN NHÁP)\n`;
-            billText += `Mã hóa đơn: #${invoiceId}         Phòng: @Model.RoomName\n`;
-            billText += `Giờ vào: @(Model.CheckInTime?.ToString("HH:mm:ss dd/MM/yyyy"))\n`;
-            billText += `Giờ ra (tạm tính): ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getFullYear()}\n`;
-            billText += `Thời lượng hát: ${timeSingingText}\n`;
-            billText += `------------------------------------------\n`;
-            billText += `Nội dung                    SL   Đ.Giá    T.Tiền\n`;
-            billText += `------------------------------------------\n`;
-            billText += `TIỀN PHÒNG HÁT\n`;
-            
-            const checkInDate = new Date(checkInTimeISO);
-            const hoursSinged = (now - checkInDate) / (1000 * 3600);
-            billText += `Giờ hát (@(Model.PricePerHour.ToString("N0"))đ/h)       ${hoursSinged.toFixed(2)}h            ${formatCurrency(roomCharge)}đ\n\n`;
-            
-            billText += `DỊCH VỤ GỌI MÓN\n`;
-            const rows = document.querySelectorAll('#invoice-items-list .invoice-item-row');
-            if (rows.length > 0) {
-                rows.forEach(row => {
-                    const name = row.querySelector('.invoice-item-name').textContent;
-                    const qty = row.querySelector('.qty-val').textContent;
-                    const priceUnitText = row.querySelector('.invoice-item-price-unit').textContent;
-                    const subtotalText = row.querySelector('.item-subtotal-price').textContent;
-                    
-                    let padName = name.substring(0, 24);
-                    billText += `${padName.padEnd(25)} ${qty.padStart(3)} ${subtotalText.padStart(12)}\n`;
-                });
-            } else {
-                billText += `  (Chưa gọi dịch vụ món nào)\n`;
-            }
-            
-            billText += `------------------------------------------\n`;
-            billText += `Tiền phòng tạm tính:             ${formatCurrency(roomCharge)} đ\n`;
-            billText += `Tiền dịch vụ tạm tính:           ${formatCurrency(serviceSubtotal)} đ\n`;
-            billText += `Khuyến mãi:                               0 đ\n`;
-            billText += `------------------------------------------\n`;
-            billText += `TỔNG CỘNG TẠM TÍNH:             ${formatCurrency(grandTotal)} đ\n`;
-            billText += `==========================================\n`;
-            billText += `      Xin cảm ơn quý khách và hẹn gặp lại!  \n`;
-            billText += `==========================================\n`;
-
-            document.getElementById('bill-preview-text').textContent = billText;
-            document.getElementById('draft-modal').style.display = 'flex';
-        }
         
-        function closeDraftModal() {
-            document.getElementById('draft-modal').style.display = 'none';
-        }
-
         
         function formatCurrency(value) {
             return new Intl.NumberFormat('vi-VN').format(value);

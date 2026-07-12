@@ -8,94 +8,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Minh Tuấn KTV - Access Denied</title>
     
-    <!-- Custom CSS from Login -->
     <link rel="stylesheet" href="~/css/Login.css" asp-append-version="true" />
-    
-    <!-- Font Awesome Icons CDN -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-    
-    <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <style>
-        .error-card {
-            text-align: center;
-            padding: 2.5rem;
-        }
-        .error-icon {
-            font-size: 4rem;
-            color: #ff3366;
-            margin-bottom: 1.5rem;
-            text-shadow: 0 0 20px rgba(255, 51, 102, 0.4);
-            animation: pulse 2s infinite alternate;
-        }
-        .error-title {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #ffffff;
-            margin-bottom: 1rem;
-        }
-        .error-message {
-            font-size: 0.95rem;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 2rem;
-            line-height: 1.6;
-        }
-        .btn-group {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-        .btn-action {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.8rem 1.8rem;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            text-decoration: none;
-        }
-        .btn-primary-error {
-            background: linear-gradient(135deg, #ff3366, #ff6699);
-            color: #ffffff;
-            border: none;
-            box-shadow: 0 4px 15px rgba(255, 51, 102, 0.3);
-        }
-        .btn-primary-error:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 51, 102, 0.5);
-        }
-        .btn-secondary-error {
-            background: rgba(255, 255, 255, 0.1);
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-        }
-        .btn-secondary-error:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-        @@keyframes pulse {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.08); }
-        }
-    </style>
+   
 </head>
 <body>
 
-    <!-- Gradient Mesh Background -->
     <div class="mesh-background">
         <div class="mesh-item top-left mesh-1"></div>
         <div class="mesh-item bottom-right mesh-1"></div>
         <div class="mesh-item top-right mesh-2"></div>
     </div>
 
-    <!-- Main Container -->
     <div class="login-container">
         <div class="glass-card error-card">
             <div class="error-icon">
@@ -121,3 +49,84 @@
 
 </body>
 </html>
+<style>
+    .error-card {
+        text-align: center;
+        padding: 2.5rem;
+    }
+
+    .error-icon {
+        font-size: 4rem;
+        color: #ff3366;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 0 20px rgba(255, 51, 102, 0.4);
+        animation: pulse 2s infinite alternate;
+    }
+
+    .error-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: black;
+        margin-bottom: 1rem;
+    }
+
+    .error-message {
+        font-size: 0.95rem;
+        color: black;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.8rem 1.8rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .btn-primary-error {
+        background: linear-gradient(135deg, #ff3366, #ff6699);
+        color: #ffffff;
+        border: none;
+        box-shadow: 0 4px 15px rgba(255, 51, 102, 0.3);
+    }
+
+        .btn-primary-error:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 51, 102, 0.5);
+        }
+
+    .btn-secondary-error {
+        background: rgba(255, 51, 102, 0.3);
+        color: black;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+    }
+
+        .btn-secondary-error:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+    @@keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+
+        100% {
+            transform: scale(1.08);
+        }
+    }
+</style>

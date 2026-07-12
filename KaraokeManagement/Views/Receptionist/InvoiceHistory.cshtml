@@ -24,7 +24,7 @@
 
             <header class="reception-header">
                 <div class="header-title-wrapper" style="margin-left: 0; display: flex; align-items: center; gap: 16px; flex-grow: 1;">
-                    <h1 class="header-title-text" style="font-size: 1.5rem; font-weight: 800; color: var(--primary-magenta); margin: 0;">Lịch sử hóa đơn</h1>
+                    <h1 class="header-title-text" style="font-size: 1.5rem; font-weight: 800; margin: 0;">Lịch sử hóa đơn</h1>
                     
                     <div style="position: relative; width: 280px; margin-left: 10px;">
                         <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem;"></i>
@@ -106,7 +106,7 @@
                                     <th>GIỜ VÀO/RA</th>
                                     <th>TỔNG TIỀN</th>
                                     <th>TRẠNG THÁI</th>
-                                    <th style="text-align: center; width: 80px;">HÀNH ĐỘNG</th>
+                                    <th style="text-align: center; width: 80px;">CHI TIẾT</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -115,7 +115,7 @@
                                     @foreach (var invoice in Model.Invoices)
                                     {
                                         <tr>
-                                            <td class="col-invoice-code">#LUM-@invoice.InvoiceId.ToString("D4")</td>
+                                            <td class="col-invoice-code">@invoice.InvoiceId.ToString("D4")</td>
 
                                             <td>
                                                 <span class="badge-room">@invoice.RoomName</span>
@@ -147,15 +147,11 @@
                                             <td>
                                                 @if (invoice.Status == "Paid")
                                                 {
-                                                    <span class="badge-status paid">
-                                                        <i class="fa-solid fa-circle-check"></i> Đã thanh toán
-                                                    </span>
+                                                    <span class="badge-status paid"> Đã thanh toán </span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="badge-status unpaid">
-                                                        <i class="fa-solid fa-circle-info"></i> Chưa thanh toán
-                                                    </span>
+                                                    <span class="badge-status unpaid"> Chưa thanh toán </span>
                                                 }
                                             </td>
 

@@ -213,15 +213,12 @@ body.invoice-history-page {
 
 /* Columns specific formatting */
 .col-invoice-code {
-    color: var(--primary-magenta);
     font-weight: 700;
     font-size: 0.9rem;
 }
 
 /* Badges */
 .badge-room {
-    background-color: var(--primary-light);
-    color: var(--primary-magenta);
     font-size: 0.75rem;
     font-weight: 700;
     padding: 4px 10px;
