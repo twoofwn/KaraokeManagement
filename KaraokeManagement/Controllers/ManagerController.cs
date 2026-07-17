@@ -1,4 +1,4 @@
-using KaraokeManagement.Models;
+﻿using KaraokeManagement.Models;
 using KaraokeManagement.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
@@ -89,6 +89,7 @@ namespace KaraokeManagement.Controllers
             ViewBag.Suppliers = _context.Suppliers.ToList();
             return View();
         }
+
         [HttpGet]
         public async Task<IActionResult> SearchServices(string term)
         
