@@ -1,322 +1,355 @@
-﻿
-@{
-    Layout = "~/Views/Manager/_ManagerLayout.cshtml";
-    ViewData["Title"] = "Nhập hàng";
-    ViewData["ActiveNav"] = "stockin";
+﻿@{
+	Layout = "~/Views/Manager/_ManagerLayout.cshtml";
+	ViewData["Title"] = "Nhập hàng";
+	ViewData["ActiveNav"] = "stockin";
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/Manager.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/css/Manager.css" asp-append-version="true" />
 }
 
 <div class="d-flex justify-content-between align-items-end page-title-section">
-    <div>
-        <h1 class="fw-bold mb-1">Nhập hàng</h1>
-        <p class="text-muted mb-0">Tạo phiếu nhập kho mới từ nhà cung cấp.</p>
-    </div>
+	<div>
+		<h1 class="fw-bold mb-1">Nhập hàng</h1>
+		<p class="text-muted mb-0">Tạo phiếu nhập kho mới từ nhà cung cấp.</p>
+	</div>
 </div>
 
 <form id="stockInForm" action="#" class="stock-container" method="post">
-    <div class="custom-card stock-info">
-        <div class="card-title-custom">
-            <i class="fa-regular fa-file-lines"></i> Thông tin phiếu nhập
-        </div>
-        <div class="col-12 mb-3">
-                <label class="form-label text-muted" style="font-size: 0.85rem;">Ngày nhập</label>
-                <input type="date" class="form-control"/>
-        </div>
-        <div class="col-12 mb-3">
-                <label class="form-label text-muted" style="font-size: 0.85rem;">Nhà cung cấp</label>
-                <select class="form-select">
-                    @foreach(var s in ViewBag.Suppliers)
-                    {
-                        <option value="@s.SupplierId" selected>@s.SupplierName</option>
-                    }
-                </select>
-            </div>
-            <div class="col-12 mb-3">
-                <label class="form-label text-muted" style="font-size: 0.85rem;">Ghi chú (Note)</label>
-                <textarea class="form-control" rows="2" placeholder="Nhập ghi chú cho đơn hàng này..."></textarea>
-            </div>
-    </div>
+	<div class="custom-card stock-info">
+		<div class="card-title-custom">
+			<i class="fa-regular fa-file-lines"></i> Thông tin phiếu nhập
+		</div>
+		<div class="col-12 mb-3">
+			<label class="form-label text-muted" style="font-size: 0.85rem;">Ngày nhập</label>
+			<input type="date" class="form-control" />
+		</div>
+		<div class="col-12 mb-3">
+			<label class="form-label text-muted" style="font-size: 0.85rem;">Nhà cung cấp</label>
+			<select id="supplierSelect" class="form-select">
+				@foreach (var s in ViewBag.Suppliers)
+				{
+					<option value="@s.SupplierId"
+							data-phone="@s.Phone"
+							data-address="@s.Address">
+						@s.SupplierName
+					</option>
+				}
+			</select>
+			<div id="supplierInfo" class="mt-2 p-2 bg-light rounded border text-muted" style="font-size: 0.85rem;">
+				<div class="mb-1">
+					<i class="fa-solid fa-phone me-2 text-pink"></i> SĐT: <span id="supplierPhone" class="fw-semibold text-dark">Chưa cập nhật</span>
+				</div>
+				<div>
+					<i class="fa-solid fa-location-dot me-2 text-pink"></i> Địa chỉ: <span id="supplierAddress" class="fw-semibold text-dark">Chưa cập nhật</span>
+				</div>
+			</div>
+		</div>
+		<div class="col-12 mb-3">
+			<label class="form-label text-muted" style="font-size: 0.85rem;">Ghi chú (Note)</label>
+			<textarea class="form-control" rows="2" placeholder="Nhập ghi chú cho đơn hàng này..."></textarea>
+		</div>
+	</div>
 
-    <div class="custom-card prod-list">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div class="card-title-custom mb-0">
-                <i class="fa-solid fa-box-open"></i> Danh sách sản phẩm
-            </div>
-            <div class="search-product-box">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <input type="text" id="searchInput" class="form-control" placeholder="Tìm & thêm sản phẩm..." autocomplete="off" />
-    
-    <ul id="searchDropdown" class="search-dropdown"></ul>
-</div>
+	<div class="custom-card prod-list">
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<div class="card-title-custom mb-0">
+				<i class="fa-solid fa-box-open"></i> Danh sách sản phẩm
+			</div>
+			<div class="search-product-box">
+				<i class="fa-solid fa-magnifying-glass"></i>
+				<input type="text" id="searchInput" class="form-control" placeholder="Tìm & thêm sản phẩm..." autocomplete="off" />
 
-<tbody id="productList">
-    </tbody>
-        </div>
+				<ul id="searchDropdown" class="search-dropdown"></ul>
+			</div>
 
-        <div class="table-responsive">
-            <table class="table table-custom">
-                <thead>
-                    <tr>
-                        <th width="5%">#</th>
-                        <th width="30%">SẢN PHẨM</th>
-                        <th width="15%">ĐVT</th>
-                        <th width="15%">SỐ LƯỢNG</th>
-                        <th width="15%" class="text-end">GIÁ NHẬP (VNĐ)</th>
-                        <th width="20%" class="text-end">THÀNH TIỀN</th>
-                    </tr>
-                </thead>
-                <tbody id="productList">
-                </tbody>
-            </table>
-        </div>
+			<tbody id="productList">
+			</tbody>
+		</div>
 
-        <div class="summary-box d-flex justify-content-between align-items-end mt-4">
-            <div class="d-flex gap-2">
-                <div>
-                    <div class="summary-label">TỔNG MẶT HÀNG</div>
-                    <div class="summary-value" id="totalItems">0</div>
-                </div>
-                <div class="border-start ps-2">
-                    <div class="summary-label">TỔNG SỐ LƯỢNG</div>
-                    <div class="summary-value" id="totalQty">0</div>
-                </div>
-            </div>
-            
-            <div class="d-flex align-items-end gap-2">
-                <div class="text-end me-3">
-                    <div class="summary-label">TỔNG CỘNG:</div>
-                    <div class="summary-value text-dark d-inline-block" id="grandTotal" style="font-size: 1.8rem;">0</div>
-                    <span class="text-muted ms-1">VNĐ</span>
-                </div>
-                
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-light px-4 border">Hủy bỏ</button>
-                    <button type="submit" class="btn btn-pink">
-                        <i class="fa-solid fa-floppy-disk me-2"></i> Lưu phiếu nhập
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+		<div class="table-responsive">
+			<table class="table table-custom">
+				<thead>
+					<tr>
+						<th width="5%">#</th>
+						<th width="30%">SẢN PHẨM</th>
+						<th width="15%">ĐVT</th>
+						<th width="15%">SỐ LƯỢNG</th>
+						<th width="15%" class="text-end">GIÁ NHẬP (VNĐ)</th>
+						<th width="20%" class="text-end">THÀNH TIỀN</th>
+					</tr>
+				</thead>
+				<tbody id="productList">
+				</tbody>
+			</table>
+		</div>
+
+		<div class="summary-box d-flex justify-content-between align-items-end mt-4">
+			<div class="d-flex gap-2">
+				<div>
+					<div class="summary-label">TỔNG MẶT HÀNG</div>
+					<div class="summary-value" id="totalItems">0</div>
+				</div>
+				<div class="border-start ps-2">
+					<div class="summary-label">TỔNG SỐ LƯỢNG</div>
+					<div class="summary-value" id="totalQty">0</div>
+				</div>
+			</div>
+
+			<div class="d-flex align-items-end gap-2">
+				<div class="text-end me-3">
+					<div class="summary-label">TỔNG CỘNG:</div>
+					<div class="summary-value text-dark d-inline-block" id="grandTotal" style="font-size: 1.8rem;">0</div>
+					<span class="text-muted ms-1">VNĐ</span>
+				</div>
+
+				<div class="d-flex gap-2">
+					<button type="button" class="btn btn-light px-4 border">Hủy bỏ</button>
+					<button type="submit" class="btn btn-pink">
+						<i class="fa-solid fa-floppy-disk me-2"></i> Lưu phiếu nhập
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
 </form>
 
 @section Scripts {
-    <script>
-        // Vanilla JS thuần để xử lý tính toán số lượng/thành tiền trực tiếp trên UI
-        document.addEventListener("DOMContentLoaded", function () {
-            document.getElementById('stockInForm').addEventListener('keydown', function (e) {
-                // Nếu phím nhấn là Enter và thẻ hiện tại không phải là Textarea (Ghi chú)
-    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
-        e.preventDefault(); // Chặn submit
-    }
-});
+	<script>
+				// Vanilla JS thuần để xử lý tính toán số lượng/thành tiền trực tiếp trên UI
+				document.addEventListener("DOMContentLoaded", function () {
+					document.getElementById('stockInForm').addEventListener('keydown', function (e) {
+						// Nếu phím nhấn là Enter và thẻ hiện tại không phải là Textarea (Ghi chú)
+			if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+				e.preventDefault(); // Chặn submit
+			}
+		});
 
-            const qtyInputs = document.querySelectorAll('.item-qty');
-            
-            function formatCurrency(number) {
-                return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-            }
+					const qtyInputs = document.querySelectorAll('.item-qty');
 
-            function calculateTotals() {
-                let totalQty = 0;
-                let grandTotal = 0;
-                
-                qtyInputs.forEach(input => {
-                    let qty = parseInt(input.value) || 0;
-                    let price = parseInt(input.getAttribute('data-price')) || 0;
-                    
-                    let lineTotal = qty * price;
-                    
-                    // Update Line Total
-                    let row = input.closest('tr');
-                    row.querySelector('.item-total').innerText = formatCurrency(lineTotal);
-                    
-                    totalQty += qty;
-                    grandTotal += lineTotal;
-                });
-                
-                // Update Footer Totals
-                document.getElementById('totalQty').innerText = totalQty;
-                document.getElementById('grandTotal').innerText = formatCurrency(grandTotal);
-            }
+					function formatCurrency(number) {
+						return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+					}
 
-            // Gắn event listener cho mỗi ô input số lượng
-            qtyInputs.forEach(input => {
-                input.addEventListener('input', calculateTotals);
-            });
+					function calculateTotals() {
+						let totalQty = 0;
+						let grandTotal = 0;
 
-            const searchInput = document.getElementById('searchInput');
-            const searchDropdown = document.getElementById('searchDropdown');
-            const productList = document.getElementById('productList');
-            const stockInForm = document.getElementById('stockInForm');
-            let searchTimeout;
+						qtyInputs.forEach(input => {
+							let qty = parseInt(input.value) || 0;
+							let price = parseInt(input.getAttribute('data-price')) || 0;
 
-            // 1. Hàm định dạng tiền tệ
-            function formatCurrency(number) {
-                return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-            }
+							let lineTotal = qty * price;
 
-            // 2. Hàm tính toán tổng
-            function calculateTotals() {
-                let totalQty = 0;
-                let grandTotal = 0;
-                
-                const rows = productList.querySelectorAll('tr');
-                
-                rows.forEach(row => {
-                    let qty = parseInt(row.querySelector('.item-qty').value) || 0;
-                    let price = parseInt(row.querySelector('.price-input').value) || 0;
-                    
-                    let lineTotal = qty * price;
-                    
-                    row.querySelector('.item-total').innerText = formatCurrency(lineTotal);
-                    totalQty += qty;
-                    grandTotal += lineTotal;
-                });
-                
-                document.getElementById('totalItems').innerText = rows.length;
-                document.getElementById('totalQty').innerText = totalQty;
-                document.getElementById('grandTotal').innerText = formatCurrency(grandTotal);
-            }
+							// Update Line Total
+							let row = input.closest('tr');
+							row.querySelector('.item-total').innerText = formatCurrency(lineTotal);
 
-            // 3. Hàm tìm kiếm sản phẩm
-            searchInput.addEventListener('input', function () {
-                clearTimeout(searchTimeout);
-                let term = this.value.trim();
-                
-                if (term.length < 2) {
-                    searchDropdown.style.display = 'none';
-                    return;
-                }
+							totalQty += qty;
+							grandTotal += lineTotal;
+						});
 
-                // Debounce gọi API để tránh spam request
-                searchTimeout = setTimeout(() => {
-                    fetch(`/Manager/SearchServices?term=${encodeURIComponent(term)}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            searchDropdown.innerHTML = '';
-                            
-                            // Lấy danh sách ServiceId đã có trong bảng để loại trừ
-                            const existingIds = Array.from(productList.querySelectorAll('tr')).map(tr => parseInt(tr.dataset.serviceId));
+						// Update Footer Totals
+						document.getElementById('totalQty').innerText = totalQty;
+						document.getElementById('grandTotal').innerText = formatCurrency(grandTotal);
+					}
 
-                            const filteredData = data.filter(item => !existingIds.includes(item.serviceId));
+					// Gắn event listener cho mỗi ô input số lượng
+					qtyInputs.forEach(input => {
+						input.addEventListener('input', calculateTotals);
+					});
 
-                            if (filteredData.length === 0) {
-                                searchDropdown.innerHTML = '<li class="text-muted">Không tìm thấy hoặc đã có trong phiếu.</li>';
-                            } else {
-                                filteredData.forEach(item => {
-                                    let li = document.createElement('li');
-                                    li.innerHTML = `<span> ${item.serviceName}</span> <small class="text-muted">${item.unit || ''}</small>`;
+					const searchInput = document.getElementById('searchInput');
+					const searchDropdown = document.getElementById('searchDropdown');
+					const productList = document.getElementById('productList');
+					const stockInForm = document.getElementById('stockInForm');
+					let searchTimeout;
 
-                                    // Bấm vào để thêm xuống bảng
-                                    li.addEventListener('click', function () {
-                                        addProductToTable(item);
-                                        searchInput.value = '';
-                                        searchDropdown.style.display = 'none';
-                                        searchInput.focus();
-                                    });
-                                    searchDropdown.appendChild(li);
-                                });
-                            }
-                            searchDropdown.style.display = 'block';
-                        });
-                }, 300);
-            });
+					// 1. Hàm định dạng tiền tệ
+					function formatCurrency(number) {
+						return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+					}
 
-            // Ẩn dropdown khi click ra ngoài
-            document.addEventListener('click', function (e) {
-                if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
-                    searchDropdown.style.display = 'none';
-                }
-            });
+					// 2. Hàm tính toán tổng
+					function calculateTotals() {
+						let totalQty = 0;
+						let grandTotal = 0;
 
-            // 4. Thêm sản phẩm vào bảng
-            function addProductToTable(item) {
-                const tr = document.createElement('tr');
-                tr.dataset.serviceId = item.serviceId;
-                
-                tr.innerHTML = `
-                    <td class="text-center">
-                        <button type="button" class="btn btn-sm btn-outline-danger remove-btn"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                    <td>
-                        <div class="fw-semibold">${item.serviceName}</div>
-                    </td>
-                    <td>${item.unit || 'Cái'}</td>
-                    <td>
-                        <input type="number" class="qty-input item-qty" value="1" min="1" />
-                    </td>
-                    <td class="text-end">
-                        <input type="number" class="price-input" value="0" min="0" />
-                    </td>
-                    <td class="text-end text-pink fw-bold item-total">0</td>
-                `;
+						const rows = productList.querySelectorAll('tr');
 
-                // Gắn sự kiện tính tiền khi số lượng hoặc giá thay đổi
-                tr.querySelector('.item-qty').addEventListener('input', calculateTotals);
-                tr.querySelector('.price-input').addEventListener('input', calculateTotals);
-                
-                // Nút xóa dòng
-                tr.querySelector('.remove-btn').addEventListener('click', function() {
-                    tr.remove();
-                    calculateTotals();
-                });
+						rows.forEach(row => {
+							let qty = parseInt(row.querySelector('.item-qty').value) || 0;
+							let price = parseInt(row.querySelector('.price-input').value) || 0;
 
-                productList.appendChild(tr);
-                calculateTotals();
-            }
+							let lineTotal = qty * price;
 
-            // 5. Submit Form qua AJAX
-            stockInForm.addEventListener('submit', function (e) {
-                e.preventDefault();
+							row.querySelector('.item-total').innerText = formatCurrency(lineTotal);
+							totalQty += qty;
+							grandTotal += lineTotal;
+						});
 
-                const rows = productList.querySelectorAll('tr');
-                if (rows.length === 0) {
-                    alert('Vui lòng thêm ít nhất 1 sản phẩm vào phiếu nhập!');
-                    return;
-                }
+						document.getElementById('totalItems').innerText = rows.length;
+						document.getElementById('totalQty').innerText = totalQty;
+						document.getElementById('grandTotal').innerText = formatCurrency(grandTotal);
+					}
 
-                // Gom dữ liệu
-                const requestData = {
-                    supplierId: document.querySelector('select.form-select').value,
-                    orderDate: document.querySelector('input[type="date"]').value,
-                    note: document.querySelector('textarea').value,
-                    items: []
-                };
+					// 3. Hàm tìm kiếm sản phẩm
+					searchInput.addEventListener('input', function () {
+						clearTimeout(searchTimeout);
+						let term = this.value.trim();
 
-                rows.forEach(row => {
-                    requestData.items.push({
-                        serviceId: parseInt(row.dataset.serviceId),
-                        quantity: parseInt(row.querySelector('.item-qty').value),
-                        importPrice: parseFloat(row.querySelector('.price-input').value)
-                    });
-                });
+						if (term.length < 2) {
+							searchDropdown.style.display = 'none';
+							return;
+						}
 
-                // Gọi POST API
-                fetch('/Manager/SaveStockIn', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestData)
-                })
-                .then(res => res.json())
-                .then(result => {
-                    if (result.success) {
-                        alert(result.message);
-                        window.location.href = '/Manager/ImportHistory';
-                    } else {
-                        alert(result.message);
-                    }
-                })
-                .catch(err => {
-                    console.error('Lỗi khi lưu phiếu:', err);
-                    alert('Có lỗi hệ thống xảy ra.');
-                });
-            });
-        });
+						// Debounce gọi API để tránh spam request
+						searchTimeout = setTimeout(() => {
+							fetch(`/Manager/SearchServices?term=${encodeURIComponent(term)}`)
+								.then(response => response.json())
+								.then(data => {
+									searchDropdown.innerHTML = '';
 
-            
-    </script>
+									// Lấy danh sách ServiceId đã có trong bảng để loại trừ
+									const existingIds = Array.from(productList.querySelectorAll('tr')).map(tr => parseInt(tr.dataset.serviceId));
+
+									const filteredData = data.filter(item => !existingIds.includes(item.serviceId));
+
+									if (filteredData.length === 0) {
+										searchDropdown.innerHTML = '<li class="text-muted">Không tìm thấy hoặc đã có trong phiếu.</li>';
+									} else {
+										filteredData.forEach(item => {
+											let li = document.createElement('li');
+											li.innerHTML = `<span> ${item.serviceName}</span> <small class="text-muted">${item.unit || ''}</small>`;
+
+											// Bấm vào để thêm xuống bảng
+											li.addEventListener('click', function () {
+												addProductToTable(item);
+												searchInput.value = '';
+												searchDropdown.style.display = 'none';
+												searchInput.focus();
+											});
+											searchDropdown.appendChild(li);
+										});
+									}
+									searchDropdown.style.display = 'block';
+								});
+						}, 300);
+					});
+
+					// Ẩn dropdown khi click ra ngoài
+					document.addEventListener('click', function (e) {
+						if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+							searchDropdown.style.display = 'none';
+						}
+					});
+
+					// 4. Thêm sản phẩm vào bảng
+					function addProductToTable(item) {
+						const tr = document.createElement('tr');
+						tr.dataset.serviceId = item.serviceId;
+
+						tr.innerHTML = `
+							<td class="text-center">
+								<button type="button" class="btn btn-sm btn-outline-danger remove-btn"><i class="fa-solid fa-trash"></i></button>
+							</td>
+							<td>
+								<div class="fw-semibold">${item.serviceName}</div>
+							</td>
+							<td>${item.unit || 'Cái'}</td>
+							<td>
+								<input type="number" class="qty-input item-qty" value="1" min="1" />
+							</td>
+							<td class="text-end">
+								<input type="number" class="price-input" value="0" min="0" />
+							</td>
+							<td class="text-end text-pink fw-bold item-total">0</td>
+						`;
+
+						// Gắn sự kiện tính tiền khi số lượng hoặc giá thay đổi
+						tr.querySelector('.item-qty').addEventListener('input', calculateTotals);
+						tr.querySelector('.price-input').addEventListener('input', calculateTotals);
+
+						// Nút xóa dòng
+						tr.querySelector('.remove-btn').addEventListener('click', function() {
+							tr.remove();
+							calculateTotals();
+						});
+
+						productList.appendChild(tr);
+						calculateTotals();
+					}
+
+					// 5. Submit Form qua AJAX
+					stockInForm.addEventListener('submit', function (e) {
+						e.preventDefault();
+
+						const rows = productList.querySelectorAll('tr');
+						if (rows.length === 0) {
+							alert('Vui lòng thêm ít nhất 1 sản phẩm vào phiếu nhập!');
+							return;
+						}
+
+						// Gom dữ liệu
+						const requestData = {
+							supplierId: document.querySelector('select.form-select').value,
+							orderDate: document.querySelector('input[type="date"]').value,
+							note: document.querySelector('textarea').value,
+							items: []
+						};
+
+						rows.forEach(row => {
+							requestData.items.push({
+								serviceId: parseInt(row.dataset.serviceId),
+								quantity: parseInt(row.querySelector('.item-qty').value),
+								importPrice: parseFloat(row.querySelector('.price-input').value)
+							});
+						});
+
+						// Gọi POST API
+						fetch('/Manager/SaveStockIn', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify(requestData)
+						})
+						.then(res => res.json())
+						.then(result => {
+							if (result.success) {
+								alert(result.message);
+								window.location.href = '/Manager/ImportHistory';
+							} else {
+								alert(result.message);
+							}
+						})
+						.catch(err => {
+							console.error('Lỗi khi lưu phiếu:', err);
+							alert('Có lỗi hệ thống xảy ra.');
+						});
+					});
+
+							const supplierSelect = document.getElementById('supplierSelect');
+		const supplierPhone = document.getElementById('supplierPhone');
+		const supplierAddress = document.getElementById('supplierAddress');
+
+		function showSupplierDetails() {
+			if (!supplierSelect || supplierSelect.selectedIndex === -1) return;
+
+			const selectedOption = supplierSelect.options[supplierSelect.selectedIndex];
+			const phone = selectedOption.getAttribute('data-phone');
+			const address = selectedOption.getAttribute('data-address');
+
+			// Luôn điền thông tin, nếu null/rỗng thì để chữ 'Chưa cập nhật'
+			supplierPhone.innerText = phone ? phone : 'Chưa cập nhật';
+			supplierAddress.innerText = address ? address : 'Chưa cập nhật';
+		}
+
+		// Bắt sự kiện khi đổi nhà cung cấp
+		supplierSelect.addEventListener('change', showSupplierDetails);
+
+		// Gọi ngay 1 lần khi load trang
+		showSupplierDetails();
+				});
+
+
+	</script>
 }

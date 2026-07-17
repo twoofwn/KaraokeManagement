@@ -22,6 +22,37 @@ namespace KaraokeManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
+            var today = DateTime.Today;
+            var startOfDay = today;
+            var endOfDay = today.AddDays(1).AddTicks(-1);
+
+            var startOfMonth = new DateTime(today.Year, today.Month, 1);
+            var endOfMonth = startOfMonth.AddMonths(1).AddTicks(-1);
+
+            // 1. Số khách hôm nay (Distinct CustomerId từ các hoá đơn có Booking phát sinh hôm nay)
+            int customersToday = await _context.Invoices
+                .Where(i => i.CheckInTime >= startOfDay && i.CheckInTime <= endOfDay && i.BookingId != null)
+                .Select(i => i.Booking.CustomerId)
+                .Distinct()
+                .CountAsync();
+
+            // 2. Doanh thu hôm nay (Từ các hoá đơn đã thanh toán hôm nay)
+            decimal revenueToday = await _context.Invoices
+                .Where(i => i.Status == "Paid" && i.CheckOutTime >= startOfDay && i.CheckOutTime <= endOfDay)
+                .SumAsync(i => i.GrandTotal ?? 0);
+
+            // 3. Số khách tháng này
+            int customersThisMonth = await _context.Invoices
+                .Where(i => i.CheckInTime >= startOfMonth && i.CheckInTime <= endOfMonth && i.BookingId != null)
+                .Select(i => i.Booking.CustomerId)
+                .Distinct()
+                .CountAsync();
+
+            // 4. Doanh thu tháng này
+            decimal revenueThisMonth = await _context.Invoices
+                .Where(i => i.Status == "Paid" && i.CheckOutTime >= startOfMonth && i.CheckOutTime <= endOfMonth)
+                .SumAsync(i => i.GrandTotal ?? 0);
+
             // Calculate Total Revenue from all Paid Invoices
             decimal totalRevenue = await _context.Invoices
                 .Where(i => i.Status == "Paid")
@@ -71,6 +102,11 @@ namespace KaraokeManagement.Controllers
 
             var viewModel = new FinancialDashboardViewModel
             {
+                CustomersToday = customersToday,
+                RevenueToday = revenueToday,
+                CustomersThisMonth = customersThisMonth,
+                RevenueThisMonth = revenueThisMonth,
+
                 TotalRevenue = totalRevenue,
                 TotalExpenses = totalExpenses,
                 NetProfit = netProfit,
@@ -92,7 +128,7 @@ namespace KaraokeManagement.Controllers
 
         [HttpGet]
         public async Task<IActionResult> SearchServices(string term)
-        
+
         {
             var query = _context.ServiceItems.AsQueryable();
 
@@ -185,7 +221,8 @@ namespace KaraokeManagement.Controllers
                 })
                 .ToDictionaryAsync(x => x.ServiceId, x => x.LatestPrice);
 
-            var vmItems = items.Select(item => {
+            var vmItems = items.Select(item =>
+            {
                 decimal importPrice = latestImportPrices.TryGetValue(item.ServiceId, out var price) ? price : 0;
                 string status = "In Stock";
                 if ((item.StockQuantity ?? 0) <= 0) status = "Out of Stock";

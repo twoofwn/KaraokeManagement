@@ -1,10 +1,15 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace KaraokeManagement.ViewModel
 {
     public class FinancialDashboardViewModel
     {
+        public int CustomersToday { get; set; }
+        public decimal RevenueToday { get; set; }
+        public int CustomersThisMonth { get; set; }
+        public decimal RevenueThisMonth { get; set; }
+
         public decimal TotalRevenue { get; set; }
         public decimal TotalExpenses { get; set; }
         public decimal NetProfit { get; set; }
