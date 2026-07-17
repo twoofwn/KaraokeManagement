@@ -1,6 +1,7 @@
 using KaraokeManagement.Models;
 using System;
 using System.Collections.Generic;
+using KaraokeManagement.Models;
 
 namespace KaraokeManagement.ViewModel;
 
