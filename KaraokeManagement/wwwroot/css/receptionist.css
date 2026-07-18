@@ -27,10 +27,6 @@
     --status-using-text: #FF4D6D;
     --status-using-dot: #FF4D6D;
     
-    --status-waiting-bg: #FEF9E6;
-    --status-waiting-text: #D97706;
-    --status-waiting-dot: #FBBF24;
-    
     --status-maintenance-bg: #F1F5F9;
     --status-maintenance-text: #4B5563;
     --status-maintenance-dot: #3B82F6; /* Blue dot as specified in legend */
@@ -422,7 +418,6 @@ body {
 
 .legend-dot.green { background-color: var(--status-ready-dot); }
 .legend-dot.red { background-color: var(--status-using-dot); }
-.legend-dot.yellow { background-color: var(--status-waiting-dot); }
 .legend-dot.blue { background-color: var(--status-maintenance-dot); }
 
 .legend-count {
@@ -491,7 +486,6 @@ body {
 /* Room card theme modifiers based on statuses */
 .room-card.status-ready::before { background-color: var(--status-ready-dot); }
 .room-card.status-using::before { background-color: var(--status-using-dot); }
-.room-card.status-waiting::before { background-color: var(--status-waiting-dot); }
 .room-card.status-maintenance::before { background-color: var(--status-maintenance-dot); }
 
 /* Card Header */
@@ -549,10 +543,6 @@ body {
     background-color: #FFF0F3;
     color: var(--status-using-text);
 }
-.room-card.status-waiting .card-icon-container {
-    background-color: #FEF9E6;
-    color: var(--status-waiting-text);
-}
 .room-card.status-maintenance .card-icon-container {
     background-color: #F1F5F9;
     color: var(--status-maintenance-text);
@@ -572,7 +562,6 @@ body {
 
 .room-card.status-ready .status-label-large { color: var(--status-ready-text); }
 .room-card.status-using .status-label-large { color: var(--status-using-text); }
-.room-card.status-waiting .status-label-large { color: var(--status-waiting-text); }
 .room-card.status-maintenance .status-label-large { color: var(--status-maintenance-text); }
 
 /* Card Content / Details */

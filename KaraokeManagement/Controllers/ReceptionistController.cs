@@ -28,14 +28,13 @@ namespace KaraokeManagement.Controllers
             List<string> roomTypes = new List<string> { "Tất cả loại" };
             roomTypes.AddRange(dbRoomTypes);
 
-            List<string> statuses = new List<string> { "Tất cả", "SẴN SÀNG", "ĐANG SỬ DỤNG", "CHỜ NHẬN PHÒNG", "ĐANG BẢO TRÌ" };
+            List<string> statuses = new List<string> { "Tất cả", "SẴN SÀNG", "ĐANG SỬ DỤNG", "ĐANG BẢO TRÌ" };
 
             List<RoomCardViewModel> roomCards = new List<RoomCardViewModel>();
             var now = DateTime.Now;
 
             try
             {
-                // Lấy toàn bộ phòng kèm theo loại phòng, booking, thiết bị và log bảo trì
                 var dbRooms = await _context.Rooms
                     .Include(r => r.RoomType)
                     .Include(r => r.Bookings).ThenInclude(b => b.Customer)
@@ -46,7 +45,6 @@ namespace KaraokeManagement.Controllers
                 {
                     string cardStatus = "SẴN SÀNG";
                     string timeLeft = "--:--:--";
-                    string customerBooking = null;
                     string maintenanceNote = null;
                     bool showCheckIn = true;
                     bool showDots = false;
@@ -55,19 +53,12 @@ namespace KaraokeManagement.Controllers
                     var activeBooking = room.Bookings
                         .FirstOrDefault(b => b.StartTime <= now && b.EndTime >= now && b.Status == "CheckedIn");
 
-                    var upcomingBooking = room.Bookings
-                        .Where(b => b.StartTime > now && b.Status != "Cancelled" && b.Status != "Completed")
-                        .OrderBy(b => b.StartTime)
-                        .FirstOrDefault();
-
-                    // Ánh xạ trạng thái từ DB ra View
                     if (room.Status == "Maintenance")
                     {
                         cardStatus = "ĐANG BẢO TRÌ";
                         showCheckIn = false;
                         showDots = true;
 
-                        // Lấy log bảo trì mới nhất của thiết bị trong phòng này
                         var latestLog = room.Equipment
                             .SelectMany(e => e.MaintenanceLogs)
                             .OrderByDescending(l => l.LogDate)
@@ -89,26 +80,13 @@ namespace KaraokeManagement.Controllers
                                 : "00:00:00";
                         }
                     }
-                    else // Trạng thái DB là Available
+                    else
                     {
-                        // Kiểm tra xem phòng có booking sắp tới trong vòng 3 tiếng không
-                        if (upcomingBooking != null && (upcomingBooking.StartTime - now).TotalHours <= 3)
-                        {
-                            cardStatus = "CHỜ NHẬN PHÒNG";
-                            showCheckIn = true; // Lễ tân có thể check-in cho khách tới sớm
-                            showDots = true;
-                            string cusName = upcomingBooking.Customer?.FullName ?? "Khách";
-                            customerBooking = $"{cusName} - {upcomingBooking.StartTime:HH\\hmm}";
-                        }
-                        else
-                        {
-                            cardStatus = "SẴN SÀNG";
-                            showCheckIn = true;
-                            showDots = false;
-                        }
+                        cardStatus = "SẴN SÀNG";
+                        showCheckIn = true;
+                        showDots = false;
                     }
 
-                    // Gán icon tự động theo loại phòng
                     string icon = "fa-solid fa-microphone";
                     string typeNameUpper = room.RoomType.TypeName.ToUpper();
                     if (typeNameUpper.Contains("SUPER VIP") || typeNameUpper.Contains("PARTY")) icon = "fa-solid fa-music";
@@ -124,7 +102,6 @@ namespace KaraokeManagement.Controllers
                         IconClass = icon,
                         PricePerHour = room.RoomType.PricePerHour,
                         TimeLeft = timeLeft,
-                        CustomerBooking = customerBooking,
                         MaintenanceDescription = maintenanceNote,
                         ShowCheckInButton = showCheckIn,
                         ShowMenuDots = showDots
@@ -136,13 +113,10 @@ namespace KaraokeManagement.Controllers
                 System.Diagnostics.Debug.WriteLine($"DB Loading failed: {ex.Message}");
             }
 
-            // Tính toán số lượng thẻ dựa trên tổng dữ liệu trước khi Lọc (Filter)
             int readyCount = roomCards.Count(r => r.Status == "SẴN SÀNG");
             int usingCount = roomCards.Count(r => r.Status == "ĐANG SỬ DỤNG");
-            int waitingCount = roomCards.Count(r => r.Status == "CHỜ NHẬN PHÒNG");
             int maintenanceCount = roomCards.Count(r => r.Status == "ĐANG BẢO TRÌ");
 
-            // Xử lý Lọc (Filters)
             if (!string.IsNullOrEmpty(searchString))
             {
                 var term = searchString.Trim().ToLower();
@@ -159,7 +133,6 @@ namespace KaraokeManagement.Controllers
                 roomCards = roomCards.Where(r => r.Status.Equals(status, StringComparison.OrdinalIgnoreCase)).ToList();
             }
 
-            // Trả về ViewModel
             var viewModel = new ReceptionistDashboardViewModel
             {
                 RoomCards = roomCards,
@@ -171,7 +144,6 @@ namespace KaraokeManagement.Controllers
 
                 ReadyCount = readyCount,
                 UsingCount = usingCount,
-                WaitingCount = waitingCount,
                 MaintenanceCount = maintenanceCount
             };
 
@@ -525,7 +497,7 @@ namespace KaraokeManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCustomerByPhone(string phone)
         {
-            if (string.IsNullOrWhiteSpace(phone))
+            if (string.IsNullOrWhiteSpace(phone) || !KaraokeManagement.Helpers.ValidationHelper.IsValidPhoneNumber(phone, allowGuestDefault: true))
             {
                 return Json(new { found = false });
             }
@@ -555,6 +527,11 @@ namespace KaraokeManagement.Controllers
             if (string.IsNullOrWhiteSpace(request.FullName))
             {
                 return Json(new { success = false, message = "Họ và tên là bắt buộc." });
+            }
+
+            if (!KaraokeManagement.Helpers.ValidationHelper.IsValidPhoneNumber(request.Phone, allowGuestDefault: false))
+            {
+                return Json(new { success = false, message = "Số điện thoại không hợp lệ." });
             }
 
             var existing = await _context.Customers.FirstOrDefaultAsync(c => c.Phone == request.Phone);
@@ -597,7 +574,6 @@ namespace KaraokeManagement.Controllers
             if (room == null)
             {
                 ModelState.AddModelError("", "Phòng được chọn không tồn tại.");
-                // Reload available rooms to render form again
                 model.AvailableRooms = await _context.Rooms
                     .Include(r => r.RoomType)
                     .Where(r => r.Status == "Available" || r.RoomId == model.RoomId)
@@ -609,7 +585,7 @@ namespace KaraokeManagement.Controllers
                         PricePerHour = r.RoomType.PricePerHour
                     })
                     .ToListAsync();
-                model.CurrentEmployeeName = User.Identity?.Name ?? "Nguyễn Minh Anh";
+                model.CurrentEmployeeName = User.Identity?.Name ?? "Phạm Mai (Lễ Tân ca 2)";
                 return View(model);
             }
 
@@ -758,7 +734,6 @@ namespace KaraokeManagement.Controllers
                 return NotFound("Không tìm thấy hóa đơn cần thanh toán.");
             }
 
-            // Cập nhật thông tin hóa đơn
             invoice.CheckOutTime = model.CheckOutTime;
             invoice.RoomTotal = model.RoomTotal;
             invoice.ServiceTotal = model.ServiceTotal;
@@ -766,10 +741,8 @@ namespace KaraokeManagement.Controllers
             invoice.GrandTotal = model.GrandTotal;
             invoice.Status = "Paid";
 
-            // Cập nhật trạng thái phòng
             invoice.Room.Status = "Available";
 
-            // Cập nhật trạng thái Booking
             if (invoice.Booking != null)
             {
                 invoice.Booking.Status = "Completed";
@@ -948,7 +921,6 @@ namespace KaraokeManagement.Controllers
         }
     }
 
-    // Các class ViewModel giữ nguyên
     public class RoomCardViewModel
     {
         public int RoomId { get; set; }
@@ -958,7 +930,6 @@ namespace KaraokeManagement.Controllers
         public string IconClass { get; set; } = string.Empty;
         public decimal PricePerHour { get; set; }
         public string? TimeLeft { get; set; }
-        public string? CustomerBooking { get; set; }
         public string? MaintenanceDescription { get; set; }
         public bool ShowCheckInButton { get; set; }
         public bool ShowMenuDots { get; set; }
@@ -976,7 +947,6 @@ namespace KaraokeManagement.Controllers
 
         public int ReadyCount { get; set; }
         public int UsingCount { get; set; }
-        public int WaitingCount { get; set; }
         public int MaintenanceCount { get; set; }
     }
 

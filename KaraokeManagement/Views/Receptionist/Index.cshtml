@@ -1,4 +1,4 @@
-﻿@model KaraokeManagement.Controllers.ReceptionistDashboardViewModel
+@model KaraokeManagement.Controllers.ReceptionistDashboardViewModel
 @{
     Layout = null;
 }
@@ -96,10 +96,6 @@
                     <span>Đang sử dụng (<span class="legend-count">@Model.UsingCount</span>)</span>
                 </div>
                 <div class="legend-item">
-                    <span class="legend-dot yellow"></span>
-                    <span>Chờ nhận phòng (<span class="legend-count">@Model.WaitingCount</span>)</span>
-                </div>
-                <div class="legend-item">
                     <span class="legend-dot blue"></span>
                     <span>Bảo trì (<span class="legend-count">@Model.MaintenanceCount</span>)</span>
                 </div>
@@ -118,9 +114,6 @@
                                 break;
                             case "ĐANG SỬ DỤNG":
                                 statusClass = "status-using";
-                                break;
-                            case "CHỜ NHẬN PHÒNG":
-                                statusClass = "status-waiting";
                                 break;
                             case "ĐANG BẢO TRÌ":
                                 statusClass = "status-maintenance";
@@ -155,13 +148,6 @@
                                     {
                                         <div class="detail-row">
                                             <span class="detail-label">Mô tả: Sẵn sàng vào hát</span>
-                                        </div>
-                                    }
-                                    else if (room.Status == "CHỜ NHẬN PHÒNG")
-                                    {
-                                        <div class="detail-row">
-                                            <span class="detail-label">Khách đặt:</span>
-                                            <span class="detail-value">@room.CustomerBooking</span>
                                         </div>
                                     }
                                     else if (room.Status == "ĐANG BẢO TRÌ")
