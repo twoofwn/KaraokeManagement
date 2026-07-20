@@ -756,6 +756,104 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .badge-status.active { background: #edfaf3; color: #27a85f; }
 .badge-status.draft { background: #f5f0f8; color: #8a7e90; }
+.badge-status.available { background: #edfaf3; color: #27a85f; }
+.badge-status.inuse { background: #fdf0f7; color: #E83C91; }
+.badge-status.maintenance { background: #fff3cd; color: #856404; }
+
+/* =============================================
+   ALERTS
+   ============================================= */
+.admin-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 18px;
+}
+
+.admin-alert.error { background: #fdecef; color: #c0264b; border: 1px solid #f8cdd6; }
+.admin-alert.success { background: #edfaf3; color: #27a85f; border: 1px solid #c8ecd8; }
+
+/* =============================================
+   DASHBOARD STATS EXTRAS
+   ============================================= */
+.stat-trend {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+.stat-trend.up { color: #27a85f; }
+.stat-trend.down { color: #c0264b; }
+
+.dashboard-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+@media (max-width: 1100px) {
+    .dashboard-2col { grid-template-columns: 1fr; }
+}
+
+/* =============================================
+   TABLE SEARCH + PAGER
+   ============================================= */
+.table-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8f4ec;
+    border: 1px solid #ede6f0;
+    border-radius: 8px;
+    padding: 6px 12px;
+    margin-left: auto;
+    margin-right: 12px;
+}
+
+.table-search i { color: #a09098; font-size: 12px; }
+
+.table-search input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 13px;
+    color: #43334C;
+    width: 180px;
+}
+
+.pager {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 16px 0 20px;
+}
+
+.pager-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border-radius: 8px;
+    border: 1px solid #ede6f0;
+    background: #fff;
+    color: #43334C;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.15s;
+}
+
+.pager-btn:hover { border-color: #FF8FB7; color: #E83C91; }
+.pager-btn.active { background: #E83C91; border-color: #E83C91; color: #fff; }
 
 /* =============================================
    SHARED BUTTONS

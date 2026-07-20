@@ -1,0 +1,76 @@
+@model IEnumerable<KaraokeManagement.Models.RoomType>
+@{
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+    ViewData["Title"] = "Room Types";
+    ViewData["ActiveNav"] = "roomtypes";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Room Types</h1>
+        <nav class="breadcrumb-nav">
+            <span class="breadcrumb-current">Room Types</span>
+        </nav>
+    </div>
+    <a href="/Admin/RoomTypeCreate" class="btn-primary-sm">
+        <i class="fa-solid fa-plus"></i> Add Room Type
+    </a>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="admin-alert error">
+        <i class="fa-solid fa-circle-exclamation"></i> @TempData["Error"]
+    </div>
+}
+
+<div class="table-card">
+    <div class="table-card-header">
+        <h2 class="table-card-title">Room Types</h2>
+        <span class="record-count">@Model.Count() records</span>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Type Name</th>
+                <th>Price / Hour</th>
+                <th>Description</th>
+                <th>Rooms</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var type in Model)
+            {
+                <tr>
+                    <td>@type.RoomTypeId</td>
+                    <td>@type.TypeName</td>
+                    <td>@type.PricePerHour.ToString("N0")đ</td>
+                    <td>@type.Description</td>
+                    <td><span class="category-chip-plain">@type.Rooms.Count phòng</span></td>
+                    <td class="table-actions">
+                        <a href="/Admin/RoomTypeEdit/@type.RoomTypeId" class="action-btn edit">
+                            <i class="fa-solid fa-pen"></i>
+                        </a>
+                        <form method="post" action="/Admin/RoomTypeDelete/@type.RoomTypeId"
+                              onsubmit="return confirm('Xóa loại phòng này?')" style="display:inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="action-btn delete">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="6" style="text-align:center;color:#a09098;padding:32px;">
+                        Chưa có loại phòng nào. <a href="/Admin/RoomTypeCreate">Thêm mới</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

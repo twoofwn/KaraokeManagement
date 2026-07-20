@@ -1,0 +1,28 @@
+@{
+    int currentPage = ViewBag.Page ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    string pagerAction = ViewBag.PagerAction ?? "";
+    string searchQuery = ViewBag.Search as string ?? "";
+}
+@if (totalPages > 1)
+{
+    <div class="pager">
+        @if (currentPage > 1)
+        {
+            <a class="pager-btn" href="/Admin/@pagerAction?search=@searchQuery&page=@(currentPage - 1)">
+                <i class="fa-solid fa-chevron-left"></i>
+            </a>
+        }
+        @for (int p = 1; p <= totalPages; p++)
+        {
+            <a class="pager-btn @(p == currentPage ? "active" : "")"
+               href="/Admin/@pagerAction?search=@searchQuery&page=@p">@p</a>
+        }
+        @if (currentPage < totalPages)
+        {
+            <a class="pager-btn" href="/Admin/@pagerAction?search=@searchQuery&page=@(currentPage + 1)">
+                <i class="fa-solid fa-chevron-right"></i>
+            </a>
+        }
+    </div>
+}

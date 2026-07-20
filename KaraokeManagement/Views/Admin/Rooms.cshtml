@@ -1,0 +1,96 @@
+@model IEnumerable<KaraokeManagement.Models.Room>
+@{
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+    ViewData["Title"] = "Rooms";
+    ViewData["ActiveNav"] = "rooms";
+
+    string StatusClass(string? status) => status switch
+    {
+        "Available" => "available",
+        "InUse" => "inuse",
+        "Maintenance" => "maintenance",
+        _ => "draft"
+    };
+    string StatusText(string? status) => status switch
+    {
+        "Available" => "Sẵn sàng",
+        "InUse" => "Đang sử dụng",
+        "Maintenance" => "Bảo trì",
+        _ => status ?? "—"
+    };
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Rooms</h1>
+        <nav class="breadcrumb-nav">
+            <span class="breadcrumb-current">Rooms</span>
+        </nav>
+    </div>
+    <a href="/Admin/RoomCreate" class="btn-primary-sm">
+        <i class="fa-solid fa-plus"></i> Add Room
+    </a>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="admin-alert error">
+        <i class="fa-solid fa-circle-exclamation"></i> @TempData["Error"]
+    </div>
+}
+
+<div class="table-card">
+    <div class="table-card-header">
+        <h2 class="table-card-title">Karaoke Rooms</h2>
+        <form method="get" action="/Admin/Rooms" class="table-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" name="search" value="@ViewBag.Search" placeholder="Tìm theo tên phòng, loại..." />
+        </form>
+        <span class="record-count">@ViewBag.TotalCount records</span>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Room Name</th>
+                <th>Room Type</th>
+                <th>Price / Hour</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var room in Model)
+            {
+                <tr>
+                    <td>@room.RoomId</td>
+                    <td>@room.RoomName</td>
+                    <td><span class="category-chip-plain">@room.RoomType?.TypeName</span></td>
+                    <td>@room.RoomType?.PricePerHour.ToString("N0")đ</td>
+                    <td><span class="badge-status @StatusClass(room.Status)">@StatusText(room.Status)</span></td>
+                    <td class="table-actions">
+                        <a href="/Admin/RoomEdit/@room.RoomId" class="action-btn edit">
+                            <i class="fa-solid fa-pen"></i>
+                        </a>
+                        <form method="post" action="/Admin/RoomDelete/@room.RoomId"
+                              onsubmit="return confirm('Xóa phòng này?')" style="display:inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="action-btn delete">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="6" style="text-align:center;color:#a09098;padding:32px;">
+                        Chưa có phòng nào. <a href="/Admin/RoomCreate">Thêm mới</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @await Html.PartialAsync("_Pager")
+</div>

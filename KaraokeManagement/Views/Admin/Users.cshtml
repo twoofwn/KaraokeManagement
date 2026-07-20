@@ -17,10 +17,21 @@
     </a>
 </div>
 
+@if (TempData["Error"] != null)
+{
+    <div class="admin-alert error">
+        <i class="fa-solid fa-circle-exclamation"></i> @TempData["Error"]
+    </div>
+}
+
 <div class="table-card">
     <div class="table-card-header">
         <h2 class="table-card-title">Staff Accounts</h2>
-        <span class="record-count">@Model.Count() records</span>
+        <form method="get" action="/Admin/Users" class="table-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" name="search" value="@ViewBag.Search" placeholder="Tìm theo tên, username, role..." />
+        </form>
+        <span class="record-count">@ViewBag.TotalCount records</span>
     </div>
     <table class="data-table">
         <thead>
@@ -60,6 +71,7 @@
                         </a>
                         <form method="post" action="/Admin/UserDelete/@user.AccountId"
                               onsubmit="return confirm('Xóa tài khoản @user.Username?')" style="display:inline">
+                            @Html.AntiForgeryToken()
                             <button type="submit" class="action-btn delete">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
@@ -77,4 +89,5 @@
             }
         </tbody>
     </table>
+    @await Html.PartialAsync("_Pager")
 </div>

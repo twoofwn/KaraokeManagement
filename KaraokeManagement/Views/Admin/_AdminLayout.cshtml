@@ -37,6 +37,18 @@
                 <i class="fa-solid fa-layer-group nav-icon"></i>
                 <span>Categories</span>
             </a>
+            <a href="/Admin/Rooms" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "rooms" ? "active" : "")">
+                <i class="fa-solid fa-door-open nav-icon"></i>
+                <span>Rooms</span>
+            </a>
+            <a href="/Admin/RoomTypes" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "roomtypes" ? "active" : "")">
+                <i class="fa-solid fa-tags nav-icon"></i>
+                <span>Room Types</span>
+            </a>
+            <a href="/Admin/Suppliers" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "suppliers" ? "active" : "")">
+                <i class="fa-solid fa-truck-field nav-icon"></i>
+                <span>Suppliers</span>
+            </a>
             <a href="/Admin/Users" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "users" ? "active" : "")">
                 <i class="fa-solid fa-users nav-icon"></i>
                 <span>Users</span>

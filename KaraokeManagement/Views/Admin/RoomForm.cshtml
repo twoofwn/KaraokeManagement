@@ -1,0 +1,70 @@
+@model KaraokeManagement.Models.Room
+@{
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+    bool isEdit = ViewBag.IsEdit == true;
+    ViewData["Title"] = isEdit ? "Edit Room" : "Add Room";
+    ViewData["ActiveNav"] = "rooms";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">@(isEdit ? "Edit Room" : "Add Room")</h1>
+        <nav class="breadcrumb-nav">
+            <a href="/Admin/Rooms">Rooms</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">@(isEdit ? "Edit" : "Create New")</span>
+        </nav>
+    </div>
+</div>
+
+<div class="form-layout-narrow">
+    <div class="form-card">
+        <form method="post"
+              asp-action="@(isEdit ? "RoomEdit" : "RoomCreate")"
+              asp-controller="Admin"
+              asp-route-id="@(isEdit ? Model.RoomId : 0)">
+
+            <div class="field-group" style="margin-bottom:24px;">
+                <label class="field-label">Room Name</label>
+                <input asp-for="RoomName" class="field-input" placeholder="e.g. Phòng 101, VIP 01..." />
+                <span asp-validation-for="RoomName" class="field-error"></span>
+            </div>
+
+            <div class="field-group" style="margin-bottom:24px;">
+                <label class="field-label">Room Type</label>
+                <div class="select-wrapper">
+                    <select asp-for="RoomTypeId" asp-items="ViewBag.RoomTypes" class="field-select">
+                        <option value="">Select room type</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down select-arrow"></i>
+                </div>
+                <span asp-validation-for="RoomTypeId" class="field-error"></span>
+                <span class="field-hint">Loại phòng quyết định giá thuê theo giờ. <a href="/Admin/RoomTypeCreate">Thêm loại phòng mới</a></span>
+            </div>
+
+            <div class="field-group" style="margin-bottom:28px;">
+                <label class="field-label">Status</label>
+                <div class="select-wrapper">
+                    <select asp-for="Status" class="field-select">
+                        <option value="Available">Sẵn sàng</option>
+                        <option value="Maintenance">Bảo trì</option>
+                        @if (isEdit && Model.Status == "InUse")
+                        {
+                            <option value="InUse">Đang sử dụng</option>
+                        }
+                    </select>
+                    <i class="fa-solid fa-chevron-down select-arrow"></i>
+                </div>
+                <span class="field-hint">Trạng thái "Đang sử dụng" do lễ tân check-in tự đặt.</span>
+            </div>
+
+            <div class="form-actions">
+                <a href="/Admin/Rooms" class="btn-cancel">Cancel</a>
+                <button type="submit" class="btn-save">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    @(isEdit ? "Update Room" : "Save Room")
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

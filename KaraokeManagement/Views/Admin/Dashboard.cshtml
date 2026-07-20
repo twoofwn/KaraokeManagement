@@ -1,7 +1,11 @@
+@model KaraokeManagement.ViewModel.AdminDashboardViewModel
 @{
     Layout = "~/Views/Admin/_AdminLayout.cshtml";
     ViewData["Title"] = "Dashboard";
     ViewData["ActiveNav"] = "dashboard";
+
+    string TrendClass(double percent) => percent >= 0 ? "up" : "down";
+    string TrendIcon(double percent) => percent >= 0 ? "fa-arrow-trend-up" : "fa-arrow-trend-down";
 }
 
 <div class="page-header">
@@ -10,78 +14,204 @@
         <nav class="breadcrumb-nav">
             <span>Admin</span>
             <span class="breadcrumb-sep">/</span>
-            <span class="breadcrumb-current">Dashboard</span>
+            <span class="breadcrumb-current">Thống kê tháng @DateTime.Now.ToString("MM/yyyy")</span>
         </nav>
     </div>
 </div>
 
+<!-- Thống kê tháng này -->
 <div class="stats-row">
     <div class="stat-card">
-        <div class="stat-icon"><i class="fa-solid fa-box"></i></div>
+        <div class="stat-icon"><i class="fa-solid fa-user-plus"></i></div>
         <div class="stat-info">
-            <div class="stat-value">@ViewBag.TotalItems</div>
-            <div class="stat-label">Total Items</div>
+            <div class="stat-value">@Model.NewCustomersThisMonth</div>
+            <div class="stat-label">Khách hàng mới tháng này</div>
+            <div class="stat-trend @TrendClass(Model.PercentCustomerChange)">
+                <i class="fa-solid @TrendIcon(Model.PercentCustomerChange)"></i>
+                @Model.PercentCustomerChange% so với tháng trước
+            </div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon"><i class="fa-solid fa-layer-group"></i></div>
+        <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
         <div class="stat-info">
-            <div class="stat-value">@ViewBag.TotalCategories</div>
-            <div class="stat-label">Categories</div>
+            <div class="stat-value">@Model.HoursThisMonth.ToString("N1")h</div>
+            <div class="stat-label">Giờ sử dụng phòng</div>
+            <div class="stat-trend @TrendClass(Model.PercentHoursChange)">
+                <i class="fa-solid @TrendIcon(Model.PercentHoursChange)"></i>
+                @Model.PercentHoursChange% so với tháng trước
+            </div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+        <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
         <div class="stat-info">
-            <div class="stat-value">@ViewBag.TotalUsers</div>
-            <div class="stat-label">Staff Accounts</div>
+            <div class="stat-value">@Model.RevenueThisMonth.ToString("N0")đ</div>
+            <div class="stat-label">Doanh thu tháng này</div>
+            <div class="stat-trend @TrendClass(Model.PercentRevenueChange)">
+                <i class="fa-solid @TrendIcon(Model.PercentRevenueChange)"></i>
+                @Model.PercentRevenueChange% so với tháng trước
+            </div>
         </div>
     </div>
     <div class="stat-card">
         <div class="stat-icon"><i class="fa-solid fa-file-invoice"></i></div>
         <div class="stat-info">
-            <div class="stat-value">@ViewBag.TotalInvoices</div>
-            <div class="stat-label">Active Invoices</div>
+            <div class="stat-value">@Model.InvoicesThisMonth</div>
+            <div class="stat-label">Lượt sử dụng phòng</div>
+            <div class="stat-trend @TrendClass(Model.PercentInvoiceChange)">
+                <i class="fa-solid @TrendIcon(Model.PercentInvoiceChange)"></i>
+                @Model.PercentInvoiceChange% so với tháng trước
+            </div>
         </div>
     </div>
 </div>
 
-<div class="table-card">
+<!-- Biểu đồ giờ sử dụng theo ngày -->
+<div class="table-card" style="margin-bottom:24px;">
     <div class="table-card-header">
-        <h2 class="table-card-title">Recent Entries</h2>
-        <a href="/Admin/InventoryCreate" class="btn-primary-sm">
-            <i class="fa-solid fa-plus"></i> Add New
-        </a>
+        <h2 class="table-card-title">Giờ sử dụng phòng theo ngày (tháng @DateTime.Now.ToString("MM/yyyy"))</h2>
     </div>
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Product Name</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in ViewBag.RecentItems as IEnumerable<KaraokeManagement.Models.ServiceItem> ?? [])
-            {
-                <tr>
-                    <td>@item.ServiceId</td>
-                    <td>@item.ServiceName</td>
-                    <td><span class="category-chip-plain">@item.Category?.CategoryName</span></td>
-                    <td>@item.SellingPrice.ToString("N0")đ</td>
-                    <td>@item.StockQuantity</td>
-                    <td class="table-actions">
-                        <a href="/Admin/InventoryEdit/@item.ServiceId" class="action-btn edit"><i class="fa-solid fa-pen"></i></a>
-                        <form method="post" action="/Admin/InventoryDelete/@item.ServiceId" style="display:inline"
-                              onsubmit="return confirm('Xóa item này?')">
-                            <button type="submit" class="action-btn delete"><i class="fa-solid fa-trash"></i></button>
-                        </form>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div style="padding:16px 24px 24px;height:280px;">
+        <canvas id="dailyUsageChart"></canvas>
+    </div>
 </div>
+
+<div class="dashboard-2col">
+    <!-- Top phòng -->
+    <div class="table-card">
+        <div class="table-card-header">
+            <h2 class="table-card-title">Top phòng tháng này</h2>
+            <a href="/Admin/Rooms" class="btn-primary-sm"><i class="fa-solid fa-door-open"></i> Quản lý phòng</a>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Phòng</th>
+                    <th>Loại</th>
+                    <th>Lượt</th>
+                    <th>Giờ</th>
+                    <th>Doanh thu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var room in Model.TopRooms)
+                {
+                    <tr>
+                        <td>@room.RoomName</td>
+                        <td><span class="category-chip-plain">@room.TypeName</span></td>
+                        <td>@room.Sessions</td>
+                        <td>@room.Hours.ToString("N1")h</td>
+                        <td>@room.Revenue.ToString("N0")đ</td>
+                    </tr>
+                }
+                @if (!Model.TopRooms.Any())
+                {
+                    <tr><td colspan="5" style="text-align:center;color:#a09098;padding:24px;">Chưa có dữ liệu tháng này.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Top dịch vụ -->
+    <div class="table-card">
+        <div class="table-card-header">
+            <h2 class="table-card-title">Top dịch vụ bán chạy</h2>
+            <a href="/Admin/Inventory" class="btn-primary-sm"><i class="fa-solid fa-box"></i> Kho hàng</a>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Sản phẩm</th>
+                    <th>Danh mục</th>
+                    <th>SL bán</th>
+                    <th>Doanh thu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var service in Model.TopServices)
+                {
+                    <tr>
+                        <td>@service.ServiceName</td>
+                        <td><span class="category-chip-plain">@service.CategoryName</span></td>
+                        <td>@service.Quantity</td>
+                        <td>@service.Amount.ToString("N0")đ</td>
+                    </tr>
+                }
+                @if (!Model.TopServices.Any())
+                {
+                    <tr><td colspan="4" style="text-align:center;color:#a09098;padding:24px;">Chưa có dữ liệu tháng này.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Tổng quan hệ thống -->
+<div class="stats-row" style="margin-top:24px;">
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-door-open"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">@Model.TotalRooms</div>
+            <div class="stat-label">Tổng số phòng</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-box"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">@Model.TotalItems</div>
+            <div class="stat-label">Sản phẩm / dịch vụ</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">@Model.TotalUsers</div>
+            <div class="stat-label">Tài khoản nhân viên</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-id-card"></i></div>
+        <div class="stat-info">
+            <div class="stat-value">@Model.TotalCustomers</div>
+            <div class="stat-label">Khách hàng</div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+        const labels = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+        const usageData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            Model.DailyUsage.Select(p => new { day = p.Day, hours = p.Hours })));
+        const hoursByDay = labels.map(d => {
+            const found = usageData.find(p => p.day === d);
+            return found ? found.hours : 0;
+        });
+
+        new Chart(document.getElementById('dailyUsageChart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Giờ sử dụng',
+                    data: hoursByDay,
+                    backgroundColor: '#FF8FB7',
+                    hoverBackgroundColor: '#E83C91',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: 'Giờ' } },
+                    x: { grid: { display: false }, title: { display: true, text: 'Ngày trong tháng' } }
+                }
+            }
+        });
+    </script>
+}
