@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+@{
+    var fullName = User.FindFirstValue(ClaimTypes.Name) ?? "User";
+    var avatar = fullName.Substring(0, 1).ToUpper();
+}
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
@@ -19,50 +24,50 @@
                 <i class="fa-solid fa-table-columns"></i>
             </div>
             <div>
-                <div class="brand-name">AdminPanel</div>
-                <div class="brand-sub">Data Management</div>
+                <div class="brand-name">Quản trị hệ thống</div>
+                <div class="brand-sub">Admin</div>
             </div>
         </div>
 
         <nav class="sidebar-nav">
             <a href="/Admin/Dashboard" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "dashboard" ? "active" : "")">
                 <i class="fa-solid fa-table-columns nav-icon"></i>
-                <span>Dashboard</span>
+                <span>Báo cáo hệ thống</span>
             </a>
             <a href="/Admin/Inventory" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "inventory" ? "active" : "")">
                 <i class="fa-solid fa-box nav-icon"></i>
-                <span>Inventory</span>
+                <span>Kho hàng</span>
             </a>
             <a href="/Admin/Categories" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "categories" ? "active" : "")">
                 <i class="fa-solid fa-layer-group nav-icon"></i>
-                <span>Categories</span>
+                <span>Loại hàng</span>
             </a>
             <a href="/Admin/Rooms" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "rooms" ? "active" : "")">
                 <i class="fa-solid fa-door-open nav-icon"></i>
-                <span>Rooms</span>
+                <span>Phòng hát</span>
             </a>
             <a href="/Admin/RoomTypes" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "roomtypes" ? "active" : "")">
                 <i class="fa-solid fa-tags nav-icon"></i>
-                <span>Room Types</span>
+                <span>Loại phòng</span>
             </a>
             <a href="/Admin/Suppliers" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "suppliers" ? "active" : "")">
                 <i class="fa-solid fa-truck-field nav-icon"></i>
-                <span>Suppliers</span>
+                <span>Nhà cung cấp</span>
             </a>
             <a href="/Admin/Users" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "users" ? "active" : "")">
                 <i class="fa-solid fa-users nav-icon"></i>
-                <span>Users</span>
+                <span>Tài khoản</span>
             </a>
             <a href="#" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "settings" ? "active" : "")">
                 <i class="fa-solid fa-gear nav-icon"></i>
-                <span>Settings</span>
+                <span>Cài đặt</span>
             </a>
         </nav>
 
         <div class="sidebar-bottom">
             <a href="/Auth/Logout" class="sidebar-footer-link">
                 <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                <span>Logout</span>
+                <span>Đăng xuất</span>
             </a>
         </div>
     </aside>
@@ -72,12 +77,15 @@
 
         <!-- Top header -->
         <header class="admin-header">
-            <div class="header-search">
+            <div@*  class="header-search" *@>
             </div>
             <nav class="header-tabs">
             </nav>
             <div class="header-actions">
-                <div class="header-avatar">I</div>
+                    <div class="header-user">
+                        <span>@fullName</span>
+                    </div>
+                    <div class="header-avatar">@avatar</div>
             </div>
         </header>
 
