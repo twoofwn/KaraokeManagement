@@ -41,7 +41,6 @@
                         </div>
                         <div class="user-info">
                             <span class="user-name">@(User.Identity?.Name ?? "Chưa rõ")</span>
-                            <span class="user-role">@(User.FindFirst(ClaimTypes.Role)?.Value ?? "Chưa rõ")</span>
                         </div>
                     </div>
                 </div>
@@ -224,11 +223,13 @@
     </div>
 
     <script>
+        // Chuyển đến trang được chọn trong danh sách phân trang
         function submitForm(page) {
             document.getElementById('pageNumberInput').value = page;
             document.getElementById('historyForm').submit();
         }
 
+         // Xóa toàn bộ bộ lọc tìm kiếm và tải lại danh sách
         function resetFilters() {
             const form = document.getElementById('historyForm');
             
@@ -250,6 +251,7 @@
             submitForm(1);
         }
 
+        // Hiển thị chi tiết hóa đơn trong modal
         function viewInvoiceDetail(invoiceId) {
             const modalContent = document.getElementById('modalContent');
             modalContent.innerHTML = `
@@ -284,6 +286,7 @@
             const modal = document.getElementById('invoiceDetailModal');
             const closeBtn = document.getElementById('closeModalBtn');
 
+            // Đóng modal chi tiết hóa đơn
             function closeModal() {
                 modal.classList.remove('show');
                 setTimeout(() => {

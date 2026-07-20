@@ -11,7 +11,7 @@
     <title>Nhận phòng - Minh Tuấn Karaoke</title>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/css/receptionist.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/CheckIn.css" asp-append-version="true" />
 </head>
@@ -32,7 +32,6 @@
                     </div>
                     <div class="user-info">
                         <span class="user-name">@Model.CurrentEmployeeName</span>
-                        <span class="user-role">Lễ tân trực</span>
                     </div>
                 </div>
             </div>
@@ -216,6 +215,7 @@
             const checkOutTimeEstimatedInput = document.getElementById('CheckOutTimeEstimated');
             const quickTimeButtons = document.querySelectorAll('.btn-quick-time');
 
+            // Cập nhật thời gian trả phòng dự kiến dựa trên số giờ sử dụng
             function updateEstimatedCheckoutTime(hours) {
                 const checkInVal = checkInTimeInput.value;
                 if (checkInVal) {
@@ -298,6 +298,7 @@
                 }
             });
 
+            // Tìm kiếm thông tin khách hàng theo số điện thoại
             function performCustomerLookup(phone) {
                 customerProfileCard.innerHTML = `
                     <div style="text-align: center; color: var(--primary-magenta); padding: 20px;">
@@ -326,6 +327,7 @@
                     });
             }
 
+            // Hiển thị thông tin khách hàng đã tìm thấy
             function renderCustomerProfile(customer) {
                 hiddenCustomerId.value = customer.customerId;
                 
@@ -366,6 +368,7 @@
                 });
             }
 
+            // Hiển thị trạng thái khi không tìm thấy khách hàng
             function renderNotFoundState(searchedPhone) {
                 hiddenCustomerId.value = '';
                 customerProfileCard.innerHTML = `
@@ -394,6 +397,7 @@
                 });
             }
 
+            // Reset thông tin về trạng thái khách vãng lai
             function resetToGuestCustomer() {
                 hiddenCustomerId.value = '';
                 phoneSearchInput.value = '';
@@ -408,6 +412,7 @@
                 `;
             }
 
+            // Đóng modal đăng ký khách hàng
             function closeModal() {
                 newCustomerModal.classList.remove('show');
                 newCustomerForm.reset();

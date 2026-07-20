@@ -255,6 +255,7 @@
             initSearchFilter();
         });
 
+        // Đếm thời gian sử dụng phòng và tính tiền phòng
         function initSingingTimer() {
             const checkInDate = new Date(checkInTimeISO);
             const timerEl = document.getElementById('singing-timer');
@@ -297,7 +298,7 @@
             updateTime();
             setInterval(updateTime, 1000);
         }
-
+        // Chức năng lọc dịch vụ theo danh mục
         function initCategoryFilter() {
             const tabs = document.querySelectorAll('#category-tabs .tab-item');
             const cards = document.querySelectorAll('#products-list .product-card');
@@ -323,6 +324,7 @@
             });
         }
 
+        // Chức năng tìm kiếm dịch vụ
         function initSearchFilter() {
             const searchInput = document.getElementById('menu-search');
             
@@ -348,7 +350,7 @@
             });
         }
 
-        
+         // Thêm dịch vụ vào hóa đơn
         function addService(serviceId) {
             postData('/Receptionist/AddServiceItem', { roomId: roomId, serviceId: serviceId })
                 .then(res => {
@@ -365,6 +367,7 @@
                 });
         }
 
+        // Cập nhật số lượng dịch vụ trong hóa đơn
         function adjustQty(detailId, newQty) {
             if (newQty <= 0) {
                 removeItem(detailId);
@@ -386,6 +389,7 @@
                 });
         }
 
+        // Xóa dịch vụ khỏi hóa đơn
         function removeItem(detailId) {
             if (!confirm('Bạn có muốn xóa món ăn này khỏi danh sách gọi dịch vụ?')) return;
 
@@ -404,6 +408,7 @@
                 });
         }
 
+        // Xử lý chuyển phòng cho khách
         function submitTransfer() {
             const selectEl = document.getElementById('new-room-select');
             const newRoomId = parseInt(selectEl.value);
@@ -428,6 +433,7 @@
                 });
         }
 
+        // Chuyển đến trang thanh toán hóa đơn
         function processPayment() {
             if (invoiceId && invoiceId !== 0) {
                 window.location.href = `/Receptionist/Checkout?invoiceId=${invoiceId}`;

@@ -1,10 +1,8 @@
-/* --- RECEPTIONIST DASHBOARD STYLES --- */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     
-    /* Soft Pastel Palette */
     --bg-main: #FCF9F9;
     --bg-card: #FFFFFF;
     --sidebar-bg: #FFFFFF;
@@ -12,13 +10,11 @@
     --text-secondary: #707070;
     --text-muted: #A0A0A0;
     
-    /* Branding Colors */
     --logo-pink: #C1355E;
     --active-pink: #D84B73;
     --active-pink-hover: #C53E65;
     --bg-pink-light: #FDF2F4;
     
-    /* Room Status Colors (Pastel Bgs + Vivid Texts) */
     --status-ready-bg: #EBF7EE;
     --status-ready-text: #10B981;
     --status-ready-dot: #10B981;
@@ -29,7 +25,7 @@
     
     --status-maintenance-bg: #F1F5F9;
     --status-maintenance-text: #4B5563;
-    --status-maintenance-dot: #3B82F6; /* Blue dot as specified in legend */
+    --status-maintenance-dot: #3B82F6;
 
     --border-color: #F1ECEC;
     --shadow-sm: 0 2px 8px rgba(216, 75, 115, 0.04);
@@ -47,7 +43,7 @@
 }
 
 body {
-    font-family: var(--font-sans);
+    font-family: 'Inter', sans-serif;
     background-color: var(--bg-main);
     color: var(--text-primary);
     display: flex;
@@ -56,7 +52,6 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* Sidebar Styling */
 .reception-sidebar {
     width: 240px;
     min-width: 240px;

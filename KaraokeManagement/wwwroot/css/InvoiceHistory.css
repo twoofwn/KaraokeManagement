@@ -1,5 +1,5 @@
 /* --- INVOICE HISTORY SCREEN STYLES --- */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet');
 
 :root {
     --bg-history: #FCF2F4;
@@ -17,8 +17,6 @@
     --shadow-premium: 0 10px 30px rgba(216, 75, 115, 0.05);
     --shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.15);
     
-    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    
     --color-success: #10B981;
     --color-success-bg: #E6F8F0;
     --color-warning: #FBBF24;
@@ -28,7 +26,7 @@
 }
 
 body.invoice-history-page {
-    font-family: var(--font-sans);
+    font-family: 'Inter', sans-serif;
     background-color: var(--bg-history);
     color: var(--text-dark);
     display: flex;

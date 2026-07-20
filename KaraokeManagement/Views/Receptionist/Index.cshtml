@@ -36,7 +36,6 @@
                     </div>
                     <div class="user-info">
                         <span class="user-name">@(User.Identity?.Name ?? "Chưa rõ")</span>
-                        <span class="user-role">@(User.FindFirst(ClaimTypes.Role)?.Value ?? "Chưa rõ")</span>
                     </div>
                 </div>
             </div>
@@ -253,6 +252,7 @@
             });
         });
 
+        // Chuyển đổi số giây thành định dạng giờ:phút:giây
         function formatSeconds(totalSecs) {
             const hrs = Math.floor(totalSecs / 3600);
             const mins = Math.floor((totalSecs % 3600) / 60);
