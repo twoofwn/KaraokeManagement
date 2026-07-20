@@ -17,27 +17,9 @@
     <partial name="_ReceptionistSidebar" />
 
     <div class="reception-main">
-        <header class="reception-header">
-            <form id="filterForm" method="get" action="/Receptionist">
-                <div class="header-search-container">
-                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" name="searchString" value="@Model.SearchString" 
-                           placeholder="Tìm kiếm tên phòng hoặc số phòng..." 
-                           class="search-input" autocomplete="off" id="searchInput" />
-                </div>
-                <input type="hidden" name="roomType" value="@Model.SelectedRoomType" id="hiddenRoomType" />
-                <input type="hidden" name="status" value="@Model.SelectedStatus" id="hiddenStatus" />
-            </form>
-
+        <header class="reception-header1">
             <div class="header-actions">
-                <div class="user-profile">
-                    <div class="avatar-container">
-                        <img src="~/img/receptionist_avatar.png" alt="Avatar Minh Anh" class="user-avatar" />
-                    </div>
-                    <div class="user-info">
-                        <span class="user-name">@(User.Identity?.Name ?? "Chưa rõ")</span>
-                    </div>
-                </div>
+                <span class="user-name">@(User.Identity?.Name ?? "Chưa rõ")</span>
             </div>
         </header>
 

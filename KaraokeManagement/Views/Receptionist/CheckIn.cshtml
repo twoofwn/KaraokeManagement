@@ -26,14 +26,7 @@
             </div>
             
             <div class="header-actions">
-                <div class="user-profile">
-                    <div class="avatar-container">
-                        <img src="~/img/receptionist_avatar.png" alt="Avatar" class="user-avatar" />
-                    </div>
-                    <div class="user-info">
-                        <span class="user-name">@Model.CurrentEmployeeName</span>
-                    </div>
-                </div>
+                    <span class="user-name">@Model.CurrentEmployeeName</span>
             </div>
         </header>
 
@@ -146,7 +139,7 @@
                         </div>
 
                         <div class="form-actions">
-                            <button type="button" class="btn-cancel" onclick="window.location.href='/Receptionist'">Hủy bỏ</button>
+                            <button type="button" class="btn-cancel" onclick="window.location.href='/Receptionist/Index'">Hủy bỏ</button>
                             <button type="submit" class="btn-submit">
                                 <i class="fa-solid fa-check"></i> Xác nhận nhận phòng
                             </button>
