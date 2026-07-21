@@ -163,7 +163,6 @@ namespace KaraokeManagement.Controllers
 
             var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == email);
 
-            // Tránh leak thông tin user, vẫn báo thành công dù email có tồn tại hay không
             if (account != null)
             {
                 string token = Guid.NewGuid().ToString("N");
@@ -193,21 +192,21 @@ namespace KaraokeManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> ResetPassword(string token, string email)
         {
-            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
-            {
-                return RedirectToAction("Login");
-            }
+            //if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
+            //{
+            //    return RedirectToAction("Login");
+            //}
 
             var account = await _context.Accounts.FirstOrDefaultAsync(a =>
                 a.Email == email &&
                 a.ResetPasswordToken == token &&
                 a.ResetPasswordTokenExpiry > DateTime.UtcNow);
 
-            if (account == null)
-            {
-                ViewBag.Error = "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.";
-                return View("Error");
-            }
+            //if (account == null)
+            //{
+            //    ViewBag.Error = "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.";
+            //    return View("Error");
+            //}
 
             var model = new ResetPasswordViewModel { Token = token, Email = email };
             return View(model);
