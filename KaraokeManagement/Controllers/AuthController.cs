@@ -1,4 +1,4 @@
-﻿using KaraokeManagement.Helpers;
+using KaraokeManagement.Helpers;
 using KaraokeManagement.Models;
 using KaraokeManagement.Service;
 using KaraokeManagement.ViewModel;
@@ -17,9 +17,9 @@ namespace KaraokeManagement.Controllers
         private readonly KaraokeManagementDbContext _context;
         private readonly IEmailService _emailService;
 
-        public AuthController(IEmailService emailService)
+        public AuthController(KaraokeManagementDbContext context, IEmailService emailService)
         {
-            _context = new KaraokeManagementDbContext();
+            _context = context;
             _emailService = emailService;
         }
 

@@ -606,5 +606,108 @@ namespace KaraokeManagement.Controllers
             ViewBag.Roles = new SelectList(_context.Roles.ToList(), "RoleId", "RoleName", selectedId);
         }
 
+        private void LoadRooms(int? selectedId = null)
+        {
+            ViewBag.Rooms = new SelectList(_context.Rooms.ToList(), "RoomId", "RoomName", selectedId);
+        }
+
+        // ========== ROOM IMAGES ==========
+        public IActionResult RoomImages(int? roomId, int page = 1)
+        {
+            var query = _context.RoomImages.Include(i => i.Room).AsQueryable();
+            if (roomId.HasValue)
+                query = query.Where(i => i.RoomId == roomId.Value);
+
+            LoadRooms(roomId);
+            ViewBag.FilterRoomId = roomId;
+            var list = PageList(query.OrderBy(i => i.RoomId).ThenBy(i => i.RoomImageId), page, "RoomImages", null);
+            return View(list);
+        }
+
+        // Redirect legacy URL /Admin/RoomImageCreate → /Admin/RoomImageUpload
+        [HttpGet]
+        public IActionResult RoomImageCreate() => RedirectToAction("RoomImageUpload");
+
+        [HttpGet]
+        public IActionResult RoomImageUpload()
+        {
+            LoadRooms();
+            return View();
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> RoomImageUpload(int roomId, List<IFormFile> files)
+        {
+            if (roomId == 0)
+            {
+                TempData["Error"] = "Vui lòng chọn phòng.";
+                LoadRooms();
+                return View();
+            }
+            if (files == null || files.Count == 0)
+            {
+                TempData["Error"] = "Vui lòng chọn ít nhất một ảnh.";
+                LoadRooms(roomId);
+                return View();
+            }
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
+            var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "rooms");
+            Directory.CreateDirectory(uploadDir);
+
+            int uploaded = 0;
+            foreach (var file in files)
+            {
+                if (file.Length == 0) continue;
+                var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+                if (!allowedExtensions.Contains(ext)) continue;
+
+                var fileName = $"{Guid.NewGuid()}{ext}";
+                var filePath = Path.Combine(uploadDir, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                    await file.CopyToAsync(stream);
+
+                _context.RoomImages.Add(new RoomImage
+                {
+                    RoomId = roomId,
+                    ImageUrl = $"/uploads/rooms/{fileName}"
+                });
+                uploaded++;
+            }
+
+            if (uploaded > 0)
+            {
+                await _context.SaveChangesAsync();
+                TempData["Success"] = $"Đã tải lên {uploaded} ảnh thành công!";
+            }
+            else
+            {
+                TempData["Error"] = "Không có ảnh hợp lệ được tải lên (chỉ chấp nhận .jpg, .jpeg, .png, .webp, .gif).";
+            }
+
+            return RedirectToAction("RoomImages");
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public IActionResult RoomImageDelete(int id)
+        {
+            var img = _context.RoomImages.Find(id);
+            if (img == null) return NotFound();
+
+            // Xóa file vật lý nếu là ảnh upload local
+            if (img.ImageUrl.StartsWith("/uploads/"))
+            {
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", img.ImageUrl.TrimStart('/'));
+                if (System.IO.File.Exists(filePath))
+                    System.IO.File.Delete(filePath);
+            }
+
+            _context.RoomImages.Remove(img);
+            _context.SaveChanges();
+            TempData["Success"] = "Xóa ảnh thành công!";
+            return RedirectToAction("RoomImages");
+        }
+
     }
 }

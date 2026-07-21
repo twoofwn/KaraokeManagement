@@ -50,6 +50,8 @@ public partial class KaraokeManagementDbContext : DbContext
 
     public virtual DbSet<Room> Rooms { get; set; }
 
+    public virtual DbSet<RoomImage> RoomImages { get; set; }
+
     public virtual DbSet<RoomType> RoomTypes { get; set; }
 
     public virtual DbSet<ServiceItem> ServiceItems { get; set; }
@@ -498,9 +500,19 @@ public partial class KaraokeManagementDbContext : DbContext
                 .HasColumnType("datetime");
         });
 
+        modelBuilder.Entity<RoomImage>(entity =>
+        {
+            entity.HasKey(e => e.RoomImageId);
+            entity.ToTable("RoomImage");
+            entity.Property(e => e.ImageUrl).HasMaxLength(500);
+            entity.HasOne(e => e.Room)
+                  .WithMany()
+                  .HasForeignKey(e => e.RoomId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
         OnModelCreatingPartial(modelBuilder);
     }
-
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
