@@ -1,4 +1,6 @@
 ﻿using KaraokeManagement.Models;
+using KaraokeManagement.Service;
+using KaraokeManagement.Service.KaraokeManagement.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<KaraokeManagementDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddAuthentication("CookieAuth")
     .AddCookie("CookieAuth", options =>

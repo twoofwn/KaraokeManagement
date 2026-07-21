@@ -31,6 +31,8 @@ CREATE TABLE [Account] (
     Phone VARCHAR(15),
     Email VARCHAR(100),
     CreatedAt DATETIME DEFAULT GETDATE(),
+    ResetPasswordToken VARCHAR(256) NULL,
+    ResetPasswordTokenExpiry DATETIME NULL,
     FOREIGN KEY (RoleID) REFERENCES [Role](RoleID)
 );
 

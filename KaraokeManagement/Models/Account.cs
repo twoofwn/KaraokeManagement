@@ -30,4 +30,6 @@ public partial class Account
     public virtual ICollection<PurchaseOrder> PurchaseOrders { get; set; } = new List<PurchaseOrder>();
 
     public virtual Role Role { get; set; } = null!;
+    public string? ResetPasswordToken { get; set; }
+    public DateTime? ResetPasswordTokenExpiry { get; set; }
 }

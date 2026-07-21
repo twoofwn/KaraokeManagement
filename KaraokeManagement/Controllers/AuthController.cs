@@ -1,22 +1,26 @@
+﻿using KaraokeManagement.Helpers;
+using KaraokeManagement.Models;
+using KaraokeManagement.Service;
+using KaraokeManagement.ViewModel;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using KaraokeManagement.Models;
-using KaraokeManagement.Helpers;
 
 namespace KaraokeManagement.Controllers
 {
     public class AuthController : Controller
     {
         private readonly KaraokeManagementDbContext _context;
+        private readonly IEmailService _emailService;
 
-        public AuthController()
+        public AuthController(IEmailService emailService)
         {
             _context = new KaraokeManagementDbContext();
+            _emailService = emailService;
         }
 
         [HttpGet]
@@ -141,12 +145,103 @@ namespace KaraokeManagement.Controllers
         {
             return PasswordHelper.VerifyPassword(inputPassword, storedPasswordHash);
         }
-    }
 
-    public class LoginViewModel
-    {
-        public string UsernameOrEmail { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-        public bool RememberMe { get; set; }
-    }
+    [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                ViewBag.Error = "Vui lòng nhập Email.";
+                return View();
+            }
+
+            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == email);
+
+            // Tránh leak thông tin user, vẫn báo thành công dù email có tồn tại hay không
+            if (account != null)
+            {
+                string token = Guid.NewGuid().ToString("N");
+                account.ResetPasswordToken = token;
+                account.ResetPasswordTokenExpiry = DateTime.UtcNow.AddMinutes(30);
+
+                _context.Accounts.Update(account);
+                await _context.SaveChangesAsync();
+
+                string resetLink = Url.Action("ResetPassword", "Auth", new { token = token, email = email }, Request.Scheme)!;
+
+                string emailBody = $@"
+                    <h2>Yêu cầu đặt lại mật khẩu - Minh Tuấn Karaoke</h2>
+                    <p>Chào bạn,</p>
+                    <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản liên kết với email này.</p>
+                    <p>Vui lòng bấm vào liên kết bên dưới để tiến hành đặt lại mật khẩu (Liên kết có hiệu lực trong 30 phút):</p>
+                    <p><a href='{resetLink}' style='padding: 10px 15px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 5px;'>Đặt lại mật khẩu</a></p>
+                    <p>Nếu bạn không gửi yêu cầu này, vui lòng bỏ qua email này.</p>";
+
+                await _emailService.SendEmailAsync(account.Email!, "Reset Password - Minh Tuấn Karaoke", emailBody);
+            }
+
+            ViewBag.Success = "Nếu Email tồn tại trong hệ thống, chúng tôi đã gửi link đặt lại mật khẩu vào hòm thư của bạn.";
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ResetPassword(string token, string email)
+        {
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
+            {
+                return RedirectToAction("Login");
+            }
+
+            var account = await _context.Accounts.FirstOrDefaultAsync(a =>
+                a.Email == email &&
+                a.ResetPasswordToken == token &&
+                a.ResetPasswordTokenExpiry > DateTime.UtcNow);
+
+            if (account == null)
+            {
+                ViewBag.Error = "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.";
+                return View("Error");
+            }
+
+            var model = new ResetPasswordViewModel { Token = token, Email = email };
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            var account = await _context.Accounts.FirstOrDefaultAsync(a =>
+                a.Email == model.Email &&
+                a.ResetPasswordToken == model.Token &&
+                a.ResetPasswordTokenExpiry > DateTime.UtcNow);
+
+            if (account == null)
+            {
+                ViewBag.Error = "Yêu cầu không hợp lệ hoặc đã hết hạn.";
+                return View(model);
+            }
+
+            account.PasswordHash = PasswordHelper.HashPassword(model.NewPassword);
+            account.ResetPasswordToken = null;
+            account.ResetPasswordTokenExpiry = null;
+
+            _context.Accounts.Update(account);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Đặt lại mật khẩu thành công. Vui lòng đăng nhập.";
+            return RedirectToAction("Login");
+        }
+    } 
 }
+
+    
+
+
