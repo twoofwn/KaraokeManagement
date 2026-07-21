@@ -1,5 +1,6 @@
-﻿using KaraokeManagement.Models;
+using KaraokeManagement.Models;
 using KaraokeManagement.ViewModel;
+using KaraokeManagement.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -815,5 +816,211 @@ namespace KaraokeManagement.Controllers
 
             return View(viewModel);
         }
+
+        #region Dynamic Pricing Management
+
+        [HttpGet]
+        public async Task<IActionResult> DynamicPricing(string tab = "prices")
+        {
+            var roomPrices = await _context.RoomPrices
+                .Include(rp => rp.RoomType)
+                .OrderBy(rp => rp.RoomTypeId)
+                .ThenBy(rp => rp.StartTime)
+                .ToListAsync();
+
+            var pricingPolicies = await _context.PricingPolicies
+                .OrderBy(p => p.PolicyType)
+                .ToListAsync();
+
+            var holidays = await _context.Holidays
+                .OrderBy(h => h.HolidayDate)
+                .ToListAsync();
+
+            var roomTypes = await _context.RoomTypes
+                .OrderBy(rt => rt.TypeName)
+                .ToListAsync();
+
+            var viewModel = new DynamicPricingViewModel
+            {
+                RoomPrices = roomPrices,
+                PricingPolicies = pricingPolicies,
+                Holidays = holidays,
+                RoomTypes = roomTypes,
+                ActiveTab = tab
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateRoomPrice(int roomTypeId, TimeSpan startTime, TimeSpan endTime, decimal pricePerHour, DateTime? effectiveFrom, DateTime? effectiveTo)
+        {
+            var roomPrice = new RoomPrice
+            {
+                RoomTypeId = roomTypeId,
+                StartTime = startTime,
+                EndTime = endTime,
+                PricePerHour = pricePerHour,
+                EffectiveFrom = effectiveFrom,
+                EffectiveTo = effectiveTo
+            };
+
+            _context.RoomPrices.Add(roomPrice);
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Thêm khung giá phòng thành công!";
+            return RedirectToAction(nameof(DynamicPricing), new { tab = "prices" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditRoomPrice(int priceId, int roomTypeId, TimeSpan startTime, TimeSpan endTime, decimal pricePerHour, DateTime? effectiveFrom, DateTime? effectiveTo)
+        {
+            var existing = await _context.RoomPrices.FindAsync(priceId);
+            if (existing != null)
+            {
+                existing.RoomTypeId = roomTypeId;
+                existing.StartTime = startTime;
+                existing.EndTime = endTime;
+                existing.PricePerHour = pricePerHour;
+                existing.EffectiveFrom = effectiveFrom;
+                existing.EffectiveTo = effectiveTo;
+
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Cập nhật khung giá thành công!";
+            }
+            return RedirectToAction(nameof(DynamicPricing), new { tab = "prices" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteRoomPrice(int priceId)
+        {
+            var existing = await _context.RoomPrices.FindAsync(priceId);
+            if (existing != null)
+            {
+                _context.RoomPrices.Remove(existing);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Xóa khung giá thành công!";
+            }
+            return RedirectToAction(nameof(DynamicPricing), new { tab = "prices" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreatePricingPolicy(string policyName, string policyType, decimal value, bool isActive = true)
+        {
+            var policy = new PricingPolicy
+            {
+                PolicyName = policyName,
+                PolicyType = policyType,
+                Value = value,
+                IsActive = isActive
+            };
+
+            _context.PricingPolicies.Add(policy);
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Thêm chính sách phụ thu thành công!";
+            return RedirectToAction(nameof(DynamicPricing), new { tab = "policies" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditPricingPolicy(int policyId, string policyName, string policyType, decimal value, bool isActive)
+        {
+            var existing = await _context.PricingPolicies.FindAsync(policyId);
+            if (existing != null)
+            {
+                existing.PolicyName = policyName;
+                existing.PolicyType = policyType;
+                existing.Value = value;
+                existing.IsActive = isActive;
+
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Cập nhật chính sách phụ thu thành công!";
+            }
+            return RedirectToAction(nameof(DynamicPricing), new { tab = "policies" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> TogglePricingPolicy(int policyId)
+        {
+            var existing = await _context.PricingPolicies.FindAsync(policyId);
+            if (existing != null)
+            {
+                existing.IsActive = !existing.IsActive;
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(DynamicPricing), new { tab = "policies" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeletePricingPolicy(int policyId)
+        {
+            var existing = await _context.PricingPolicies.FindAsync(policyId);
+            if (existing != null)
+            {
+                _context.PricingPolicies.Remove(existing);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Xóa chính sách phụ thu thành công!";
+            }
+            return RedirectToAction(nameof(DynamicPricing), new { tab = "policies" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateHoliday(string holidayName, DateTime holidayDate, decimal surchargePercent, bool isActive = true)
+        {
+            var holiday = new Holiday
+            {
+                HolidayName = holidayName,
+                HolidayDate = holidayDate,
+                SurchargePercent = surchargePercent,
+                IsActive = isActive
+            };
+
+            _context.Holidays.Add(holiday);
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Thêm ngày lễ thành công!";
+            return RedirectToAction(nameof(DynamicPricing), new { tab = "holidays" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditHoliday(int holidayId, string holidayName, DateTime holidayDate, decimal surchargePercent, bool isActive)
+        {
+            var existing = await _context.Holidays.FindAsync(holidayId);
+            if (existing != null)
+            {
+                existing.HolidayName = holidayName;
+                existing.HolidayDate = holidayDate;
+                existing.SurchargePercent = surchargePercent;
+                existing.IsActive = isActive;
+
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Cập nhật thông tin ngày lễ thành công!";
+            }
+            return RedirectToAction(nameof(DynamicPricing), new { tab = "holidays" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ToggleHoliday(int holidayId)
+        {
+            var existing = await _context.Holidays.FindAsync(holidayId);
+            if (existing != null)
+            {
+                existing.IsActive = !existing.IsActive;
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(DynamicPricing), new { tab = "holidays" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteHoliday(int holidayId)
+        {
+            var existing = await _context.Holidays.FindAsync(holidayId);
+            if (existing != null)
+            {
+                _context.Holidays.Remove(existing);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Xóa ngày lễ thành công!";
+            }
+            return RedirectToAction(nameof(DynamicPricing), new { tab = "holidays" });
+        }
+
+        #endregion
     }
 }
