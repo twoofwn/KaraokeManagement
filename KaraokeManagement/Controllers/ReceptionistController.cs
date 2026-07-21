@@ -49,7 +49,6 @@ namespace KaraokeManagement.Controllers
                     bool showCheckIn = true;
                     bool showDots = false;
 
-                    // Lọc Booking để xác định trạng thái thực tế
                     var activeBooking = room.Bookings
                         .FirstOrDefault(b => b.StartTime <= now && b.EndTime >= now && b.Status == "CheckedIn");
 

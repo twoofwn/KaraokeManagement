@@ -34,7 +34,7 @@ namespace KaraokeManagement.Controllers
                 .Include(i => i.Receptionist)
                 .AsQueryable();
 
-            // 1. SearchString (Top header) - Search by Invoice ID, Customer Name, or Receptionist Name
+            // Search
             if (!string.IsNullOrEmpty(searchString))
             {
                 var term = searchString.Trim().ToLower();
@@ -49,7 +49,7 @@ namespace KaraokeManagement.Controllers
                 );
             }
 
-            // 2. CustomerFilter (Filter Card) - Search by Customer Name or Customer Phone
+            // Search by Customer Name or Customer Phone
             if (!string.IsNullOrEmpty(customerFilter))
             {
                 var term = customerFilter.Trim().ToLower();
@@ -60,26 +60,25 @@ namespace KaraokeManagement.Controllers
                 );
             }
 
-            // 3. FromDate
+            // FromDate
             if (fromDate.HasValue)
             {
                 query = query.Where(i => i.CheckInTime >= fromDate.Value);
             }
 
-            // 4. ToDate
+            // ToDate
             if (toDate.HasValue)
             {
                 var endOfDay = toDate.Value.Date.AddDays(1).AddTicks(-1);
                 query = query.Where(i => i.CheckInTime <= endOfDay);
             }
 
-            // 5. Status dropdown ("All", "Paid", "Unpaid")
+            // Payment status
             if (!string.IsNullOrEmpty(status) && status != "All" && status != "Tất cả")
             {
                 query = query.Where(i => i.Status == status);
             }
 
-            // 6. Pagination
             int totalCount = await query.CountAsync();
             int pageSize = 10;
             int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
