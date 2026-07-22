@@ -50,7 +50,15 @@ public partial class KaraokeManagementDbContext : DbContext
 
     public virtual DbSet<Room> Rooms { get; set; }
 
+    public virtual DbSet<RoomImage> RoomImages { get; set; }
+
     public virtual DbSet<RoomType> RoomTypes { get; set; }
+
+    public virtual DbSet<RoomPrice> RoomPrices { get; set; }
+
+    public virtual DbSet<PricingPolicy> PricingPolicies { get; set; }
+
+    public virtual DbSet<Holiday> Holidays { get; set; }
 
     public virtual DbSet<ServiceItem> ServiceItems { get; set; }
 
@@ -498,9 +506,63 @@ public partial class KaraokeManagementDbContext : DbContext
                 .HasColumnType("datetime");
         });
 
+        modelBuilder.Entity<RoomPrice>(entity =>
+        {
+            entity.HasKey(e => e.PriceId);
+            entity.ToTable("RoomPrice");
+
+            entity.Property(e => e.PriceId).HasColumnName("PriceID");
+            entity.Property(e => e.RoomTypeId).HasColumnName("RoomTypeID");
+            entity.Property(e => e.StartTime).HasColumnType("time");
+            entity.Property(e => e.EndTime).HasColumnType("time");
+            entity.Property(e => e.PricePerHour).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.EffectiveFrom).HasColumnType("date");
+            entity.Property(e => e.EffectiveTo).HasColumnType("date");
+
+            entity.HasOne(d => d.RoomType)
+                .WithMany(p => p.RoomPrices)
+                .HasForeignKey(d => d.RoomTypeId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<PricingPolicy>(entity =>
+        {
+            entity.HasKey(e => e.PolicyId);
+            entity.ToTable("PricingPolicy");
+
+            entity.Property(e => e.PolicyId).HasColumnName("PolicyID");
+            entity.Property(e => e.PolicyName).HasMaxLength(100);
+            entity.Property(e => e.PolicyType).HasMaxLength(20).IsUnicode(false);
+            entity.Property(e => e.Value).HasColumnType("decimal(5, 2)");
+            entity.Property(e => e.IsActive).HasDefaultValueSql("((1))");
+        });
+
+        modelBuilder.Entity<Holiday>(entity =>
+        {
+            entity.HasKey(e => e.HolidayId);
+            entity.ToTable("Holiday");
+
+            entity.Property(e => e.HolidayId).HasColumnName("HolidayID");
+            entity.Property(e => e.HolidayName).HasMaxLength(100);
+            entity.Property(e => e.HolidayDate).HasColumnType("date");
+            entity.HasIndex(e => e.HolidayDate).IsUnique();
+            entity.Property(e => e.SurchargePercent).HasColumnType("decimal(5, 2)").HasDefaultValueSql("((0.00))");
+            entity.Property(e => e.IsActive).HasDefaultValueSql("((1))");
+        });
+
+        modelBuilder.Entity<RoomImage>(entity =>
+        {
+            entity.HasKey(e => e.RoomImageId);
+            entity.ToTable("RoomImage");
+            entity.Property(e => e.ImageUrl).HasMaxLength(500);
+            entity.HasOne(e => e.Room)
+                  .WithMany()
+                  .HasForeignKey(e => e.RoomId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
         OnModelCreatingPartial(modelBuilder);
     }
-
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

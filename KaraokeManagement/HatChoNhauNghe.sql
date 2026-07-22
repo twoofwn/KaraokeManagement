@@ -1,4 +1,4 @@
-﻿USE master;
+USE master;
 GO
 
 IF EXISTS (SELECT name FROM sys.databases WHERE name = N'KaraokeManagementDB')
@@ -226,7 +226,7 @@ CREATE TABLE [Expense] (
     Note NVARCHAR(255) NULL,
     CreatedAt DATETIME DEFAULT GETDATE()
 );
-GO
+
 
 
 -- ==========================================
@@ -367,4 +367,61 @@ INSERT INTO [PaymentTransaction] (InvoiceID, MethodID, Amount, TransactionDate, 
 (13, 2, 710000, DATEADD(hour, 3, GETDATE()-5), 'VNPAY-888'),
 (14, 4, 440000, DATEADD(hour, 2, GETDATE()-4), 'MOMO-333'),
 (15, 3, 1620000, DATEADD(hour, 4, GETDATE()-3), 'VISA-666');
+
+
+
+-- Import 3 bảng này vào (HolidayPrice)
+
+CREATE TABLE [RoomPrice] (
+    PriceID INT IDENTITY(1,1) PRIMARY KEY,
+    RoomTypeID INT NOT NULL,
+    StartTime TIME NOT NULL,
+    EndTime TIME NOT NULL,
+    PricePerHour DECIMAL(18,2) NOT NULL,
+    EffectiveFrom DATE NULL,
+    EffectiveTo DATE NULL,
+    FOREIGN KEY (RoomTypeID) REFERENCES [RoomType](RoomTypeID)
+);
+
+CREATE TABLE [PricingPolicy] (
+    PolicyID INT IDENTITY(1,1) PRIMARY KEY,
+    PolicyName NVARCHAR(100) NOT NULL,
+    PolicyType VARCHAR(20) NOT NULL, -- 'Weekend', 'Holiday'
+    [Value] DECIMAL(5,2) NOT NULL,
+    IsActive BIT DEFAULT 1
+);
+
+CREATE TABLE [Holiday] (
+    HolidayID INT IDENTITY(1,1) PRIMARY KEY,
+    HolidayName NVARCHAR(100) NOT NULL,
+    HolidayDate DATE NOT NULL UNIQUE,
+    SurchargePercent DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+    IsActive BIT DEFAULT 1
+);
+GO
+-- Dữ liệu import giá theo ngàyy
+INSERT INTO [RoomPrice] (RoomTypeID, StartTime, EndTime, PricePerHour, EffectiveFrom, EffectiveTo) VALUES 
+(1, '08:00:00', '17:00:00', 120000.00, NULL, NULL),
+(1, '17:00:00', '23:59:59', 180000.00, NULL, NULL),
+(2, '08:00:00', '17:00:00', 220000.00, NULL, NULL),
+(2, '17:00:00', '23:59:59', 300000.00, NULL, NULL),
+(3, '08:00:00', '17:00:00', 400000.00, NULL, NULL),
+(3, '17:00:00', '23:59:59', 500000.00, NULL, NULL),
+(4, '08:00:00', '17:00:00', 90000.00, NULL, NULL),
+(4, '17:00:00', '23:59:59', 120000.00, NULL, NULL);
+
+INSERT INTO [PricingPolicy] (PolicyName, PolicyType, [Value], IsActive) VALUES 
+(N'Phụ thu Cuối tuần (T7 & CN)', 'Weekend', 15.00, 1),
+(N'Phụ thu Ngày lễ chung', 'Holiday', 30.00, 1);
+
+INSERT INTO [Holiday] (HolidayName, HolidayDate, SurchargePercent, IsActive) VALUES 
+(N'Tết Dương Lịch 2026', '2026-01-01', 20.00, 1),
+(N'Tết Nguyên Đán 2026 (Giao Thừa)', '2026-02-16', 200.00, 1),
+(N'Tết Nguyên Đán 2026 (Mùng 1)', '2026-02-17', 200.00, 1),
+(N'Tết Nguyên Đán 2026 (Mùng 2)', '2026-02-18', 150.00, 1),
+(N'Tết Nguyên Đán 2026 (Mùng 3)', '2026-02-19', 100.00, 1),
+(N'Giỗ Tổ Hùng Vương 2026', '2026-04-26', 30.00, 1),
+(N'Ngày Giải Phóng Miền Nam', '2026-04-30', 50.00, 1),
+(N'Quốc Tế Lao Động', '2026-05-01', 50.00, 1),
+(N'Quốc Khánh', '2026-09-02', 40.00, 1);
 GO

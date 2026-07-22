@@ -1,0 +1,215 @@
+@{
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+    ViewData["Title"] = "Tải ảnh phòng";
+    ViewData["ActiveNav"] = "roomimages";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Tải ảnh phòng</h1>
+        <nav class="breadcrumb-nav">
+            <a href="/Admin/RoomImages">Ảnh phòng</a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">Tải lên</span>
+        </nav>
+    </div>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="admin-alert error"><i class="fa-solid fa-circle-exclamation"></i> @TempData["Error"]</div>
+}
+
+<div class="table-card" style="max-width:720px;">
+    <div class="table-card-header">
+        <h2 class="table-card-title">Tải lên nhiều ảnh cùng lúc</h2>
+    </div>
+
+    <form method="post" action="/Admin/RoomImageUpload" enctype="multipart/form-data"
+          style="padding:24px;display:flex;flex-direction:column;gap:20px;" id="uploadForm">
+        @Html.AntiForgeryToken()
+
+        <div class="form-group">
+            <label class="form-label">Phòng <span style="color:#e74c3c">*</span></label>
+            @Html.DropDownList("roomId", (IEnumerable<SelectListItem>)ViewBag.Rooms, "-- Chọn phòng --",
+                new { @class = "form-control", required = "required", id = "roomSelect" })
+        </div>
+
+        @* Drop Zone *@
+        <div class="form-group">
+            <label class="form-label">Ảnh phòng <span style="color:#e74c3c">*</span></label>
+            <div id="dropZone" onclick="document.getElementById('fileInput').click()">
+                <input type="file" name="files" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif"
+                       style="display:none" onchange="handleFiles(this.files)" />
+                <div id="dropInner">
+                    <i class="fa-solid fa-cloud-arrow-up" style="font-size:48px;color:#7c6fb0;margin-bottom:12px;"></i>
+                    <p style="font-size:15px;font-weight:600;color:#3d3050;margin:0;">Kéo thả ảnh vào đây</p>
+                    <p style="font-size:13px;color:#9b8faa;margin:4px 0 0;">hoặc click để chọn file · JPG, PNG, WEBP, GIF</p>
+                </div>
+            </div>
+        </div>
+
+        @* Preview Grid *@
+        <div id="previewGrid" style="display:none;">
+            <label class="form-label">Xem trước (<span id="imgCount">0</span> ảnh)</label>
+            <div id="previewContainer" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;"></div>
+        </div>
+
+        <div style="display:flex;gap:12px;">
+            <button type="submit" class="btn-primary-sm" id="submitBtn" disabled>
+                <i class="fa-solid fa-cloud-arrow-up"></i> Tải lên
+            </button>
+            <a href="/Admin/RoomImages" class="btn-secondary-sm">Hủy</a>
+            <button type="button" class="btn-secondary-sm" onclick="clearFiles()" id="clearBtn" style="display:none">
+                <i class="fa-solid fa-xmark"></i> Xóa hết
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+    #dropZone {
+        border: 2px dashed #c4b5d8;
+        border-radius: 12px;
+        padding: 40px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all .2s;
+        background: #faf8ff;
+    }
+    #dropZone.dragover {
+        border-color: #7c6fb0;
+        background: #f0ecff;
+        transform: scale(1.01);
+    }
+    .preview-item {
+        position: relative;
+        width: 110px;
+        height: 80px;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 2px solid #e8e0f0;
+        flex-shrink: 0;
+    }
+    .preview-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .preview-item .remove-btn {
+        position: absolute;
+        top: 3px;
+        right: 3px;
+        background: rgba(220,38,38,.85);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+    }
+    .btn-secondary-sm {
+        padding: 8px 16px;
+        border-radius: 8px;
+        background: #f3f0f8;
+        color: #5a4d72;
+        border: 1px solid #d8ceea;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: background .15s;
+    }
+    .btn-secondary-sm:hover { background: #e8e0f5; }
+</style>
+
+@section Scripts {
+<script>
+    let dataTransfer = new DataTransfer();
+
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const previewGrid = document.getElementById('previewGrid');
+    const previewContainer = document.getElementById('previewContainer');
+    const submitBtn = document.getElementById('submitBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const imgCount = document.getElementById('imgCount');
+
+    // Drag & drop events
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+    });
+
+    function handleFiles(newFiles) {
+        const allowed = ['image/jpeg','image/png','image/webp','image/gif'];
+        Array.from(newFiles).forEach(file => {
+            if (!allowed.includes(file.type)) return;
+            // Tránh trùng tên file
+            const exists = Array.from(dataTransfer.files).some(f => f.name === file.name && f.size === file.size);
+            if (exists) return;
+            dataTransfer.items.add(file);
+        });
+        fileInput.files = dataTransfer.files;
+        renderPreviews();
+    }
+
+    function renderPreviews() {
+        previewContainer.innerHTML = '';
+        const files = dataTransfer.files;
+        if (files.length === 0) {
+            previewGrid.style.display = 'none';
+            submitBtn.disabled = true;
+            clearBtn.style.display = 'none';
+            imgCount.textContent = 0;
+            return;
+        }
+        previewGrid.style.display = 'block';
+        submitBtn.disabled = false;
+        clearBtn.style.display = 'inline-flex';
+        imgCount.textContent = files.length;
+
+        Array.from(files).forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const item = document.createElement('div');
+                item.className = 'preview-item';
+                item.innerHTML = `
+                    <img src="${e.target.result}" alt="${file.name}" title="${file.name}" />
+                    <button type="button" class="remove-btn" onclick="removeFile(${index})">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>`;
+                previewContainer.appendChild(item);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function removeFile(index) {
+        const newDT = new DataTransfer();
+        Array.from(dataTransfer.files).forEach((f, i) => {
+            if (i !== index) newDT.items.add(f);
+        });
+        dataTransfer = newDT;
+        fileInput.files = dataTransfer.files;
+        renderPreviews();
+    }
+
+    function clearFiles() {
+        dataTransfer = new DataTransfer();
+        fileInput.files = dataTransfer.files;
+        renderPreviews();
+    }
+</script>
+}
