@@ -8,12 +8,12 @@ public class RoomImage
     [Key]
     public int RoomImageId { get; set; }
 
-    public int RoomId { get; set; }
+    public int RoomTypeId { get; set; }
 
     [Required]
     [MaxLength(500)]
     public string ImageUrl { get; set; } = null!;
 
-    [ForeignKey("RoomId")]
-    public virtual Room? Room { get; set; }
+    [ForeignKey("RoomTypeId")]
+    public virtual RoomType? RoomType { get; set; }
 }

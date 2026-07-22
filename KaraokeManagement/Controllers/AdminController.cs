@@ -266,6 +266,13 @@ namespace KaraokeManagement.Controllers
         public IActionResult RoomTypes()
         {
             var roomTypes = _context.RoomTypes.Include(rt => rt.Rooms).ToList();
+            // Load images grouped by RoomTypeId for thumbnail display
+            var allImages = _context.RoomImages.ToList();
+            var imageMap = roomTypes.ToDictionary(
+                rt => rt.RoomTypeId,
+                rt => allImages.Where(i => i.RoomTypeId == rt.RoomTypeId).ToList()
+            );
+            ViewBag.ImageMap = imageMap;
             return View("RoomTypes", roomTypes);
         }
 
@@ -611,44 +618,31 @@ namespace KaraokeManagement.Controllers
             ViewBag.Rooms = new SelectList(_context.Rooms.ToList(), "RoomId", "RoomName", selectedId);
         }
 
-        // ========== ROOM IMAGES ==========
-        public IActionResult RoomImages(int? roomId, int page = 1)
-        {
-            var query = _context.RoomImages.Include(i => i.Room).AsQueryable();
-            if (roomId.HasValue)
-                query = query.Where(i => i.RoomId == roomId.Value);
-
-            LoadRooms(roomId);
-            ViewBag.FilterRoomId = roomId;
-            var list = PageList(query.OrderBy(i => i.RoomId).ThenBy(i => i.RoomImageId), page, "RoomImages", null);
-            return View(list);
-        }
-
-        // Redirect legacy URL /Admin/RoomImageCreate → /Admin/RoomImageUpload
+        // ========== ROOM IMAGES (per RoomType) ==========
+        // Redirect legacy URL /Admin/RoomImageCreate
         [HttpGet]
-        public IActionResult RoomImageCreate() => RedirectToAction("RoomImageUpload");
+        public IActionResult RoomImageCreate() => RedirectToAction("RoomTypes");
 
         [HttpGet]
-        public IActionResult RoomImageUpload()
+        public IActionResult RoomImageUpload(int roomTypeId)
         {
-            LoadRooms();
+            var roomType = _context.RoomTypes.Find(roomTypeId);
+            if (roomType == null) return NotFound();
+            ViewBag.RoomType = roomType;
+            ViewBag.Images = _context.RoomImages
+                .Where(i => i.RoomTypeId == roomTypeId)
+                .OrderBy(i => i.RoomImageId)
+                .ToList();
             return View();
         }
 
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> RoomImageUpload(int roomId, List<IFormFile> files)
+        public async Task<IActionResult> RoomImageUpload(int roomTypeId, List<IFormFile> files)
         {
-            if (roomId == 0)
-            {
-                TempData["Error"] = "Vui lòng chọn phòng.";
-                LoadRooms();
-                return View();
-            }
             if (files == null || files.Count == 0)
             {
                 TempData["Error"] = "Vui lòng chọn ít nhất một ảnh.";
-                LoadRooms(roomId);
-                return View();
+                return RedirectToAction("RoomImageUpload", new { roomTypeId });
             }
 
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
@@ -670,7 +664,7 @@ namespace KaraokeManagement.Controllers
 
                 _context.RoomImages.Add(new RoomImage
                 {
-                    RoomId = roomId,
+                    RoomTypeId = roomTypeId,
                     ImageUrl = $"/uploads/rooms/{fileName}"
                 });
                 uploaded++;
@@ -683,10 +677,10 @@ namespace KaraokeManagement.Controllers
             }
             else
             {
-                TempData["Error"] = "Không có ảnh hợp lệ được tải lên (chỉ chấp nhận .jpg, .jpeg, .png, .webp, .gif).";
+                TempData["Error"] = "Không có ảnh hợp lệ (chỉ chấp nhận .jpg, .jpeg, .png, .webp, .gif).";
             }
 
-            return RedirectToAction("RoomImages");
+            return RedirectToAction("RoomImageUpload", new { roomTypeId });
         }
 
         [HttpPost, ValidateAntiForgeryToken]
@@ -695,7 +689,8 @@ namespace KaraokeManagement.Controllers
             var img = _context.RoomImages.Find(id);
             if (img == null) return NotFound();
 
-            // Xóa file vật lý nếu là ảnh upload local
+            int roomTypeId = img.RoomTypeId;
+
             if (img.ImageUrl.StartsWith("/uploads/"))
             {
                 var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", img.ImageUrl.TrimStart('/'));
@@ -706,7 +701,7 @@ namespace KaraokeManagement.Controllers
             _context.RoomImages.Remove(img);
             _context.SaveChanges();
             TempData["Success"] = "Xóa ảnh thành công!";
-            return RedirectToAction("RoomImages");
+            return RedirectToAction("RoomImageUpload", new { roomTypeId });
         }
 
     }

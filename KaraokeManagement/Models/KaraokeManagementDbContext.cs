@@ -557,9 +557,9 @@ public partial class KaraokeManagementDbContext : DbContext
             entity.HasKey(e => e.RoomImageId);
             entity.ToTable("RoomImage");
             entity.Property(e => e.ImageUrl).HasMaxLength(500);
-            entity.HasOne(e => e.Room)
+            entity.HasOne(e => e.RoomType)
                   .WithMany()
-                  .HasForeignKey(e => e.RoomId)
+                  .HasForeignKey(e => e.RoomTypeId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
