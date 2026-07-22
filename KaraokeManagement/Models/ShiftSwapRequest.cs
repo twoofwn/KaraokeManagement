@@ -1,8 +1,10 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System;
 using System.Collections.Generic;
 
 namespace KaraokeManagement.Models;
 
+[Table("ShiftSwapRequest")]
 public partial class ShiftSwapRequest
 {
     public int SwapRequestId { get; set; }

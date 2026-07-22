@@ -1,8 +1,10 @@
-﻿
+using System.ComponentModel.DataAnnotations.Schema;
+
 using System;
 
 namespace KaraokeManagement.Models;
 
+[Table("RoomTransferHistory")]
 public partial class RoomTransferHistory
 {
     public int TransferId { get; set; }

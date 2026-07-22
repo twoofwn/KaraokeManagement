@@ -1,8 +1,10 @@
-﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
+using System;
 using System.Collections.Generic;
 
 namespace KaraokeManagement.Models;
 
+[Table("Promotion")]
 public partial class Promotion
 {
     public int PromotionId { get; set; }

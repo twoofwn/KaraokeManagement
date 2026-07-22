@@ -1,8 +1,10 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System;
 using System.Collections.Generic;
 
 namespace KaraokeManagement.Models;
 
+[Table("LeaveRequest")]
 public partial class LeaveRequest
 {
     public int LeaveRequestId { get; set; }

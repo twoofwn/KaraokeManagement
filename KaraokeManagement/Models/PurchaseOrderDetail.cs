@@ -1,8 +1,10 @@
-﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
+using System;
 using System.Collections.Generic;
 
 namespace KaraokeManagement.Models;
 
+[Table("PurchaseOrderDetail")]
 public partial class PurchaseOrderDetail
 {
     public int PodetailId { get; set; }

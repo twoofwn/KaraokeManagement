@@ -1,8 +1,10 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System;
 using System.Collections.Generic;
 
 namespace KaraokeManagement.Models;
 
+[Table("Booking")]
 public partial class Booking
 {
     public int BookingId { get; set; }

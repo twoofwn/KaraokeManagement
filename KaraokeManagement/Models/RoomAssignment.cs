@@ -1,8 +1,10 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System;
 
 namespace KaraokeManagement.Models
 {
-    public partial class RoomAssignment
+    [Table("RoomAssignment")]
+public partial class RoomAssignment
     {
         public int RoomAssignmentId { get; set; }
         public int RoomId { get; set; }

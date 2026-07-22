@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KaraokeManagement.Models;
 
+[Table("RoomImage")]
 public class RoomImage
 {
     [Key]

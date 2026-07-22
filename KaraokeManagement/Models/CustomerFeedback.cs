@@ -1,8 +1,10 @@
-﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
+using System;
 using System.Collections.Generic;
 
 namespace KaraokeManagement.Models;
 
+[Table("CustomerFeedback")]
 public partial class CustomerFeedback
 {
     public int FeedbackId { get; set; }

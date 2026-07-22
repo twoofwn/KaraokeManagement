@@ -1,8 +1,10 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System;
 using System.Collections.Generic;
 
 namespace KaraokeManagement.Models;
 
+[Table("NotificationLog")]
 public partial class NotificationLog
 {
     public int NotificationId { get; set; }

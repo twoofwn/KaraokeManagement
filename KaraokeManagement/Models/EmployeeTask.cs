@@ -1,8 +1,10 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System;
 using System.Collections.Generic;
 
 namespace KaraokeManagement.Models;
 
+[Table("EmployeeTask")]
 public partial class EmployeeTask
 {
     public int TaskId { get; set; }

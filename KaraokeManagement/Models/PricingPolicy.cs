@@ -1,8 +1,10 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System;
 using System.Collections.Generic;
 
 namespace KaraokeManagement.Models;
 
+[Table("PricingPolicy")]
 public partial class PricingPolicy
 {
     public int PolicyId { get; set; }
