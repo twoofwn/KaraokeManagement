@@ -554,20 +554,20 @@ INSERT INTO [WorkShift] (ShiftID, ShiftName, StartTime, EndTime) VALUES (3, N'Ca
 SET IDENTITY_INSERT [WorkShift] OFF;
 
 SET IDENTITY_INSERT [Holiday] ON;
-INSERT INTO [Holiday] (HolidayID, HolidayName, HolidayDate, SurchargePercent, IsActive) VALUES (1, N'Tết Dương Lịch 2026', '2026-01-01 00:00:00', 20.00, NULL);
-INSERT INTO [Holiday] (HolidayID, HolidayName, HolidayDate, SurchargePercent, IsActive) VALUES (2, N'Tết Nguyên Đán 2026 (Giao Thừa)', '2026-02-16 00:00:00', 200.00, NULL);
-INSERT INTO [Holiday] (HolidayID, HolidayName, HolidayDate, SurchargePercent, IsActive) VALUES (3, N'Tết Nguyên Đán 2026 (Mùng 1)', '2026-02-17 00:00:00', 200.00, NULL);
-INSERT INTO [Holiday] (HolidayID, HolidayName, HolidayDate, SurchargePercent, IsActive) VALUES (4, N'Tết Nguyên Đán 2026 (Mùng 2)', '2026-02-18 00:00:00', 150.00, NULL);
-INSERT INTO [Holiday] (HolidayID, HolidayName, HolidayDate, SurchargePercent, IsActive) VALUES (5, N'Tết Nguyên Đán 2026 (Mùng 3)', '2026-02-19 00:00:00', 100.00, NULL);
-INSERT INTO [Holiday] (HolidayID, HolidayName, HolidayDate, SurchargePercent, IsActive) VALUES (6, N'Giỗ Tổ Hùng Vương 2026', '2026-04-26 00:00:00', 30.00, NULL);
-INSERT INTO [Holiday] (HolidayID, HolidayName, HolidayDate, SurchargePercent, IsActive) VALUES (7, N'Ngày Giải Phóng Miền Nam', '2026-04-30 00:00:00', 50.00, NULL);
-INSERT INTO [Holiday] (HolidayID, HolidayName, HolidayDate, SurchargePercent, IsActive) VALUES (8, N'Quốc Tế Lao Động', '2026-05-01 00:00:00', 50.00, NULL);
-INSERT INTO [Holiday] (HolidayID, HolidayName, HolidayDate, SurchargePercent, IsActive) VALUES (9, N'Quốc Khánh', '2026-09-02 00:00:00', 40.00, NULL);
+INSERT INTO [Holiday] (HolidayID, HolidayName, HolidayDate, SurchargePercent, IsActive) VALUES (1, N'Tết Dương Lịch 2026', '2026-01-01 00:00:00', 20.00, 1);
+INSERT INTO [Holiday] (HolidayID, HolidayName, HolidayDate, SurchargePercent, IsActive) VALUES (2, N'Tết Nguyên Đán 2026 (Giao Thừa)', '2026-02-16 00:00:00', 200.00, 1);
+INSERT INTO [Holiday] (HolidayID, HolidayName, HolidayDate, SurchargePercent, IsActive) VALUES (3, N'Tết Nguyên Đán 2026 (Mùng 1)', '2026-02-17 00:00:00', 200.00, 1);
+INSERT INTO [Holiday] (HolidayID, HolidayName, HolidayDate, SurchargePercent, IsActive) VALUES (4, N'Tết Nguyên Đán 2026 (Mùng 2)', '2026-02-18 00:00:00', 150.00, 1);
+INSERT INTO [Holiday] (HolidayID, HolidayName, HolidayDate, SurchargePercent, IsActive) VALUES (5, N'Tết Nguyên Đán 2026 (Mùng 3)', '2026-02-19 00:00:00', 100.00, 1);
+INSERT INTO [Holiday] (HolidayID, HolidayName, HolidayDate, SurchargePercent, IsActive) VALUES (6, N'Giỗ Tổ Hùng Vương 2026', '2026-04-26 00:00:00', 30.00, 1);
+INSERT INTO [Holiday] (HolidayID, HolidayName, HolidayDate, SurchargePercent, IsActive) VALUES (7, N'Ngày Giải Phóng Miền Nam', '2026-04-30 00:00:00', 50.00, 1);
+INSERT INTO [Holiday] (HolidayID, HolidayName, HolidayDate, SurchargePercent, IsActive) VALUES (8, N'Quốc Tế Lao Động', '2026-05-01 00:00:00', 50.00, 1);
+INSERT INTO [Holiday] (HolidayID, HolidayName, HolidayDate, SurchargePercent, IsActive) VALUES (9, N'Quốc Khánh', '2026-09-02 00:00:00', 40.00, 1);
 SET IDENTITY_INSERT [Holiday] OFF;
 
 SET IDENTITY_INSERT [PricingPolicy] ON;
-INSERT INTO [PricingPolicy] (PolicyID, PolicyName, PolicyType, Value, IsActive) VALUES (1, N'Phụ thu Cuối tuần (T7 & CN)', N'Weekend', 15.00, NULL);
-INSERT INTO [PricingPolicy] (PolicyID, PolicyName, PolicyType, Value, IsActive) VALUES (2, N'Phụ thu Ngày lễ chung', N'Holiday', 30.00, NULL);
+INSERT INTO [PricingPolicy] (PolicyID, PolicyName, PolicyType, Value, IsActive) VALUES (1, N'Phụ thu Cuối tuần (T7 & CN)', N'Weekend', 15.00, 1);
+INSERT INTO [PricingPolicy] (PolicyID, PolicyName, PolicyType, Value, IsActive) VALUES (2, N'Phụ thu Ngày lễ chung', N'Holiday', 30.00, 1);
 SET IDENTITY_INSERT [PricingPolicy] OFF;
 
 SET IDENTITY_INSERT [CustomerAutomationRule] ON;
