@@ -503,10 +503,7 @@ INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageUR
 INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageURL, Capacity) VALUES (2, N'Phòng VIP', 300000.00, N'Sức chứa 10-15 người', N'/images/rooms/vip.jpg', 15);
 INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageURL, Capacity) VALUES (3, N'Phòng Party', 600000.00, N'Sức chứa 30 người', N'/images/rooms/party.jpg', 30);
 INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageURL, Capacity) VALUES (4, N'Phòng Couple', 120000.00, N'Sức chứa 2-4 người', NULL, 10);
-INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageURL, Capacity) VALUES (5, N'Phòng Thường', 150000.00, N'Sức chứa 5-8 người', NULL, 10);
-INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageURL, Capacity) VALUES (6, N'Phòng VIP', 300000.00, N'Sức chứa 10-15 người', NULL, 10);
-INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageURL, Capacity) VALUES (7, N'Phòng Super VIP (Party)', 600000.00, N'Sức chứa 30 người', NULL, 10);
-INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageURL, Capacity) VALUES (8, N'Phòng Couple', 120000.00, N'Sức chứa 2-4 người', NULL, 10);
+INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageURL, Capacity) VALUES (5, N'Phòng Super VIP (Party)', 600000.00, N'Sức chứa 30 người', NULL, 10);
 SET IDENTITY_INSERT [RoomType] OFF;
 
 SET IDENTITY_INSERT [Category] ON;
@@ -658,12 +655,12 @@ INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (8, 3, N'Tầng
 INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (9, 3, N'Tầng 3 - 302 (Party)', N'InUse');
 INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (10, 1, N'Tầng 4 - 401', N'Available');
 INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (11, 1, N'Tầng 1 - 101', N'Available');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (12, 1, N'Tầng 1 - 102', N'Available');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (13, 1, N'Tầng 1 - 103', N'Maintenance');
+INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (12, 4, N'Tầng 1 - 102', N'Available');
+INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (13, 4, N'Tầng 1 - 103', N'Maintenance');
 INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (14, 4, N'Tầng 1 - 104 (Couple)', N'InUse');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (15, 2, N'Tầng 2 - 201 (VIP)', N'Available');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (16, 2, N'Tầng 2 - 202 (VIP)', N'InUse');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (17, 2, N'Tầng 2 - 203 (VIP)', N'Available');
+INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (15, 5, N'Tầng 2 - 201 (VIP)', N'Available');
+INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (16, 5, N'Tầng 2 - 202 (VIP)', N'InUse');
+INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (17, 5, N'Tầng 2 - 203 (VIP)', N'Available');
 INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (18, 3, N'Tầng 3 - 301 (Party)', N'Available');
 INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (19, 3, N'Tầng 3 - 302 (Party)', N'InUse');
 INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (20, 1, N'Tầng 4 - 401', N'Available');
