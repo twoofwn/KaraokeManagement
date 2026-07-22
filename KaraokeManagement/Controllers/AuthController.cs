@@ -1,6 +1,7 @@
 using KaraokeManagement.Helpers;
 using KaraokeManagement.Models;
 using KaraokeManagement.Service;
+using KaraokeManagement.Services;
 using KaraokeManagement.ViewModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
@@ -148,13 +149,18 @@ namespace KaraokeManagement.Controllers
                 bool isValid = PasswordHelper.VerifyPassword(Password, customer.PasswordHash);
                 if (isValid)
                 {
-                    var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, customer.CustomerId.ToString()),
-                new Claim(ClaimTypes.Name, customer.FullName),
-                new Claim(ClaimTypes.Role, "Customer")
-            };
+                    if (!customer.IsEmailVerified)
+                    {
+                        ViewBag.Error = "Tài khoản của bạn chưa được xác thực Email. Vui lòng kiểm tra hòm thư.";
+                        return View();
+                    }
 
+                    var claims = new List<Claim>
+                                {
+                                    new Claim(ClaimTypes.NameIdentifier, customer.CustomerId.ToString()),
+                                    new Claim(ClaimTypes.Name, customer.FullName),
+                                    new Claim(ClaimTypes.Role, "Customer")
+                                };
                     if (!string.IsNullOrEmpty(customer.Email))
                     {
                         claims.Add(new Claim(ClaimTypes.Email, customer.Email));
@@ -199,9 +205,12 @@ namespace KaraokeManagement.Controllers
                 ViewBag.Error = "Số điện thoại hoặc Email đã được đăng ký.";
                 return View(model);
             }
-            
 
-            // Tạo đối tượng Customer mới
+
+            // Tạo Token xác thực email
+            string verificationToken = Guid.NewGuid().ToString("N");
+
+            // Tạo tài khoản Khách hàng
             var newCustomer = new Customer
             {
                 FullName = model.FullName,
@@ -209,13 +218,69 @@ namespace KaraokeManagement.Controllers
                 Email = model.Email,
                 PasswordHash = PasswordHelper.HashPassword(model.Password),
                 LoyaltyPoints = 0,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                IsEmailVerified = false,
+                EmailVerificationToken = verificationToken,
+                EmailVerificationTokenExpiry = DateTime.UtcNow.AddHours(24) 
             };
 
             _context.Customers.Add(newCustomer);
             await _context.SaveChangesAsync();
+            string verifyLink = Url.Action("VerifyEmail", "Auth", new { token = verificationToken, email = model.Email }, Request.Scheme)!;
 
-            TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+            string emailBody = $@"
+        <h2>Xác thực tài khoản - Minh Tuấn Karaoke</h2>
+        <p>Chào <b>{model.FullName}</b>,</p>
+        <p>Cảm ơn bạn đã đăng ký tài khoản tại Minh Tuấn Karaoke.</p>
+        <p>Vui lòng bấm vào nút bên dưới để kích hoạt tài khoản của bạn (Liên kết có hiệu lực trong 24 giờ):</p>
+        <p>
+            <a href='{verifyLink}' style='padding: 12px 20px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;'>
+                Xác nhận đăng ký
+            </a>
+        </p>
+        <p>Nếu bạn không đăng ký tài khoản này, vui lòng bỏ qua email.</p>";
+
+            await _emailService.SendEmailAsync(model.Email, "Xác nhận đăng ký tài khoản - Minh Tuấn Karaoke", emailBody);
+
+            TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng kiểm tra Email để kích hoạt tài khoản.";
+            return RedirectToAction("CustomerLogin");
+        }
+
+        // Verify Email
+        [HttpGet]
+        public async Task<IActionResult> VerifyEmail(string token, string email)
+        {
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
+            {
+                ViewBag.Error = "Liên kết xác thực không hợp lệ.";
+                return View("CustomerLogin");
+            }
+
+            var customer = await _context.Customers.FirstOrDefaultAsync(c =>
+                c.Email == email &&
+                c.EmailVerificationToken == token);
+
+            if (customer == null)
+            {
+                ViewBag.Error = "Xác thực không thành công. Mã xác nhận không đúng.";
+                return View("CustomerLogin");
+            }
+
+            if (customer.EmailVerificationTokenExpiry < DateTime.UtcNow)
+            {
+                ViewBag.Error = "Mã xác nhận đã hết hạn. Vui lòng đăng ký lại hoặc yêu cầu gửi lại email.";
+                return View("CustomerLogin");
+            }
+
+            // Đánh dấu tài khoản đã được verify
+            customer.IsEmailVerified = true;
+            customer.EmailVerificationToken = null; 
+            customer.EmailVerificationTokenExpiry = null;
+
+            _context.Customers.Update(customer);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Xác thực Email thành công! Bạn có thể đăng nhập ngay.";
             return RedirectToAction("CustomerLogin");
         }
 

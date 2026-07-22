@@ -21,6 +21,10 @@ public partial class Customer
 
     public string PasswordHash { get; set; } = null!;
 
+    public bool IsEmailVerified { get; set; } = false;
+    public string? EmailVerificationToken { get; set; }
+    public DateTime? EmailVerificationTokenExpiry { get; set; }
+
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 
     public virtual MembershipTier? Tier { get; set; }

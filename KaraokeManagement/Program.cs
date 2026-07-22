@@ -1,6 +1,6 @@
 using KaraokeManagement.Models;
 using KaraokeManagement.Service;
-using KaraokeManagement.Service.KaraokeManagement.Services;
+using KaraokeManagement.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
