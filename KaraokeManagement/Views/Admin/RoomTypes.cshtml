@@ -7,16 +7,22 @@
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">Room Types</h1>
+        <h1 class="page-title">Loại phòng</h1>
         <nav class="breadcrumb-nav">
             <span class="breadcrumb-current">Room Types</span>
         </nav>
     </div>
     <a href="/Admin/RoomTypeCreate" class="btn-primary-sm">
-        <i class="fa-solid fa-plus"></i> Add Room Type
+        <i class="fa-solid fa-plus"></i> Thêm loại phòng
     </a>
 </div>
 
+@if (TempData["Success"] != null)
+{
+    <div class="admin-alert success">
+        <i class="fa-solid fa-circle-check"></i> @TempData["Success"]
+    </div>
+}
 @if (TempData["Error"] != null)
 {
     <div class="admin-alert error">
@@ -33,28 +39,54 @@
         <thead>
             <tr>
                 <th>#</th>
-                <th>Type Name</th>
-                <th>Price / Hour</th>
-                <th>Description</th>
-                <th>Rooms</th>
+                <th>Ảnh đại diện</th>
+                <th>Tên loại phòng</th>
+                <th>Giá / Giờ</th>
+                <th>Mô tả</th>
+                <th>Số phòng</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var type in Model)
             {
+                var imgs = (List<KaraokeManagement.Models.RoomImage>)ViewBag.ImageMap[type.RoomTypeId];
+                var firstImg = imgs.FirstOrDefault();
                 <tr>
                     <td>@type.RoomTypeId</td>
+                    <td>
+                        @if (firstImg != null)
+                        {
+                            <img src="@firstImg.ImageUrl" alt="@type.TypeName"
+                                 style="width:72px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #e0d8f0;" />
+                        }
+                        else
+                        {
+                            <div style="width:72px;height:48px;border-radius:6px;background:#f3f0f8;display:flex;align-items:center;justify-content:center;color:#c4b5d8;font-size:20px;border:1px dashed #d8ceea;">
+                                <i class="fa-solid fa-image"></i>
+                            </div>
+                        }
+                    </td>
                     <td>@type.TypeName</td>
                     <td>@type.PricePerHour.ToString("N0")đ</td>
                     <td>@type.Description</td>
-                    <td><span class="category-chip-plain">@type.Rooms.Count phòng</span></td>
+                    <td>
+                        <span class="category-chip-plain">@type.Rooms.Count phòng</span>
+                    </td>
                     <td class="table-actions">
+                        <a href="/Admin/RoomImageUpload?roomTypeId=@type.RoomTypeId"
+                           class="action-btn" style="background:#f0ecff;color:#7c6fb0;" title="Quản lý ảnh (@imgs.Count)">
+                            <i class="fa-solid fa-images"></i>
+                            @if (imgs.Count > 0)
+                            {
+                                <span style="font-size:10px;font-weight:700;">@imgs.Count</span>
+                            }
+                        </a>
                         <a href="/Admin/RoomTypeEdit/@type.RoomTypeId" class="action-btn edit">
                             <i class="fa-solid fa-pen"></i>
                         </a>
                         <form method="post" action="/Admin/RoomTypeDelete/@type.RoomTypeId"
-                              onsubmit="return confirm('Xóa loại phòng này?')" style="display:inline">
+                              onsubmit="return confirm('Xóa loại phòng này? Tất cả ảnh liên quan cũng sẽ bị xóa.')" style="display:inline">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="action-btn delete">
                                 <i class="fa-solid fa-trash"></i>
@@ -66,7 +98,7 @@
             @if (!Model.Any())
             {
                 <tr>
-                    <td colspan="6" style="text-align:center;color:#a09098;padding:32px;">
+                    <td colspan="7" style="text-align:center;color:#a09098;padding:32px;">
                         Chưa có loại phòng nào. <a href="/Admin/RoomTypeCreate">Thêm mới</a>
                     </td>
                 </tr>
