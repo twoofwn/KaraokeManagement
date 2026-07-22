@@ -1,0 +1,605 @@
+﻿@model KaraokeManagement.Models.ServiceItem
+@{
+    ViewData["Title"] = "Chi tiết Dịch vụ - Minh Tuấn Karaoke";
+    Layout = "~/Views/Customer/_CustomerLayout.cshtml";
+    ViewData["ActiveNav"] = "services";
+}
+
+<!-- Thêm SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    /* VARIABLES */
+    :root {
+        --bg-light: #F8F4EC;
+        --pink-soft: #FF8FB7;
+        --pink-bold: #E83C91;
+        --dark-purple: #43334C;
+        --border-color: #e0e0e0;
+    }
+
+    /* General Styles */
+    .t-servicedetail-page {
+        background-color: var(--bg-light);
+        font-family: 'Inter', sans-serif;
+        padding: 40px 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+        color: var(--dark-purple);
+    }
+
+    .t-servicedetail-header {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: var(--dark-purple);
+        text-transform: uppercase;
+        border-left: 5px solid var(--pink-bold);
+        padding-left: 15px;
+    }
+
+    .t-servicedetail-breadcrumbs {
+        font-size: 0.95rem;
+        opacity: 0.8;
+        margin-bottom: 30px;
+    }
+
+        .t-servicedetail-breadcrumbs a {
+            color: var(--dark-purple);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+            .t-servicedetail-breadcrumbs a:hover {
+                color: var(--pink-bold);
+            }
+
+        .t-servicedetail-breadcrumbs span {
+            margin: 0 5px;
+        }
+
+    /* Main Content - Cố định 2 cột */
+    .t-servicedetail-main-content {
+        display: flex;
+        flex-direction: row;
+        gap: 40px;
+    }
+
+    .t-servicedetail-left-column {
+        width: 60%;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .t-servicedetail-right-column {
+        width: 40%;
+    }
+
+    /* Left Column Details */
+    .t-servicedetail-image {
+        width: 100%;
+        aspect-ratio: 16/9;
+        object-fit: cover;
+        border-radius: 1vw;
+        box-shadow: 0 5px 15px rgba(67, 51, 76, 0.1);
+    }
+
+    .t-servicedetail-category-tag {
+        display: inline-block;
+        background-color: var(--pink-soft);
+        color: var(--dark-purple);
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        width: fit-content;
+    }
+
+    .t-servicedetail-description {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: var(--dark-purple);
+        opacity: 0.9;
+    }
+
+    .t-servicedetail-time {
+        background: #fff;
+        padding: 15px 20px;
+        border-radius: 10px;
+        border: 1px solid var(--pink-soft);
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .t-servicedetail-time i {
+            color: var(--pink-bold);
+            font-size: 1.2rem;
+        }
+
+    /* Right Column - Request Box */
+    .t-servicedetail-request-box {
+        background: #fff;
+        padding: 30px;
+        border-radius: 1vw;
+        box-shadow: 0 10px 25px rgba(67, 51, 76, 0.08);
+        border: 1px solid var(--pink-soft);
+        position: sticky;
+        top: 100px;
+    }
+
+    .t-servicedetail-price-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 1px dashed var(--border-color);
+    }
+
+    .t-servicedetail-price-label {
+        font-size: 0.9rem;
+        color: var(--dark-purple);
+        opacity: 0.7;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .t-servicedetail-price-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--pink-bold);
+    }
+
+    .t-servicedetail-form-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .t-servicedetail-form-subtitle {
+        font-size: 0.85rem;
+        color: var(--pink-bold);
+        font-weight: 600;
+    }
+
+    .t-servicedetail-form-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 5px 0 0 0;
+    }
+
+    /* Form Styles */
+    .t-servicedetail-form-group {
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .t-servicedetail-form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+    .t-servicedetail-input,
+    .t-servicedetail-textarea {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 1rem;
+        font-family: inherit;
+        color: var(--dark-purple);
+        transition: all 0.3s;
+    }
+
+        .t-servicedetail-input:focus,
+        .t-servicedetail-textarea:focus {
+            outline: none;
+            border-color: var(--pink-bold);
+            box-shadow: 0 0 0 3px rgba(232, 60, 145, 0.15);
+        }
+
+    .t-servicedetail-textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    /* Quantity Control */
+    .t-servicedetail-quantity-control {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 5px 15px;
+    }
+
+        .t-servicedetail-quantity-control span {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+    .t-servicedetail-quantity-buttons {
+        display: flex;
+        gap: 5px;
+    }
+
+        .t-servicedetail-quantity-buttons button {
+            width: 35px;
+            height: 35px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-light);
+            color: var(--dark-purple);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .t-servicedetail-quantity-buttons button:hover {
+                background: var(--pink-bold);
+                color: #fff;
+                border-color: var(--pink-bold);
+            }
+
+    .t-servicedetail-submit-btn {
+        width: 100%;
+        background-color: var(--pink-bold);
+        color: white;
+        padding: 15px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+        text-transform: uppercase;
+    }
+
+        .t-servicedetail-submit-btn:hover {
+            background-color: var(--dark-purple);
+            transform: translateY(-2px);
+        }
+
+    /* Suggested Services Section */
+    .t-servicedetail-suggest-section {
+        margin-top: 60px;
+        padding-top: 40px;
+        border-top: 2px solid var(--border-color);
+    }
+
+    .t-servicedetail-suggest-header {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 25px;
+        text-align: center;
+    }
+
+    .t-servicedetail-suggest-list-wrapper {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .t-servicedetail-suggest-list {
+        display: flex;
+        gap: 20px;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        padding-bottom: 15px;
+    }
+
+        .t-servicedetail-suggest-list::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .t-servicedetail-suggest-list::-webkit-scrollbar-thumb {
+            background: var(--pink-soft);
+            border-radius: 10px;
+        }
+
+    .t-servicedetail-suggest-card {
+        min-width: 280px;
+        background: #fff;
+        border-radius: 1vw;
+        border: 1px solid transparent;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        overflow: hidden;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+        .t-servicedetail-suggest-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--pink-soft);
+            box-shadow: 0 8px 20px rgba(67, 51, 76, 0.1);
+        }
+
+    .t-servicedetail-suggest-card-image {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+    }
+
+    .t-servicedetail-suggest-card-body {
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .t-servicedetail-suggest-card-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin: 0 0 5px 0;
+    }
+
+    .t-servicedetail-suggest-card-price {
+        color: var(--pink-bold);
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .t-servicedetail-suggest-card-button {
+        background: var(--pink-soft);
+        color: var(--dark-purple);
+        padding: 8px 15px;
+        border-radius: 20px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+
+        .t-servicedetail-suggest-card-button:hover {
+            background: var(--pink-bold);
+            color: #fff;
+        }
+
+    .t-servicedetail-suggest-nav {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .t-servicedetail-suggest-nav-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--dark-purple);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        transition: all 0.3s;
+    }
+
+        .t-servicedetail-suggest-nav-btn:hover {
+            background: var(--pink-bold);
+        }
+</style>
+
+<div class="t-servicedetail-page">
+
+    <h1 class="t-servicedetail-header">@Model.ServiceName</h1>
+
+    <nav class="t-servicedetail-breadcrumbs">
+        <a href="/Customer/Index">Trang chủ</a> <span>&rsaquo;</span>
+        <a href="/Customer/Services">Dịch vụ</a> <span>&rsaquo;</span>
+        <span style="font-weight: 600; color: var(--pink-bold);">@Model.ServiceName</span>
+    </nav>
+
+    <main class="t-servicedetail-main-content">
+
+        <!-- Cột Trái: Hình ảnh & Mô tả -->
+        <div class="t-servicedetail-left-column">
+            <!-- Tạm thời dùng ảnh tĩnh vì chưa có field Image trong DB -->
+            <img src="https://images.unsplash.com/photo-1600984880922-6b997c2317af?auto=format&fit=crop&q=80&w=800"
+                 alt="@Model.ServiceName"
+                 class="t-servicedetail-image" />
+
+            <div class="t-servicedetail-category-tag">
+                @(Model.Category?.CategoryName ?? "Dịch vụ")
+            </div>
+
+            <p class="t-servicedetail-description">
+                Đang cập nhật mô tả chi tiết cho <strong>@Model.ServiceName</strong>. Minh Tuấn Karaoke cam kết mang đến những sản phẩm, dịch vụ chất lượng tốt nhất với giá cả hợp lý cho quý khách hàng.
+                <br /><br />
+                <strong>Đơn vị tính:</strong> @(string.IsNullOrEmpty(Model.Unit) ? "Phần/Gói" : Model.Unit) <br />
+                <strong>Tình trạng:</strong>
+                @if (Model.StockQuantity.HasValue && Model.StockQuantity > 0)
+                {
+                    <span style="color: #28a745; font-weight: bold;">Còn hàng (@Model.StockQuantity)</span>
+                }
+                else
+                {
+                    <span style="color: #dc3545; font-weight: bold;">Cần đặt trước / Hết hàng</span>
+                }
+            </p>
+
+            <div class="t-servicedetail-time">
+                <i class="fa-regular fa-clock"></i> Khung giờ phục vụ: 09:00 - 23:59
+            </div>
+        </div>
+
+        <!-- Cột Phải: Form Đặt dịch vụ -->
+        <div class="t-servicedetail-right-column">
+            <div class="t-servicedetail-request-box">
+
+                <div class="t-servicedetail-price-section">
+                    <span class="t-servicedetail-price-label">Giá mỗi phần</span>
+                    <span class="t-servicedetail-price-value">@Model.SellingPrice.ToString("N0") ₫</span>
+                </div>
+
+                <div class="t-servicedetail-form-header">
+                    <p class="t-servicedetail-form-subtitle">DỊCH VỤ TẬN PHÒNG</p>
+                    <h2 class="t-servicedetail-form-title">Yêu cầu dịch vụ</h2>
+                </div>
+
+                <form class="t-servicedetail-form" onsubmit="handleRequestSubmit(event)">
+
+                    <div class="t-servicedetail-form-group">
+                        <label for="roomSelect">Phòng đang hát của bạn</label>
+                        <select id="roomSelect" class="t-servicedetail-input" required>
+                            <!-- Tương lai: Lấy danh sách phòng User đang booking -->
+                            <option value="VIP101">Phòng VIP 101</option>
+                            <option value="VIP102">Phòng VIP 102</option>
+                        </select>
+                    </div>
+
+                    <div class="t-servicedetail-form-group">
+                        <label for="expectedTime">Thời gian mang lên (Bỏ trống nếu cần ngay)</label>
+                        <input type="time" id="expectedTime" class="t-servicedetail-input" />
+                    </div>
+
+                    <div class="t-servicedetail-form-group">
+                        <label>Số lượng</label>
+                        <div class="t-servicedetail-input t-servicedetail-quantity-control">
+                            <span id="qtyDisplay">1</span>
+                            <div class="t-servicedetail-quantity-buttons">
+                                <button type="button" onclick="changeQty(-1)">−</button>
+                                <button type="button" onclick="changeQty(1)">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="t-servicedetail-form-group">
+                        <label for="notes">Ghi chú thêm</label>
+                        <textarea id="notes" class="t-servicedetail-textarea" placeholder="Ví dụ: Xin thêm nhiều đá, mang thêm ly..."></textarea>
+                    </div>
+
+                    @if (Model.StockQuantity.HasValue && Model.StockQuantity.Value <= 0)
+                    {
+                        <button type="button" class="t-servicedetail-submit-btn" disabled>TẠM HẾT HÀNG</button>
+                    }
+                    else
+                    {
+                        <button type="submit" class="t-servicedetail-submit-btn">GỌI DỊCH VỤ NÀY</button>
+                    }
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Các Dịch vụ Gợi ý (Cùng danh mục) -->
+    @if (ViewBag.SuggestedServices != null && ((IEnumerable<KaraokeManagement.Models.ServiceItem>)ViewBag.SuggestedServices).Any())
+    {
+        <section class="t-servicedetail-suggest-section">
+            <h2 class="t-servicedetail-suggest-header">Gợi ý thêm cho bạn</h2>
+
+            <div class="t-servicedetail-suggest-list-wrapper">
+                <div class="t-servicedetail-suggest-list" id="suggestList">
+
+                    @foreach (var item in (IEnumerable<KaraokeManagement.Models.ServiceItem>)ViewBag.SuggestedServices)
+                    {
+                        <a href="@Url.Action("ServiceDetail", "Customer", new { id = item.ServiceId })" class="t-servicedetail-suggest-card">
+                            <img src="https://images.unsplash.com/photo-1560512823-829485b8bf24?auto=format&fit=crop&q=80&w=400"
+                                 alt="@item.ServiceName" class="t-servicedetail-suggest-card-image" />
+                            <div class="t-servicedetail-suggest-card-body">
+                                <div class="t-servicedetail-suggest-card-info">
+                                    <h3 class="t-servicedetail-suggest-card-title">@item.ServiceName</h3>
+                                    <p class="t-servicedetail-suggest-card-price">@item.SellingPrice.ToString("N0") ₫</p>
+                                </div>
+                                <span class="t-servicedetail-suggest-card-button">Xem</span>
+                            </div>
+                        </a>
+                    }
+
+                </div>
+            </div>
+
+            <!-- Điều hướng Scroll cho Suggested List -->
+            <div class="t-servicedetail-suggest-nav">
+                <button class="t-servicedetail-suggest-nav-btn" onclick="scrollList(-300)">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <button class="t-servicedetail-suggest-nav-btn" onclick="scrollList(300)">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        </section>
+    }
+
+</div>
+
+@section Scripts {
+    <script>
+        // Xử lý Tăng/Giảm Số lượng
+        let quantity = 1;
+        // Lấy tồn kho tối đa từ Model (Nếu = null thì mặc định 99)
+        const maxStock = @(Model.StockQuantity.HasValue? Model.StockQuantity.Value : 99);
+
+        function changeQty(amount) {
+            let newQty = quantity + amount;
+            if (newQty < 1) newQty = 1;
+            if (newQty > maxStock) {
+                Swal.fire('Thông báo', `Chỉ còn ${maxStock} sản phẩm trong kho!`, 'warning');
+                newQty = maxStock;
+            }
+            quantity = newQty;
+            document.getElementById('qtyDisplay').innerText = quantity;
+        }
+
+        // Xử lý nút Scroll qua lại của Gợi ý Dịch vụ
+        function scrollList(offset) {
+            const container = document.getElementById('suggestList');
+            if (container) {
+                container.scrollBy({ left: offset, behavior: 'smooth' });
+            }
+        }
+
+        // Xử lý Submit Form bằng SweetAlert2
+        function handleRequestSubmit(e) {
+            e.preventDefault();
+
+            const room = document.getElementById('roomSelect').value;
+            const expectedTime = document.getElementById('expectedTime').value || "Ngay lập tức";
+
+            // Lấy tên Dịch vụ từ Model C# truyền xuống JS
+            const serviceName = "@Html.Raw(Model.ServiceName)";
+
+            Swal.fire({
+                title: "Xác nhận yêu cầu?",
+                html: `
+                    <div style="text-align: left; margin-top: 10px; color: #43334C;">
+                        <p><strong>Dịch vụ:</strong> ${serviceName}</p>
+                        <p><strong>Số lượng:</strong> ${quantity} phần</p>
+                        <p><strong>Giao đến:</strong> ${room}</p>
+                        <p><strong>Thời gian:</strong> ${expectedTime}</p>
+                    </div>
+                `,
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Đồng ý gọi!",
+                cancelButtonText: "Hủy",
+                confirmButtonColor: "#E83C91",
+                cancelButtonColor: "#9ca3af",
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: "Thành công!",
+                        text: "Yêu cầu của bạn đã được gửi tới quầy Bar. Nhân viên sẽ mang lên trong ít phút.",
+                        icon: "success",
+                        confirmButtonColor: "#43334C"
+                    });
+
+                    // Reset form
+                    quantity = 1;
+                    document.getElementById('qtyDisplay').innerText = quantity;
+                    document.getElementById('notes').value = "";
+                    document.getElementById('expectedTime').value = "";
+                }
+            });
+        }
+    </script>
+}

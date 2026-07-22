@@ -1,0 +1,185 @@
+﻿
+@{
+    ViewData["Title"] = "Trang chủ - Minh Tuấn Karaoke";
+    Layout = "~/Views/Customer/_CustomerLayout.cshtml";
+    ViewData["ActiveNav"] = "home";
+}
+
+<div class="content-1">
+    <div class="left-content">
+        <div class="title">
+            <h1>Trải nghiệm<br /><span>Âm nhạc</span> Đỉnh cao<br />tại Minh Tuấn</h1>
+        </div>
+    </div>
+    <div class="right-content">
+        <img src="~/img/Karaoke-2-01.jpg" class="image" alt="Karaoke Hero" />
+    </div>
+</div>
+
+<!-- About Section -->
+<div class="content-2">
+    <div class="left-content">
+        <div class="title-description">
+            <span>Về Minh Tuấn Karaoke</span>
+        </div>
+        <h1>Không Gian Giải Trí Đẳng Cấp</h1>
+        <div class="description">
+            <p>Tọa lạc tại trung tâm thành phố, Minh Tuấn Karaoke tự hào mang đến hệ thống âm thanh ánh sáng hiện đại nhất. Với không gian sang trọng, dịch vụ chuyên nghiệp, chúng tôi cam kết biến mọi khoảnh khắc tụ tập của bạn thành những kỷ niệm khó quên. Hãy đến và cháy hết mình cùng đam mê âm nhạc!</p>
+        </div>
+    </div>
+    <div class="right-content">
+        <img src="~/img/z6974754446408_355605c4766bdb87b72fb9534f0fe2c7-1024x878.jpg" class="image" alt="Karaoke Room" />
+        <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=400" class="smaller-image" alt="Karaoke Mic" />
+    </div>
+</div>
+
+<!-- Rooms Section -->
+<div class="content-3">
+    <div>
+        <p class="title-description">KHÁM PHÁ CÁC HẠNG PHÒNG</p>
+        <h1 class="big-title-description">Sân khấu riêng của bạn</h1>
+        <p class="blur-description">Mỗi phòng hát tại Minh Tuấn Karaoke được thiết kế theo chủ đề riêng biệt, trang bị dàn âm thanh nổi chuẩn studio, mang lại trải nghiệm ca hát tuyệt vời nhất.</p>
+    </div>
+
+    <div class="rooms" id="roomsContainer">
+        <!-- Room 1 -->
+        <div class="room-card">
+            <div class="room-card-image">
+                <img src="~/img/1-1723440248418.webp" alt="Phòng Thường" />
+            </div>
+            <div class="room-price">
+                <p><strong>150.000đ</strong> / giờ</p>
+            </div>
+            <div class="room-name">
+                <h2>Phòng Standard (5-10 người)</h2>
+            </div>
+            <div class="room-description">
+                <p>Không gian ấm cúng, phù hợp cho nhóm bạn nhỏ hoặc gia đình. Hệ thống âm thanh sống động, chọn bài thông minh.</p>
+            </div>
+            <a href="/room-detail?id=1" class="room-book">Đặt Phòng</a>
+        </div>
+
+        <!-- Room 2 -->
+        <div class="room-card">
+            <div class="room-card-image">
+                <img src="~/img/1-1723440248418.webp" alt="Phòng VIP" />
+            </div>
+            <div class="room-price">
+                <p><strong>300.000đ</strong> / giờ</p>
+            </div>
+            <div class="room-name">
+                <h2>Phòng VIP (10-20 người)</h2>
+            </div>
+            <div class="room-description">
+                <p>Thiết kế sang trọng, đèn LED cảm biến theo nhạc, màn hình lớn 100 inch. Lựa chọn hoàn hảo cho tiệc sinh nhật.</p>
+            </div>
+            <a href="/room-detail?id=2" class="room-book">Đặt Phòng</a>
+        </div>
+
+        <!-- Room 3 -->
+        <div class="room-card">
+            <div class="room-card-image">
+                <img src="~/img/1-1723440248418.webp" alt="Phòng Super VIP" />
+            </div>
+            <div class="room-price">
+                <p><strong>500.000đ</strong> / giờ</p>
+            </div>
+            <div class="room-name">
+                <h2>Phòng Super VIP (20-40 người)</h2>
+            </div>
+            <div class="room-description">
+                <p>Không gian minibar đẳng cấp, sân khấu mini riêng biệt, âm thanh công suất lớn. Dành cho các buổi tiệc công ty, liên hoan lớn.</p>
+            </div>
+            <a href="/room-detail?id=3" class="room-book">Đặt Phòng</a>
+        </div>
+
+        <!-- Room 2 -->
+        <div class="room-card">
+            <div class="room-card-image">
+                <img src="~/img/1-1723440248418.webp" alt="Phòng VIP" />
+            </div>
+            <div class="room-price">
+                <p><strong>300.000đ</strong> / giờ</p>
+            </div>
+            <div class="room-name">
+                <h2>Phòng VIP (10-20 người)</h2>
+            </div>
+            <div class="room-description">
+                <p>Thiết kế sang trọng, đèn LED cảm biến theo nhạc, màn hình lớn 100 inch. Lựa chọn hoàn hảo cho tiệc sinh nhật.</p>
+            </div>
+            <a href="/room-detail?id=2" class="room-book">Đặt Phòng</a>
+        </div>
+    </div>
+
+</div>
+
+<!-- Services Section -->
+<div class="content-4">
+    <div>
+        <p class="title-description">DỊCH VỤ ĐI KÈM</p>
+        <h1 class="big-title-description">Hơn cả một buổi hát</h1>
+        <p class="blur-description">Chúng tôi cung cấp các gói dịch vụ đa dạng để tăng thêm niềm vui cho bữa tiệc của bạn:</p>
+    </div>
+
+    <div class="travel">
+        <div class="travel-card">
+            <div class="travel-card-image">
+                <img src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&q=80&w=600" alt="Sinh nhật" />
+            </div>
+            <div class="travel-price-tag">Từ 500.000đ / Gói</div>
+            <div class="travel-title">
+                <h3>Trang trí Sinh nhật & Sự kiện</h3>
+                <p>Setup bóng bay, hoa tươi, bảng tên và pháo sáng theo yêu cầu của quý khách.</p>
+            </div>
+        </div>
+
+        <div class="travel-card">
+            <div class="travel-card-image">
+                <img src="~/img/karaoke-f5-05-tran-duy-hung-1.jpg" alt="Đồ uống" />
+            </div>
+            <div class="travel-price-tag">Từ 200.000đ / Combo</div>
+            <div class="travel-title">
+                <h3>Combo Đồ Uống Tiết Kiệm</h3>
+                <p>Các set bia, rượu vang hoặc cocktail đi kèm tháp hoa quả tươi mát.</p>
+            </div>
+        </div>
+
+        <div class="travel-card">
+            <div class="travel-card-image">
+                <img src="~/img/snack.jpg" alt="Snacks" />
+            </div>
+            <div class="travel-price-tag">Từ 150.000đ / Món</div>
+            <div class="travel-title">
+                <h3>Thực Đơn Ăn Nhẹ</h3>
+                <p>Khô mực, bò khô, khoai tây chiên, và các món nhậu lai rai đậm vị.</p>
+            </div>
+        </div>
+
+        <div class="travel-card">
+            <div class="travel-card-image">
+                <img src="~/img/fruit.webp" alt="Trái cây" />
+            </div>
+            <div class="travel-price-tag">Từ 350.000đ / Đĩa</div>
+            <div class="travel-title">
+                <h3>Trái Cây</h3>
+                <p>Hương vị đa dạng, nhẹ nhàng và tươi mát, tạo không khí thư giãn tuyệt đối.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Restaurant / Bar Section -->
+<div class="content-5">
+    <div class="restaurant">
+        <div class="restaurant-image">
+            <img src="https://images.unsplash.com/photo-1436018626274-89acd1d6ec9d?auto=format&fit=crop&q=80&w=1600" alt="Quầy Bar" />
+        </div>
+        <div class="restaurant-description">
+            <div>
+                <p>QUẦY BAR MỞ CỦA CHÚNG TÔI</p>
+                <h2>Pha chế chuyên nghiệp</h2>
+                <p>Ngoài phòng hát, Minh Tuấn Karaoke còn sở hữu khu vực quầy Bar sang trọng. Nơi các Bartender chuyên nghiệp sẵn sàng phục vụ những ly cocktail đầy sáng tạo, giúp bạn nạp lại năng lượng trước khi tiếp tục thể hiện tài năng ca hát.</p>
+            </div>
+        </div>
+    </div>
+</div>

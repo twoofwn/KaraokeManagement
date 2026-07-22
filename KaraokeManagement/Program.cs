@@ -40,6 +40,6 @@ app.UseAuthorization();
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Auth}/{action=Login}/{id?}");
+    pattern: "{controller=Customer}/{action=Index}");
 
 app.Run();
