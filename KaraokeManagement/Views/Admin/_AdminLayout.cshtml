@@ -1,4 +1,4 @@
-﻿@using System.Security.Claims
+@using System.Security.Claims
 @{
     var fullName = User.FindFirstValue(ClaimTypes.Name) ?? "User";
     var avatar = fullName.Substring(0, 1).ToUpper();
@@ -24,7 +24,7 @@
                 <i class="fa-solid fa-table-columns"></i>
             </div>
             <div>
-                <div class="brand-name">Quản trị hệ thống</div>
+                <div class="brand-name">Minh Tuấn Karaoke</div>
                 <div class="brand-sub">Admin</div>
             </div>
         </div>
@@ -45,6 +45,10 @@
             <a href="/Admin/Rooms" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "rooms" ? "active" : "")">
                 <i class="fa-solid fa-door-open nav-icon"></i>
                 <span>Phòng hát</span>
+            </a>
+            <a href="/Admin/RoomImages" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "roomimages" ? "active" : "")">
+                <i class="fa-solid fa-images nav-icon"></i>
+                <span>Ảnh phòng</span>
             </a>
             <a href="/Admin/RoomTypes" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "roomtypes" ? "active" : "")">
                 <i class="fa-solid fa-tags nav-icon"></i>

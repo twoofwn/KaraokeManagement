@@ -34,4 +34,8 @@ public partial class Account
     public virtual Role Role { get; set; } = null!;
 
     public virtual WorkShift? DefaultShift { get; set; }
+
+    public string? ResetPasswordToken { get; set; }
+    public DateTime? ResetPasswordTokenExpiry { get; set; }
+
 }

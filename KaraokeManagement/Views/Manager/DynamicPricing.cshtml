@@ -1,0 +1,710 @@
+@model KaraokeManagement.ViewModel.DynamicPricingViewModel
+
+@{
+    Layout = "~/Views/Manager/_ManagerLayout.cshtml";
+    ViewData["Title"] = "Quản lý Giá & Phụ thu";
+    ViewData["ActiveNav"] = "dynamicpricing";
+}
+
+
+
+<div class="container-fluid px-4 py-3">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="page-title"><i class="fa-solid fa-tags text-danger me-2"></i>Quản lý Giá & Phụ thu</h3>
+            <p class="text-muted small mb-0">Cấu hình khung giá phòng theo thời gian, chính sách phụ thu/giảm giá và danh sách ngày lễ</p>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Stat Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="soft-card">
+                <div class="stat-header">
+                    <span>KHUNG GIÁ PHÒNG</span>
+                    <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+                </div>
+                <div class="stat-value">@Model.RoomPrices.Count</div>
+                <div class="text-muted small">Khung giờ đơn giá theo loại phòng</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="soft-card">
+                <div class="stat-header">
+                    <span>CHÍNH SÁCH PHỤ THU / GIẢM GIÁ</span>
+                    <div class="stat-icon"><i class="fa-solid fa-percent"></i></div>
+                </div>
+                <div class="stat-value">@Model.PricingPolicies.Count(p => p.IsActive)</div>
+                <div class="text-muted small">Chính sách đang kích hoạt</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="soft-card">
+                <div class="stat-header">
+                    <span>NGÀY LỄ CẤU HÌNH</span>
+                    <div class="stat-icon"><i class="fa-solid fa-calendar-day"></i></div>
+                </div>
+                <div class="stat-value">@Model.Holidays.Count(h => h.IsActive)</div>
+                <div class="text-muted small">Ngày lễ đang kích hoạt</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nav Tabs -->
+    <div class="mb-4">
+        <ul class="nav nav-pills nav-pills-custom" id="pricingTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link @(Model.ActiveTab == "prices" ? "active" : "")" id="prices-tab" data-bs-toggle="pill" data-bs-target="#prices-pane" type="button" role="tab">
+                    1. Khung Giá Phòng
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link @(Model.ActiveTab == "policies" ? "active" : "")" id="policies-tab" data-bs-toggle="pill" data-bs-target="#policies-pane" type="button" role="tab">
+                    2. Chính Sách Phụ Thu (%)
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link @(Model.ActiveTab == "holidays" ? "active" : "")" id="holidays-tab" data-bs-toggle="pill" data-bs-target="#holidays-pane" type="button" role="tab">
+                    3. Danh Sách Ngày Lễ
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="tab-content" id="pricingTabContent">
+        
+        <!-- TAB 1: KHUNG GIÁ PHÒNG -->
+        <div class="tab-pane fade @(Model.ActiveTab == "prices" ? "show active" : "")" id="prices-pane" role="tabpanel">
+            <div class="soft-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Danh sách Khung Giá Phòng theo thời gian</h5>
+                    <button class="btn btn-brand" data-bs-toggle="modal" data-bs-target="#modalCreateRoomPrice">
+                        <i class="fa-solid fa-plus me-1"></i>Thêm Khung Giá
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-soft table-hover">
+                        <thead>
+                            <tr>
+                                <th>#ID</th>
+                                <th>Loại Phòng</th>
+                                <th>Khung Giờ</th>
+                                <th>Đơn Giá / Giờ</th>
+                                <th>Ngày Áp Dụng</th>
+                                <th class="text-end">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.RoomPrices.Any())
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">Chưa có khung giá nào. Vui lòng thêm mới.</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                foreach (var item in Model.RoomPrices)
+                                {
+                                    <tr>
+                                        <td class="fw-bold text-muted">#@item.PriceId</td>
+                                        <td>
+                                            <span class="fw-bold text-dark">@item.RoomType?.TypeName</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-soft-warning fs-6">
+                                                <i class="fa-regular fa-clock me-1"></i>@item.StartTime.ToString(@"hh\:mm") - @item.EndTime.ToString(@"hh\:mm")
+                                            </span>
+                                        </td>
+                                        <td class="fw-bold text-danger fs-6">
+                                            @item.PricePerHour.ToString("N0") VNĐ
+                                        </td>
+                                        <td>
+                                            @if (item.EffectiveFrom.HasValue || item.EffectiveTo.HasValue)
+                                            {
+                                                <small class="text-muted">
+                                                    @(item.EffectiveFrom?.ToString("dd/MM/yyyy") ?? "Từ đầu")
+                                                    <i class="fa-solid fa-arrow-right mx-1 fs-7"></i>
+                                                    @(item.EffectiveTo?.ToString("dd/MM/yyyy") ?? "Vô thời hạn")
+                                                </small>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-soft-secondary">Áp dụng thường xuyên</span>
+                                            }
+                                        </td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-outline-primary rounded-2 me-1"
+                                                    onclick="openEditRoomPriceModal(@item.PriceId, @item.RoomTypeId, '@item.StartTime.ToString(@"hh\:mm")', '@item.EndTime.ToString(@"hh\:mm")', @item.PricePerHour, '@(item.EffectiveFrom?.ToString("yyyy-MM-dd"))', '@(item.EffectiveTo?.ToString("yyyy-MM-dd"))')">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </button>
+                                            <form asp-action="DeleteRoomPrice" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa khung giá này?');">
+                                                <input type="hidden" name="priceId" value="@item.PriceId" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-2">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: CHÍNH SÁCH PHỤ THU -->
+        <div class="tab-pane fade @(Model.ActiveTab == "policies" ? "show active" : "")" id="policies-pane" role="tabpanel">
+            <div class="soft-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Chính Sách Phụ Thu / Giảm Giá (%)</h5>
+                    <button class="btn btn-brand" data-bs-toggle="modal" data-bs-target="#modalCreatePolicy">
+                        <i class="fa-solid fa-plus me-1"></i>Thêm Chính Sách
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-soft table-hover">
+                        <thead>
+                            <tr>
+                                <th>#ID</th>
+                                <th>Tên Chính Sách</th>
+                                <th>Loại Áp Dụng</th>
+                                <th>Tỷ Lệ (%)</th>
+                                <th>Trạng Thái</th>
+                                <th class="text-end">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.PricingPolicies.Any())
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">Chưa có chính sách nào.</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                foreach (var pol in Model.PricingPolicies)
+                                {
+                                    <tr>
+                                        <td class="fw-bold text-muted">#@pol.PolicyId</td>
+                                        <td class="fw-bold">@pol.PolicyName</td>
+                                        <td>
+                                            @if (pol.PolicyType == "Weekend")
+                                            {
+                                                <span class="badge bg-primary rounded-pill px-3"><i class="fa-solid fa-calendar-week me-1"></i>Cuối Tuần (T7/CN)</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger rounded-pill px-3"><i class="fa-solid fa-star me-1"></i>Ngày Lễ</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (pol.Value > 0)
+                                            {
+                                                <span class="badge-percent-positive">
+                                                    +@pol.Value%
+                                                </span>
+                                            }
+                                            else if (pol.Value < 0)
+                                            {
+                                                <span class="badge-percent-negative">
+                                                    @pol.Value%
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-soft-secondary">0%</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <form asp-action="TogglePricingPolicy" method="post" class="d-inline">
+                                                <input type="hidden" name="policyId" value="@pol.PolicyId" />
+                                                <button type="submit" class="btn btn-sm border-0 p-0">
+                                                    @if (pol.IsActive)
+                                                    {
+                                                        <span class="badge badge-soft-success"><i class="fa-solid fa-check me-1"></i>Đang bật</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-soft-secondary"><i class="fa-solid fa-power-off me-1"></i>Đang tắt</span>
+                                                    }
+                                                </button>
+                                            </form>
+                                        </td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-outline-primary rounded-2 me-1"
+                                                    onclick="openEditPolicyModal(@pol.PolicyId, '@pol.PolicyName', '@pol.PolicyType', @pol.Value, @(pol.IsActive ? "true" : "false"))">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </button>
+                                            <form asp-action="DeletePricingPolicy" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa chính sách này?');">
+                                                <input type="hidden" name="policyId" value="@pol.PolicyId" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-2">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: DANH SÁCH NGÀY LỄ -->
+        <div class="tab-pane fade @(Model.ActiveTab == "holidays" ? "show active" : "")" id="holidays-pane" role="tabpanel">
+            <div class="soft-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Danh Sách Ngày Lễ & Tỷ Lệ Phụ Thu / Giảm Giá Riêng</h5>
+                    <button class="btn btn-brand" data-bs-toggle="modal" data-bs-target="#modalCreateHoliday">
+                        <i class="fa-solid fa-plus me-1"></i>Thêm Ngày Lễ
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-soft table-hover">
+                        <thead>
+                            <tr>
+                                <th>#ID</th>
+                                <th>Tên Ngày Lễ</th>
+                                <th>Ngày Diễn Ra</th>
+                                <th>Tỷ Lệ (%)</th>
+                                <th>Trạng Thái</th>
+                                <th class="text-end">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.Holidays.Any())
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">Chưa có ngày lễ nào được thiết lập.</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                foreach (var hol in Model.Holidays)
+                                {
+                                    <tr>
+                                        <td class="fw-bold text-muted">#@hol.HolidayId</td>
+                                        <td class="fw-bold text-dark">@hol.HolidayName</td>
+                                        <td>
+                                            <span class="badge badge-soft-warning fs-6">
+                                                <i class="fa-regular fa-calendar me-1"></i>@hol.HolidayDate.ToString("dd/MM/yyyy")
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if (hol.SurchargePercent > 0)
+                                            {
+                                                <span class="badge-percent-positive">
+                                                    +@hol.SurchargePercent%
+                                                </span>
+                                            }
+                                            else if (hol.SurchargePercent < 0)
+                                            {
+                                                <span class="badge-percent-negative">
+                                                    @hol.SurchargePercent%
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted small">Dùng % mặc định từ Policy</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <form asp-action="ToggleHoliday" method="post" class="d-inline">
+                                                <input type="hidden" name="holidayId" value="@hol.HolidayId" />
+                                                <button type="submit" class="btn btn-sm border-0 p-0">
+                                                    @if (hol.IsActive)
+                                                    {
+                                                        <span class="badge badge-soft-success"><i class="fa-solid fa-check me-1"></i>Đang bật</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-soft-secondary"><i class="fa-solid fa-power-off me-1"></i>Đang tắt</span>
+                                                    }
+                                                </button>
+                                            </form>
+                                        </td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-outline-primary rounded-2 me-1"
+                                                    onclick="openEditHolidayModal(@hol.HolidayId, '@hol.HolidayName', '@hol.HolidayDate.ToString("yyyy-MM-dd")', @hol.SurchargePercent, @(hol.IsActive ? "true" : "false"))">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </button>
+                                            <form asp-action="DeleteHoliday" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa ngày lễ này?');">
+                                                <input type="hidden" name="holidayId" value="@hol.HolidayId" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-2">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ================= MODALS ================= -->
+
+<!-- Modal Create/Edit RoomPrice -->
+<div class="modal fade" id="modalCreateRoomPrice" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <form id="formRoomPrice" asp-action="CreateRoomPrice" method="post">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="modalRoomPriceTitle">Thêm Khung Giá Phòng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="priceId" id="rpPriceId" value="0" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Loại Phòng</label>
+                        <select name="roomTypeId" id="rpRoomTypeId" class="form-select" required>
+                            @foreach (var rt in Model.RoomTypes)
+                            {
+                                <option value="@rt.RoomTypeId">@rt.TypeName</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold">Giờ Bắt Đầu</label>
+                            <input type="time" name="startTime" id="rpStartTime" class="form-control" required value="08:00" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold">Giờ Kết Thúc</label>
+                            <input type="time" name="endTime" id="rpEndTime" class="form-control" required value="17:00" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Đơn Giá / Giờ (VNĐ)</label>
+                        <input type="number" step="1000" min="1" name="pricePerHour" id="rpPricePerHour" class="form-control" required placeholder="VD: 150000" />
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold">Áp dụng từ ngày</label>
+                            <input type="date" name="effectiveFrom" id="rpEffectiveFrom" class="form-control" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold">Áp dụng đến ngày</label>
+                            <input type="date" name="effectiveTo" id="rpEffectiveTo" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-3" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-brand rounded-3">Lưu Khung Giá</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Create/Edit Policy -->
+<div class="modal fade" id="modalCreatePolicy" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <form id="formPolicy" asp-action="CreatePricingPolicy" method="post">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="modalPolicyTitle">Thêm Chính Sách Phụ Thu / Giảm Giá</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="policyId" id="polPolicyId" value="0" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tên Chính Sách</label>
+                        <input type="text" name="policyName" id="polPolicyName" class="form-control" required placeholder="VD: Phụ thu Cuối tuần" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Loại Phụ Thu</label>
+                        <select name="policyType" id="polPolicyType" class="form-select" required>
+                            <option value="Weekend">Cuối tuần (Saturday/Sunday)</option>
+                            <option value="Holiday">Ngày lễ (Holiday)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tỷ lệ thay đổi giá (%)</label>
+                        <input type="number" step="0.1" name="value" id="polValue" class="form-control" required placeholder="VD: 15.0 (Phụ thu) hoặc -10.0 (Giảm giá)" />
+                        <small class="text-muted">Nhập số dương để <strong>phụ thu</strong> (+%), nhập số âm để <strong>giảm giá</strong> (-%).</small>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" name="isActive" id="polIsActive" value="true" checked />
+                        <label class="form-check-label fw-bold" for="polIsActive">Kích hoạt ngay</label>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-3" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-brand rounded-3">Lưu Chính Sách</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Create/Edit Holiday -->
+<div class="modal fade" id="modalCreateHoliday" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <form id="formHoliday" asp-action="CreateHoliday" method="post">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="modalHolidayTitle">Thêm Ngày Lễ</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="holidayId" id="holHolidayId" value="0" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tên Ngày Lễ</label>
+                        <input type="text" name="holidayName" id="holHolidayName" class="form-control" required placeholder="VD: Tết Nguyên Đán Mùng 1" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Ngày Diễn Ra</label>
+                        <input type="date" name="holidayDate" id="holHolidayDate" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tỷ Lệ Riêng (%)</label>
+                        <input type="number" step="0.1" name="surchargePercent" id="holSurchargePercent" class="form-control" required value="0" placeholder="VD: 50.0 (Phụ thu) hoặc -10.0 (Giảm giá)" />
+                        <small class="text-muted">Nhập số dương để phụ thu, nhập số âm để giảm giá, hoặc nhập 0.0 để áp dụng % ngày lễ mặc định.</small>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" name="isActive" id="holIsActive" value="true" checked />
+                        <label class="form-check-label fw-bold" for="holIsActive">Kích hoạt ngay</label>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-3" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-brand rounded-3">Lưu Ngày Lễ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openEditRoomPriceModal(id, roomTypeId, start, end, price, effFrom, effTo) {
+            document.getElementById('modalRoomPriceTitle').innerText = 'Chỉnh Sửa Khung Giá Phòng';
+            document.getElementById('formRoomPrice').action = '/Manager/EditRoomPrice';
+            document.getElementById('rpPriceId').value = id;
+            document.getElementById('rpRoomTypeId').value = roomTypeId;
+            document.getElementById('rpStartTime').value = start;
+            document.getElementById('rpEndTime').value = end;
+            document.getElementById('rpPricePerHour').value = price;
+            document.getElementById('rpEffectiveFrom').value = effFrom || '';
+            document.getElementById('rpEffectiveTo').value = effTo || '';
+            
+            var modal = new bootstrap.Modal(document.getElementById('modalCreateRoomPrice'));
+            modal.show();
+        }
+
+        function openEditPolicyModal(id, name, type, value, isActive) {
+            document.getElementById('modalPolicyTitle').innerText = 'Chỉnh Sửa Chính Sách';
+            document.getElementById('formPolicy').action = '/Manager/EditPricingPolicy';
+            document.getElementById('polPolicyId').value = id;
+            document.getElementById('polPolicyName').value = name;
+            document.getElementById('polPolicyType').value = type;
+            document.getElementById('polValue').value = value;
+            document.getElementById('polIsActive').checked = isActive;
+
+            var modal = new bootstrap.Modal(document.getElementById('modalCreatePolicy'));
+            modal.show();
+        }
+
+        function openEditHolidayModal(id, name, date, percent, isActive) {
+            document.getElementById('modalHolidayTitle').innerText = 'Chỉnh Sửa Thông Tin Ngày Lễ';
+            document.getElementById('formHoliday').action = '/Manager/EditHoliday';
+            document.getElementById('holHolidayId').value = id;
+            document.getElementById('holHolidayName').value = name;
+            document.getElementById('holHolidayDate').value = date;
+            document.getElementById('holSurchargePercent').value = percent;
+            document.getElementById('holIsActive').checked = isActive;
+
+            var modal = new bootstrap.Modal(document.getElementById('modalCreateHoliday'));
+            modal.show();
+        }
+    </script>
+}
+<style>
+    :root {
+        --brand-pink: #b60056;
+        --brand-pink-hover: #960046;
+        --card-bg: #f4f5f7;
+        --text-main: #212529;
+        --text-muted: #6c757d;
+        --border-radius-lg: 20px;
+        --border-radius-md: 12px;
+    }
+
+    .page-title {
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 0.2rem;
+    }
+
+    .soft-card {
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius-lg);
+        padding: 1.5rem;
+        border: none;
+        height: 100%;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        background-color: #fce8f0;
+        color: var(--brand-pink);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .stat-value {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--text-main);
+        line-height: 1.2;
+    }
+
+    /* Enhanced Tab Navigation Styling */
+    .nav-pills-custom {
+        padding: 6px;
+        border-radius: 16px;
+        display: inline-flex;
+    }
+
+        .nav-pills-custom .nav-link {
+            color: #2c3e50;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            margin-right: 4px;
+            background-color: #ffffff;
+            border: 1px solid #d1d5db;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            transition: all 0.25s ease-in-out;
+        }
+
+            .nav-pills-custom .nav-link.active {
+                background-color: var(--brand-pink);
+                color: #ffffff;
+                border-color: var(--brand-pink);
+                box-shadow: 0 4px 12px rgba(182, 0, 86, 0.35);
+            }
+
+    .table-soft {
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+        .table-soft th {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            border-bottom: 1px solid #e2e4e8;
+            padding: 0.9rem 1rem;
+        }
+
+        .table-soft td {
+            vertical-align: middle;
+            padding: 1rem;
+            border-bottom: 1px solid #f0f1f3;
+        }
+
+    .btn-brand {
+        background-color: var(--brand-pink);
+        color: white;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 0.5rem 1.2rem;
+        border: none;
+        transition: all 0.2s ease;
+    }
+
+        .btn-brand:hover {
+            background-color: var(--brand-pink-hover);
+            color: white;
+        }
+
+    /* Color scheme: Positive (+) is Dark Green (#1b5e20), Negative (-) is Dark Red (#c62828) */
+    .badge-percent-positive {
+        color: #1b5e20;
+        padding: 0.4em 0.8em;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .badge-percent-negative {
+        color: #c62828;
+        padding: 0.4em 0.8em;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .badge-soft-success {
+        background-color: #e8f5e9;
+        color: #1b5e20;
+        padding: 0.35em 0.75em;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .badge-soft-secondary {
+        background-color: #e9ecef;
+        color: #495057;
+        padding: 0.35em 0.75em;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .badge-soft-warning {
+        background-color: #fff8e1;
+        color: #f57f17;
+        padding: 0.35em 0.75em;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+</style>

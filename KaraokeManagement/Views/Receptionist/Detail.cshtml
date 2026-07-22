@@ -1,3 +1,5 @@
+﻿@using System.Globalization
+
 @model KaraokeManagement.ViewModel.RoomDetailPosViewModel
 @{
     Layout = null;
@@ -9,7 +11,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>POS - @Model.RoomName</title>
-   
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/DetailRoom.css" asp-append-version="true" />
@@ -39,7 +41,7 @@
                     </div>
                     <span class="room-label-type">@Model.RoomTypeName</span>
                 </div>
-                
+
                 <div class="room-metrics">
                     <div class="metric-item">
                         <span class="metric-label">Bắt đầu hát</span>
@@ -158,24 +160,40 @@
                                     string imgPath = "/img/Reception_img/";
                                     string prodName = prod.ServiceName;
                                     string imgFile = "";
-                                    if (prodName.Contains("Heineken")) {
+                                    if (prodName.Contains("Heineken"))
+                                    {
                                         imgFile = "bia_heineken.jpg";
-                                    } else if (prodName.Contains("Tiger")) {
+                                    }
+                                    else if (prodName.Contains("Tiger"))
+                                    {
                                         imgFile = "bia_tiger.jpg";
-                                    } else if (prodName.Contains("Chivas 12")) {
+                                    }
+                                    else if (prodName.Contains("Chivas 12"))
+                                    {
                                         imgFile = "chivas12.jpg";
-                                    } else if (prodName.Contains("Aquafina")) {
+                                    }
+                                    else if (prodName.Contains("Aquafina"))
+                                    {
                                         imgFile = "aquafina.jpg";
-                                    } else if (prodName.Contains("Khô Bò")) {
+                                    }
+                                    else if (prodName.Contains("Khô Bò"))
+                                    {
                                         imgFile = "kho_bo.jpg";
-                                    } else if (prodName.Contains("Trái Cây VIP")) {
+                                    }
+                                    else if (prodName.Contains("Trái Cây VIP"))
+                                    {
                                         imgFile = "dia_trai_cay.jpg";
-                                    } else if (prodName.Contains("Combo Sinh Nhật")) {
+                                    }
+                                    else if (prodName.Contains("Combo Sinh Nhật"))
+                                    {
                                         imgFile = "combo_sinh_nhat.jpg";
-                                    } else {
+                                    }
+                                    else
+                                    {
                                         imgFile = "dia_trai_cay.jpg";
                                     }
                                 }
+                                
                                 <img src="@(imgPath + imgFile)" alt="@prod.ServiceName" />
                             </div>
                             <div style="border-top: 1px solid #f0eae0;"></div>
@@ -198,7 +216,7 @@
         </main>
     </div>
 
-    
+
     <div class="modal-overlay" id="transfer-modal">
         <div class="modal-box">
             <div class="modal-header">
@@ -206,14 +224,17 @@
                 <button type="button" class="btn-modal-close" onclick="closeTransferModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="form-group">
+                <!-- Phòng hiện tại -->
+                <div class="form-group mb-3">
                     <label class="form-label">Phòng hiện tại</label>
                     <input type="text" class="form-select" value="@Model.RoomName (@Model.RoomTypeName) - Đang sử dụng" disabled style="opacity: 0.7" />
                 </div>
-                <div class="form-group">
+
+                <!-- Chọn phòng mới -->
+                <div class="form-group mb-3">
                     <label class="form-label" for="new-room-select">Chọn phòng muốn chuyển đến</label>
                     <select class="form-select" id="new-room-select">
-                        @if (Model.AvailableRooms.Any())
+                        @if (Model.AvailableRooms != null && Model.AvailableRooms.Any())
                         {
                             @foreach (var r in Model.AvailableRooms)
                             {
@@ -226,6 +247,28 @@
                         }
                     </select>
                 </div>
+
+                <!-- Trạng thái phòng cũ sau khi đổi -->
+                <div class="form-group mb-3">
+                    <label class="form-label" for="old-room-status-select">Trạng thái phòng cũ sau khi đổi</label>
+                    <select class="form-select" id="old-room-status-select">
+                        <option value="Available">Trống (Sẵn sàng đón khách mới)</option>
+                        <option value="Maintenance">Bảo trì (Tạo nhật ký sự cố)</option>
+                    </select>
+                </div>
+
+                <!-- Lý do đổi phòng -->
+                <div class="form-group mb-3">
+                    <label class="form-label" for="transfer-reason">Lý do đổi phòng</label>
+                    <textarea class="form-control" id="transfer-reason" rows="2" style="resize: vertical;"></textarea>
+                </div>
+
+                <!-- Tên nhân viên thực hiện -->
+                <div class="form-group">
+                    <small class="text-muted">
+                        <strong>Nhân viên thực hiện:</strong> @(User.FindFirst("FullName")?.Value ?? User.Identity?.Name ?? "Nhân viên")
+                    </small>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-action btn-transfer" onclick="closeTransferModal()" style="margin: 0; padding: 10px 20px;">Hủy bỏ</button>
@@ -236,22 +279,36 @@
 
 
     <script>
-        const checkInTimeISO = "@checkInTimeISO";
+        const checkInTimeISO = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(checkInTimeISO));
+
         const roomId = @Model.RoomId;
         const invoiceId = @(Model.InvoiceId ?? 0);
-        const pricePerHour = @Model.PricePerHour;
-        
-        let serviceSubtotal = @(Model.OrderItems.Sum(o => o.TotalPrice));
+
+        const pricePerHour =
+            @Html.Raw(Model.PricePerHour.ToString(CultureInfo.InvariantCulture));
+
+        let serviceSubtotal =
+            @Html.Raw(Model.OrderItems.Sum(o => o.TotalPrice).ToString(CultureInfo.InvariantCulture));
+
         let roomCharge = 0;
         let grandTotal = 0;
 
-        document.addEventListener('DOMContentLoaded', () => {
+        console.log({
+            checkInTimeISO,
+            roomId,
+            invoiceId,
+            pricePerHour,
+            serviceSubtotal
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log("DOM Loaded");
+
             if (checkInTimeISO) {
                 initSingingTimer();
             }
 
             initCategoryFilter();
-
             initSearchFilter();
         });
 
@@ -268,7 +325,7 @@
                 const hoursFloat = initialDiffMs / (1000 * 60 * 60);
                 roomCharge = Math.round(hoursFloat * pricePerHour);
                 roomChargeEl.textContent = formatCurrency(roomCharge) + " đ";
-                
+
                 grandTotal = roomCharge + serviceSubtotal;
                 grandTotalEl.textContent = formatCurrency(grandTotal) + " đ";
             } else {
@@ -318,7 +375,7 @@
                             card.style.display = 'none';
                         }
                     });
-                    
+
                     document.getElementById('menu-search').value = '';
                 });
             });
@@ -327,7 +384,7 @@
         // Chức năng tìm kiếm dịch vụ
         function initSearchFilter() {
             const searchInput = document.getElementById('menu-search');
-            
+
             searchInput.addEventListener('input', () => {
                 const query = searchInput.value.trim().toLowerCase();
                 const cards = document.querySelectorAll('#products-list .product-card');
@@ -337,7 +394,7 @@
                 cards.forEach(card => {
                     const cardCategory = card.getAttribute('data-category');
                     const name = card.getAttribute('data-name');
-                    
+
                     const matchesCategory = (activeCategoryId === 'all' || cardCategory === activeCategoryId);
                     const matchesSearch = name.includes(query);
 
@@ -408,17 +465,32 @@
                 });
         }
 
-        // Xử lý chuyển phòng cho khách
+                // Xử lý chuyển phòng cho khách
         function submitTransfer() {
             const selectEl = document.getElementById('new-room-select');
             const newRoomId = parseInt(selectEl.value);
+
+            const oldRoomStatus = document.getElementById('old-room-status-select').value;
+            const reason = document.getElementById('transfer-reason').value.trim();
 
             if (!newRoomId) {
                 showToast('Vui lòng chọn phòng trống', 'error');
                 return;
             }
 
-            postData('/Receptionist/ChangeRoom', { invoiceId: invoiceId, newRoomId: newRoomId })
+            if (!reason) {
+                showToast('Vui lòng nhập lý do đổi phòng', 'error');
+                return;
+            }
+
+            const payload = {
+                invoiceId: invoiceId,
+                newRoomId: newRoomId,
+                oldRoomStatus: oldRoomStatus,
+                reason: reason
+            };
+
+            postData('/Receptionist/ChangeRoom', payload)
                 .then(res => {
                     if (res.success) {
                         alert(res.message);
@@ -448,8 +520,8 @@
         function closeTransferModal() {
             document.getElementById('transfer-modal').style.display = 'none';
         }
-        
-        
+
+
         function formatCurrency(value) {
             return new Intl.NumberFormat('vi-VN').format(value);
         }

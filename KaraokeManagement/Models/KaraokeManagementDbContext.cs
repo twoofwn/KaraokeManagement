@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -50,7 +50,15 @@ public partial class KaraokeManagementDbContext : DbContext
 
     public virtual DbSet<Room> Rooms { get; set; }
 
+    public virtual DbSet<RoomImage> RoomImages { get; set; }
+
     public virtual DbSet<RoomType> RoomTypes { get; set; }
+
+    public virtual DbSet<RoomPrice> RoomPrices { get; set; }
+
+    public virtual DbSet<PricingPolicy> PricingPolicies { get; set; }
+
+    public virtual DbSet<Holiday> Holidays { get; set; }
 
     public virtual DbSet<ServiceItem> ServiceItems { get; set; }
 
@@ -71,6 +79,8 @@ public partial class KaraokeManagementDbContext : DbContext
     public virtual DbSet<ShiftSwapRequest> ShiftSwapRequests { get; set; }
     public virtual DbSet<LeaveRequest> LeaveRequests { get; set; }
     public virtual DbSet<RoomAssignment> RoomAssignments { get; set; }
+
+    public virtual DbSet<RoomTransferHistory> RoomTransferHistories { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -514,137 +524,102 @@ public partial class KaraokeManagementDbContext : DbContext
                 .HasColumnType("datetime");
         });
 
-        modelBuilder.Entity<WorkShift>(entity =>
+        modelBuilder.Entity<RoomPrice>(entity =>
         {
-            entity.HasKey(e => e.ShiftId);
-            entity.ToTable("WorkShift");
+            entity.HasKey(e => e.PriceId);
+            entity.ToTable("RoomPrice");
+
+            entity.Property(e => e.PriceId).HasColumnName("PriceID");
+            entity.Property(e => e.RoomTypeId).HasColumnName("RoomTypeID");
+            entity.Property(e => e.StartTime).HasColumnType("time");
+            entity.Property(e => e.EndTime).HasColumnType("time");
+            entity.Property(e => e.PricePerHour).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.EffectiveFrom).HasColumnType("date");
+            entity.Property(e => e.EffectiveTo).HasColumnType("date");
+
+            entity.HasOne(d => d.RoomType)
+                .WithMany(p => p.RoomPrices)
+                .HasForeignKey(d => d.RoomTypeId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<EmployeeSchedule>(entity =>
+        modelBuilder.Entity<PricingPolicy>(entity =>
         {
-            entity.HasKey(e => e.ScheduleId);
-            entity.ToTable("EmployeeSchedule");
+            entity.HasKey(e => e.PolicyId);
+            entity.ToTable("PricingPolicy");
+
+            entity.Property(e => e.PolicyId).HasColumnName("PolicyID");
+            entity.Property(e => e.PolicyName).HasMaxLength(100);
+            entity.Property(e => e.PolicyType).HasMaxLength(20).IsUnicode(false);
+            entity.Property(e => e.Value).HasColumnType("decimal(5, 2)");
+            entity.Property(e => e.IsActive).HasDefaultValueSql("((1))");
         });
 
-        modelBuilder.Entity<Attendance>(entity =>
+        modelBuilder.Entity<Holiday>(entity =>
         {
-            entity.HasKey(e => e.AttendanceId);
-            entity.ToTable("Attendance");
+            entity.HasKey(e => e.HolidayId);
+            entity.ToTable("Holiday");
+
+            entity.Property(e => e.HolidayId).HasColumnName("HolidayID");
+            entity.Property(e => e.HolidayName).HasMaxLength(100);
+            entity.Property(e => e.HolidayDate).HasColumnType("date");
+            entity.HasIndex(e => e.HolidayDate).IsUnique();
+            entity.Property(e => e.SurchargePercent).HasColumnType("decimal(5, 2)").HasDefaultValueSql("((0.00))");
+            entity.Property(e => e.IsActive).HasDefaultValueSql("((1))");
         });
 
-        modelBuilder.Entity<Payroll>(entity =>
+        modelBuilder.Entity<RoomImage>(entity =>
         {
-            entity.HasKey(e => e.PayrollId);
-            entity.ToTable("Payroll");
+            entity.HasKey(e => e.RoomImageId);
+            entity.ToTable("RoomImage");
+            entity.Property(e => e.ImageUrl).HasMaxLength(500);
+            entity.HasOne(e => e.Room)
+                  .WithMany()
+                  .HasForeignKey(e => e.RoomId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<EmployeeProfile>(entity =>
+        modelBuilder.Entity<RoomTransferHistory>(entity =>
         {
-            entity.HasKey(e => e.ProfileId);
-            entity.ToTable("EmployeeProfile");
-        });
+            entity.HasKey(e => e.TransferId);
 
-        modelBuilder.Entity<TrainingRecord>(entity =>
-        {
-            entity.HasKey(e => e.TrainingId);
-            entity.ToTable("TrainingRecord");
-        });
+            entity.ToTable("RoomTransferHistory");
 
-        modelBuilder.Entity<EmployeeTask>(entity =>
-        {
-            entity.HasKey(e => e.TaskId);
-            entity.ToTable("EmployeeTask");
-        });
+            entity.Property(e => e.TransferId).HasColumnName("TransferID");
+            entity.Property(e => e.BookingId).HasColumnName("BookingID");
+            entity.Property(e => e.FromRoomId).HasColumnName("FromRoomID");
+            entity.Property(e => e.ToRoomId).HasColumnName("ToRoomID");
+            entity.Property(e => e.ProcessedById).HasColumnName("ProcessedByID");
 
-        modelBuilder.Entity<NotificationLog>(entity =>
-        {
-            entity.HasKey(e => e.NotificationId);
-            entity.ToTable("NotificationLog");
-        });
+            entity.Property(e => e.TransferredAt)
+                .HasColumnType("datetime")
+                .HasDefaultValueSql("(getdate())");
 
-        modelBuilder.Entity<CustomerReview>(entity =>
-        {
-            entity.HasKey(e => e.ReviewId);
-            entity.ToTable("CustomerReview");
-        });
+            entity.Property(e => e.Reason)
+                .HasMaxLength(255);
 
-        modelBuilder.Entity<MarketingCampaign>(entity =>
-        {
-            entity.HasKey(e => e.CampaignId);
-            entity.ToTable("MarketingCampaign");
-        });
-
-        modelBuilder.Entity<CustomerCareLog>(entity =>
-        {
-            entity.HasKey(e => e.LogId);
-            entity.ToTable("CustomerCareLog");
-        });
-
-        modelBuilder.Entity<CustomerAutomationRule>(entity =>
-        {
-            entity.HasKey(e => e.RuleId);
-            entity.ToTable("CustomerAutomationRule");
-        });
-
-        modelBuilder.Entity<ShiftSwapRequest>(entity =>
-        {
-            entity.HasKey(e => e.SwapRequestId);
-            entity.ToTable("ShiftSwapRequest");
-
-            entity.HasOne(d => d.Requester).WithMany()
-                .HasForeignKey(d => d.RequesterId)
+            entity.HasOne(d => d.Booking)
+                .WithMany(p => p.RoomTransferHistories)
+                .HasForeignKey(d => d.BookingId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(d => d.RequesterSchedule).WithMany()
-                .HasForeignKey(d => d.RequesterScheduleId)
+            entity.HasOne(d => d.FromRoom)
+                .WithMany()
+                .HasForeignKey(d => d.FromRoomId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(d => d.Target).WithMany()
-                .HasForeignKey(d => d.TargetId)
+            entity.HasOne(d => d.ToRoom)
+                .WithMany()
+                .HasForeignKey(d => d.ToRoomId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(d => d.TargetSchedule).WithMany()
-                .HasForeignKey(d => d.TargetScheduleId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasOne(d => d.ApprovedBy).WithMany()
-                .HasForeignKey(d => d.ApprovedById);
-        });
-
-        modelBuilder.Entity<LeaveRequest>(entity =>
-        {
-            entity.HasKey(e => e.LeaveRequestId);
-            entity.ToTable("LeaveRequest");
-
-            entity.HasOne(d => d.Account).WithMany()
-                .HasForeignKey(d => d.AccountId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasOne(d => d.Schedule).WithMany()
-                .HasForeignKey(d => d.ScheduleId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasOne(d => d.ApprovedBy).WithMany()
-                .HasForeignKey(d => d.ApprovedById);
-        });
-
-        modelBuilder.Entity<RoomAssignment>(entity =>
-        {
-            entity.HasKey(e => e.RoomAssignmentId);
-            entity.ToTable("RoomAssignment");
-
-            entity.HasOne(d => d.Room).WithMany()
-                .HasForeignKey(d => d.RoomId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasOne(d => d.Schedule).WithMany()
-                .HasForeignKey(d => d.ScheduleId)
+            entity.HasOne(d => d.ProcessedBy)
+                .WithMany()
+                .HasForeignKey(d => d.ProcessedById)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
-
         OnModelCreatingPartial(modelBuilder);
     }
-
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }

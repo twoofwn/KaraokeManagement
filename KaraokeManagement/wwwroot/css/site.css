@@ -4,6 +4,7 @@ html {
 
 * {
     font-family: 'Inter',sans-serif;
+    margin: 0;
 }
 
 @media (min-width: 768px) {
@@ -22,13 +23,20 @@ html {
 }
 
 body {
-    margin-bottom: 60px;
+    margin-bottom: 0px;
 }
 
 .main-logo {
     width: 15%;
 }
 
+p {
+    margin: 0;
+}
+
+a {
+    text-decoration: none;
+}
 /* 1. Dành cho Firefox */
 * {
     scrollbar-width: thin; /* Làm thanh cuộn nhỏ lại */
@@ -123,4 +131,4 @@ body {
     50% {
         transform: translateY(-4px);
     }
-}
+}

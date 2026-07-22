@@ -1,0 +1,341 @@
+﻿@model IEnumerable<KaraokeManagement.Models.RoomType>
+@{
+	ViewData["Title"] = "Phòng hát - Minh Tuấn Karaoke";
+	Layout = "~/Views/Customer/_CustomerLayout.cshtml";
+	ViewData["ActiveNav"] = "rooms";
+}
+
+<style>
+	/* VARIABLES (Kế thừa màu thương hiệu) */
+	:root {
+		--bg-light: #F8F4EC;
+		--pink-soft: #FF8FB7;
+		--pink-bold: #E83C91;
+		--dark-purple: #43334C;
+	}
+
+	/* Tổng thể trang */
+	.t-customer-rooms-container {
+		background-color: var(--bg-light);
+		font-family: 'Inter', sans-serif;
+	}
+
+	/* Hero Section */
+	.t-customer-rooms-hero {
+		background: url('/img/Karaoke-2-01.jpg') no-repeat center center/cover;
+		color: #fff;
+		text-align: center;
+		padding: 120px 20px;
+		position: relative;
+	}
+
+		.t-customer-rooms-hero::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(67, 51, 76, 0.65); /* Dùng màu dark-purple làm lớp phủ nền */
+		}
+
+		.t-customer-rooms-hero h1 {
+			font-size: 3rem;
+			margin: 0;
+			position: relative;
+			z-index: 1;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 2px;
+		}
+
+		.t-customer-rooms-hero p {
+			font-size: 1.2rem;
+			position: relative;
+			margin: 10px auto 0;
+			width: 95%;
+			text-align: center;
+			z-index: 1;
+			color: var(--bg-light);
+		}
+
+	/* Layout Main */
+	.t-rooms-main-content {
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 40px 20px;
+	}
+
+	/* Bộ lọc (Controls) */
+	.t-customer-rooms-controls {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 15px;
+		margin-bottom: 40px;
+		padding: 20px;
+		background-color: #fff;
+		border-radius: 1vw;
+		box-shadow: 0 4px 15px rgba(67, 51, 76, 0.08);
+		align-items: center;
+	}
+
+		.t-customer-rooms-controls input,
+		.t-customer-rooms-controls select {
+			flex: 0.8;
+			min-width: 180px;
+			padding: 12px 15px;
+			border: 2px solid #eee;
+			border-radius: 10px;
+			font-size: 0.95rem;
+			color: var(--dark-purple);
+			background-color: #fff;
+			transition: all 0.3s ease;
+		}
+
+			.t-customer-rooms-controls input:focus,
+			.t-customer-rooms-controls select:focus {
+				border-color: var(--pink-bold);
+				outline: none;
+				box-shadow: 0 0 0 3px rgba(232, 60, 145, 0.15); /* Bóng hồng nhạt khi focus */
+			}
+
+	.t-customer-rooms-search {
+		flex: 2;
+		min-width: 280px;
+	}
+
+	.t-customer-rooms-price-filter {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		flex: 1.5;
+		min-width: 250px;
+	}
+
+		.t-customer-rooms-price-filter span {
+			color: var(--dark-purple);
+			font-weight: 500;
+		}
+
+	.t-customer-rooms-sort {
+		flex: 1;
+		min-width: 160px;
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		appearance: none;
+		/* Icon mũi tên tuỳ chỉnh đổi sang màu dark-purple */
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2343334C'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+		background-repeat: no-repeat;
+		background-position: right 15px center;
+		background-size: 16px;
+		padding-right: 40px;
+		cursor: pointer;
+	}
+
+	/* Lưới Card Phòng */
+	.t-customer-rooms-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+		gap: 30px;
+	}
+
+	/* Thẻ thông tin từng phòng */
+	.t-customer-room-card {
+		background-color: #fff;
+		border-radius: 1vw;
+		overflow: hidden;
+		box-shadow: 0 5px 15px rgba(67, 51, 76, 0.08);
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+		display: flex;
+		flex-direction: column;
+	}
+
+		.t-customer-room-card:hover {
+			transform: translateY(-8px);
+			box-shadow: 0 12px 25px rgba(67, 51, 76, 0.15);
+		}
+
+	.t-customer-room-card-image-wrapper {
+		position: relative;
+	}
+
+	.t-customer-room-card-image {
+		width: 100%;
+		height: 220px;
+		object-fit: cover;
+		display: block;
+		transition: transform 0.5s ease;
+	}
+
+	.t-customer-room-card:hover .t-customer-room-card-image {
+		transform: scale(1.05);
+	}
+
+	.t-customer-room-card-content {
+		padding: 20px;
+		display: flex;
+		flex-direction: column;
+		flex-grow: 1;
+	}
+
+	.t-customer-room-card-price {
+		border: 1px solid var(--pink-bold);
+		color: var(--pink-bold);
+		padding: 6px 15px;
+		border-radius: 8px;
+		font-size: 1.2rem;
+		font-weight: 700;
+		margin-bottom: 10px;
+		width: fit-content;
+	}
+
+	.t-customer-room-card-price-night {
+		font-size: 0.9rem;
+		font-weight: 500;
+		color: var(--dark-purple);
+	}
+
+	.t-customer-room-card-name {
+		font-size: 1.4rem;
+		margin-top: 0;
+		margin-bottom: 12px;
+		color: var(--dark-purple);
+		font-weight: 700;
+	}
+
+	.t-customer-room-card-details {
+		display: flex;
+		gap: 15px;
+		color: var(--dark-purple);
+		opacity: 0.8;
+		margin-bottom: 15px;
+		border-bottom: 1px solid var(--pink-soft);
+		padding-bottom: 15px;
+		font-size: 0.95rem;
+	}
+
+		.t-customer-room-card-details span {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+		}
+
+	.t-customer-room-card-description {
+		font-size: 0.95rem;
+		color: var(--dark-purple);
+		opacity: 0.7;
+		line-height: 1.6;
+		margin-bottom: 20px;
+		flex-grow: 1;
+	}
+
+	/* Nút Xem chi tiết */
+	.t-customer-room-card-button {
+		padding: 10px 20px;
+		border-radius: 25px;
+		text-decoration: none;
+		font-weight: 600;
+		text-align: center;
+		color: var(--pink-bold);
+		border: 2px solid var(--pink-bold);
+		background: transparent;
+		transition: all 0.3s ease;
+		cursor: pointer;
+		display: block;
+		width: 100%;
+	}
+
+		.t-customer-room-card-button:hover {
+			background-color: var(--pink-bold);
+			color: #fff;
+		}
+</style>
+
+<div class="t-customer-rooms-container">
+	<!-- Hero Section -->
+	<div class="t-customer-rooms-hero">
+		<h1>Khám phá Phòng hát</h1>
+		<p>Lựa chọn không gian hoàn hảo cho bữa tiệc âm nhạc của bạn</p>
+	</div>
+
+	<!-- Main Content -->
+	<div class="t-rooms-main-content">
+
+		<form method="get" action="@Url.Action("Rooms", "Customer")" class="t-customer-rooms-controls">
+			<input type="text"
+				   name="searchString"
+				   value="@ViewBag.SearchString"
+				   placeholder="Tìm kiếm loại phòng..."
+				   class="t-customer-rooms-search" />
+
+			<div class="t-customer-rooms-price-filter">
+				<input type="number" name="minPrice" value="@ViewBag.MinPrice" placeholder="Giá tối thiểu" min="0" />
+				<span>-</span>
+				<input type="number" name="maxPrice" value="@ViewBag.MaxPrice" placeholder="Giá tối đa" min="0" />
+			</div>
+
+			<select name="sortOrder" class="t-customer-rooms-sort">
+				<option value="default" selected="@(ViewBag.SortOrder == "default" ? "selected" : null)">Sắp xếp theo</option>
+				<option value="price-asc" selected="@(ViewBag.SortOrder == "price-asc" ? "selected" : null)">Giá: Thấp đến Cao</option>
+				<option value="price-desc" selected="@(ViewBag.SortOrder == "price-desc" ? "selected" : null)">Giá: Cao đến Thấp</option>
+			</select>
+
+			<button type="submit" class="btn-register">
+				<i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm
+			</button>
+		</form>
+
+		<!-- Grid Cards đổ dữ liệu từ Model -->
+		<div class="t-customer-rooms-grid">
+
+			@if (Model != null && Model.Any())
+			{
+				foreach (var roomType in Model)
+				{
+					<div class="t-customer-room-card">
+						<div class="t-customer-room-card-image-wrapper">
+							<!-- Ảnh tĩnh mặc định do db chưa có trường ảnh -->
+							<img src="https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?auto=format&fit=crop&q=80&w=600" alt="@roomType.TypeName" class="t-customer-room-card-image" />
+						</div>
+						<div class="t-customer-room-card-content">
+							<div class="t-customer-room-card-price">
+								<!-- Format số tiền chuẩn VNĐ -->
+								@roomType.PricePerHour.ToString("N0") ₫<span class="t-customer-room-card-price-night"> / giờ</span>
+							</div>
+							<h3 class="t-customer-room-card-name">@roomType.TypeName</h3>
+
+							<!-- Bổ sung icon tượng trưng tĩnh do db chưa có -->
+							<div class="t-customer-room-card-details">
+								<span><i class="fa-solid fa-microphone-lines"></i> Âm thanh chuẩn</span>
+								<span><i class="fa-solid fa-couch"></i> Tiện nghi</span>
+							</div>
+
+							<p class="t-customer-room-card-description">
+								@(string.IsNullOrEmpty(roomType.Description) ? "Đang cập nhật mô tả cho loại phòng hát này. Mang đến trải nghiệm âm nhạc tuyệt vời nhất cho bạn." : roomType.Description)
+							</p>
+
+							<!-- Chuyển link động vào Detail -->
+							<a asp-controller="Customer" asp-action="RoomDetail" asp-route-id="@roomType.RoomTypeId" class="t-customer-room-card-button">
+								Xem chi tiết
+							</a>
+						</div>
+					</div>
+				}
+			}
+			else
+			{
+				<div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: var(--dark-purple);">
+					<h3>Không tìm thấy loại phòng nào phù hợp!</h3>
+				</div>
+			}
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	<!-- Nếu bạn muốn chuyển JS filter/sort vào đây giống bên React, bạn có thể viết script lọc ở đây -->
+	<script>
+		// Placeholder cho logic search/filter bằng JavaScript nếu cần thiết
+		// Nếu bạn filter bằng Backend C# thì không cần đoạn Script này.
+	</script>
+}

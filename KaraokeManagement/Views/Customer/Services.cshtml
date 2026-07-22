@@ -1,0 +1,454 @@
+﻿@model IEnumerable<KaraokeManagement.Models.ServiceItem>
+@{
+	ViewData["Title"] = "Dịch vụ - Minh Tuấn Karaoke";
+	Layout = "~/Views/Customer/_CustomerLayout.cshtml";
+	ViewData["ActiveNav"] = "services";
+}
+
+<style>
+	/* VARIABLES */
+	:root {
+		--bg-light: #F8F4EC;
+		--pink-soft: #FF8FB7;
+		--pink-bold: #E83C91;
+		--dark-purple: #43334C;
+		--success-color: #28a745;
+		--border-color: #e0e0e0;
+	}
+
+	/* General Styles */
+	.cvs-page {
+		width: 100%;
+		background-color: var(--bg-light);
+		box-sizing: border-box;
+		color: var(--dark-purple);
+		font-family: 'Inter', sans-serif;
+	}
+
+	/* Hero Section */
+	.cvs-hero {
+		text-align: center;
+		margin: 0;
+		position: relative;
+		overflow: hidden;
+		color: #fff;
+		padding: 0;
+		background-image: url("/img/bar.jpg"); /* Ảnh Shisha/Cocktail */
+		background-size: cover;
+		background-position: center;
+	}
+
+	.cvs-hero-overlay {
+		background-color: rgba(67, 51, 76, 0.65); /* Overlay tối màu tím than */
+		padding: 120px 20px;
+	}
+
+	.cvs-h1 {
+		font-size: 3rem;
+		font-weight: 700;
+		color: #fff;
+		margin: 0;
+		text-transform: uppercase;
+		letter-spacing: 2px;
+	}
+
+	.cvs-subtitle {
+		color: var(--bg-light);
+		margin-top: 15px;
+		font-size: 1.2rem;
+		max-width: 600px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	/* Search Bar */
+	.cvs-search {
+		display: flex;
+		justify-content: center;
+		margin: 40px auto 20px;
+		gap: 10px;
+		width: 90%;
+		max-width: 700px;
+	}
+
+		.cvs-search input {
+			flex: 1;
+			padding: 15px 25px;
+			border-radius: 30px;
+			border: 2px solid var(--border-color);
+			transition: all 0.3s ease;
+			font-size: 1rem;
+			color: var(--dark-purple);
+		}
+
+			.cvs-search input:focus {
+				border-color: var(--pink-bold);
+				outline: none;
+				box-shadow: 0 0 0 3px rgba(232, 60, 145, 0.15);
+			}
+
+	/* Filter Bar */
+	.cvs-filter-bar {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-wrap: nowrap; /* Bỏ wrap vì không dùng responsive */
+		gap: 20px;
+		max-width: 1200px;
+		margin: 20px auto;
+		width: 90%;
+		background: #fff;
+		border-radius: 1vw;
+		padding: 20px 25px;
+		box-shadow: 0 4px 15px rgba(67, 51, 76, 0.08);
+		box-sizing: border-box;
+	}
+
+	.cvs-filter-left {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		color: var(--pink-bold);
+		font-weight: 600;
+		cursor: pointer;
+		transition: color 0.3s;
+		font-size: 1.1rem;
+	}
+
+		.cvs-filter-left input {
+			width: 100%;
+		}
+
+		.cvs-filter-left:hover {
+			color: var(--dark-purple);
+		}
+
+	.cvs-filter-right {
+		display: flex;
+		align-items: center;
+		gap: 15px;
+	}
+
+		.cvs-filter-right select,
+		.cvs-filter-right input,
+		.cvs-filter-left input {
+			padding: 12px 15px;
+			border-radius: 10px;
+			border: 2px solid var(--border-color);
+			background: #fff;
+			font-size: 0.95rem;
+			color: var(--dark-purple);
+			transition: border-color 0.3s, box-shadow 0.3s;
+		}
+
+			.cvs-filter-right select:focus,
+			.cvs-filter-right input:focus {
+				border-color: var(--pink-bold);
+				outline: none;
+				box-shadow: 0 0 0 3px rgba(232, 60, 145, 0.15);
+			}
+
+			.cvs-filter-right input[type="number"] {
+				width: 120px;
+			}
+
+		/* Tùy chỉnh mũi tên cho the Select */
+		.cvs-filter-right select {
+			-webkit-appearance: none;
+			-moz-appearance: none;
+			appearance: none;
+			background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2343334C'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+			background-repeat: no-repeat;
+			background-position: right 15px center;
+			background-size: 16px;
+			padding-right: 40px;
+			cursor: pointer;
+		}
+
+	/* Service List Grid */
+	.cvs-service-list {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr); /* Cố định 3 cột vì không dùng media query */
+		gap: 30px;
+		max-width: 1200px;
+		width: 90%;
+		margin: 40px auto;
+		box-sizing: border-box;
+	}
+
+	.cvs-card {
+		display: flex;
+		flex-direction: column;
+		background: #fff;
+		border-radius: 1vw;
+		box-shadow: 0 5px 15px rgba(67, 51, 76, 0.08);
+		overflow: hidden;
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+		cursor: pointer;
+		border: 1px solid transparent;
+	}
+
+		.cvs-card:hover {
+			transform: translateY(-8px);
+			box-shadow: 0 12px 25px rgba(67, 51, 76, 0.15);
+			border-color: var(--pink-soft);
+		}
+
+	.cvs-card-img {
+		width: 100%;
+		height: 200px;
+		overflow: hidden;
+	}
+
+		.cvs-card-img img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			transition: transform 0.5s ease;
+		}
+
+	.cvs-card:hover .cvs-card-img img {
+		transform: scale(1.05);
+	}
+
+	.cvs-card-info {
+		padding: 20px;
+		display: flex;
+		flex-direction: column;
+		flex-grow: 1;
+	}
+
+	.cvs-card-top {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		margin-bottom: 15px;
+	}
+
+		.cvs-card-top h3 {
+			font-size: 1.25rem;
+			font-weight: 700;
+			margin: 0;
+			color: var(--dark-purple);
+			flex: 1;
+			padding-right: 10px;
+			line-height: 1.3;
+		}
+
+	.cvs-category {
+		background: var(--pink-soft);
+		color: var(--dark-purple);
+		padding: 5px 12px;
+		border-radius: 20px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		flex-shrink: 0;
+	}
+
+	.cvs-desc {
+		color: var(--dark-purple);
+		opacity: 0.7;
+		font-size: 0.95rem;
+		line-height: 1.6;
+		margin: 0 0 15px 0;
+		flex-grow: 1;
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.cvs-availability {
+		font-size: 0.9rem;
+		color: var(--success-color);
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin-bottom: 15px;
+		font-weight: 600;
+	}
+
+	.cvs-dot {
+		width: 8px;
+		height: 8px;
+		background-color: var(--success-color);
+		border-radius: 50%;
+		display: inline-block;
+	}
+
+	.cvs-price {
+		margin-top: auto;
+		font-size: 1.3rem;
+		font-weight: 800;
+		color: var(--pink-bold);
+	}
+
+	/* Pagination */
+	.cvs-pagination {
+		display: flex;
+		justify-content: center;
+		gap: 10px;
+		margin: 30px auto 0 auto;
+		padding: 0 20px 20px 0;
+	}
+
+		.cvs-pagination button {
+			background: #fff;
+			border: 2px solid var(--border-color);
+			color: var(--dark-purple);
+			min-width: 45px;
+			height: 45px;
+			padding: 0 10px;
+			border-radius: 50%; /* Chuyển thành nút tròn cho đẹp */
+			transition: all 0.3s ease;
+			cursor: pointer;
+			font-weight: 600;
+			font-size: 1rem;
+		}
+
+			.cvs-pagination button:hover {
+				border-color: var(--pink-bold);
+				color: var(--pink-bold);
+				background: var(--bg-light);
+			}
+
+		.cvs-pagination .active {
+			background: var(--pink-bold);
+			color: white;
+			border-color: var(--pink-bold);
+		}
+
+			.cvs-pagination .active:hover {
+				background: var(--dark-purple);
+				border-color: var(--dark-purple);
+				color: white;
+			}
+
+	.cvs-no-result {
+		grid-column: 1 / -1;
+		text-align: center;
+		font-style: italic;
+		color: var(--dark-purple);
+		opacity: 0.6;
+		padding: 40px 0;
+		font-size: 1.1rem;
+	}
+</style>
+
+<div class="cvs-page">
+	<div class="cvs-hero">
+		<div class="cvs-hero-overlay">
+			<h1 class="cvs-h1">Dịch vụ đi kèm</h1>
+			<p class="cvs-subtitle">
+				Nâng tầm trải nghiệm bữa tiệc của bạn với các dịch vụ đồ uống, đồ ăn nhẹ và trang trí cao cấp tại Minh Tuấn Karaoke.
+			</p>
+		</div>
+	</div>
+
+	<!-- Bao bọc thanh Tìm kiếm & Lọc bằng thẻ Form (Method GET) -->
+	<form method="get" asp-controller="Customer" asp-action="Services" class="cvs-form-container">
+
+		<!-- Filters -->
+		<div class="cvs-filter-bar">
+			<div class="cvs-filter-left">
+				<input type="text" name="searchString" value="@ViewBag.SearchString" placeholder="Tìm kiếm tên dịch vụ hoặc mô tả..." />
+			</div>
+
+			<div class="cvs-filter-right">
+				<select name="sortOrder">
+					<option value="default" selected="@(ViewBag.SortOrder == "default" ? "selected" : null)">Sắp xếp theo</option>
+					<option value="price-asc" selected="@(ViewBag.SortOrder == "price-asc" ? "selected" : null)">Giá: Thấp đến Cao</option>
+					<option value="price-desc" selected="@(ViewBag.SortOrder == "price-desc" ? "selected" : null)">Giá: Cao đến Thấp</option>
+					<option value="name-asc" selected="@(ViewBag.SortOrder == "name-asc" ? "selected" : null)">Tên: A-Z</option>
+					<option value="name-desc" selected="@(ViewBag.SortOrder == "name-desc" ? "selected" : null)">Tên: Z-A</option>
+				</select>
+
+				<!-- Đổ danh mục động từ ViewBag.Categories -->
+				<select name="categoryId">
+					<option value="">Tất cả danh mục</option>
+					@if (ViewBag.Categories != null)
+					{
+						foreach (var cat in (IEnumerable<KaraokeManagement.Models.Category>)ViewBag.Categories)
+						{
+							<option value="@cat.CategoryId" selected="@(ViewBag.CategoryId == cat.CategoryId ? "selected" : null)">
+								@cat.CategoryName
+							</option>
+						}
+					}
+				</select>
+
+				<input type="number" name="minPrice" value="@ViewBag.MinPrice" placeholder="Giá Min" min="0" />
+				<input type="number" name="maxPrice" value="@ViewBag.MaxPrice" placeholder="Giá Max" min="0" />
+
+				<!-- Nút Submit Form -->
+				<button type="submit" class="btn-register">
+					Lọc
+				</button>
+			</div>
+		</div>
+	</form>
+
+	<!-- Service List (Dữ liệu Động) -->
+	<div class="cvs-service-list">
+
+		@if (Model != null && Model.Any())
+		{
+			foreach (var item in Model)
+			{
+				<a href="@Url.Action("ServiceDetail", "Customer", new { id = item.ServiceId })" class="cvs-card">
+					<div class="cvs-card-img">
+						<!-- Ảnh tĩnh mặc định do Model chưa có ImageURL -->
+						<img src="https://images.unsplash.com/photo-1600984880922-6b997c2317af?auto=format&fit=crop&q=80&w=600" alt="@item.ServiceName" />
+					</div>
+					<div class="cvs-card-info">
+						<div class="cvs-card-top">
+							<h3>@item.ServiceName</h3>
+							<span class="cvs-category">@(item.Category?.CategoryName ?? "Dịch vụ")</span>
+						</div>
+
+						<!-- Hiển thị Đơn vị tính vào phần mô tả -->
+						<p class="cvs-desc">
+							Đơn vị tính: @(string.IsNullOrEmpty(item.Unit) ? "Gói/Phần" : item.Unit)
+						</p>
+
+						<!-- Kiểm tra Tồn kho -->
+						@if (item.StockQuantity.HasValue && item.StockQuantity.Value > 0)
+						{
+							<div class="cvs-availability in-stock">
+								<span class="cvs-dot"></span> Đang có sẵn (Còn @item.StockQuantity)
+							</div>
+						}
+						else
+						{
+							<div class="cvs-availability out-of-stock">
+								<span class="cvs-dot"></span> Cần đặt trước / Hết hàng
+							</div>
+						}
+
+						<p class="cvs-price">@item.SellingPrice.ToString("N0") ₫</p>
+					</div>
+				</a>
+			}
+		}
+		else
+		{
+			<div class="cvs-no-result">
+				Không tìm thấy dịch vụ nào phù hợp với tiêu chí của bạn!
+			</div>
+		}
+
+	</div>
+
+	<!-- Pagination (Tương lai ghép phân trang nếu nhiều dữ liệu) -->
+	<div class="cvs-pagination">
+		<button class="active">1</button>
+		<button>2</button>
+		<button><i class="fa-solid fa-chevron-right"></i></button>
+	</div>
+</div>
+
+@section Scripts {
+	<!-- Nếu cần code JS xử lý filter trên giao diện thì viết ở đây -->
+}

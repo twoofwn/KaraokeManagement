@@ -1,0 +1,362 @@
+﻿@{
+    ViewData["Title"] = "Xác nhận thông tin đặt phòng - Minh Tuấn Karaoke";
+    Layout = "~/Views/Customer/_CustomerLayout.cshtml";
+    ViewData["ActiveNav"] = "rooms";
+}
+
+<!-- Thêm SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    /* VARIABLES */
+    :root {
+        --bg-light: #F8F4EC;
+        --pink-soft: #FF8FB7;
+        --pink-bold: #E83C91;
+        --dark-purple: #43334C;
+        --border-color: #e0e0e0;
+    }
+
+    .t-checkout-container {
+        background-color: var(--bg-light);
+        font-family: 'Inter', sans-serif;
+        padding: 40px 20px;
+        min-height: 80vh;
+    }
+
+    .t-checkout-wrapper {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    /* Header */
+    .t-checkout-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+        .t-checkout-header h1 {
+            font-size: 2.5rem;
+            color: var(--dark-purple);
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+    .t-checkout-header-decorator {
+        display: inline-block;
+        width: 60px;
+        height: 4px;
+        background-color: var(--pink-bold);
+        border-radius: 2px;
+    }
+
+    /* Layout */
+    .t-checkout-layout {
+        display: flex;
+        gap: 30px;
+        align-items: flex-start;
+    }
+
+    .t-checkout-left {
+        flex: 1.5;
+        background: #fff;
+        padding: 30px;
+        border-radius: 1vw;
+        box-shadow: 0 5px 20px rgba(67, 51, 76, 0.08);
+        border: 1px solid var(--pink-soft);
+    }
+
+    .t-checkout-right {
+        flex: 1;
+        background: var(--dark-purple);
+        padding: 30px;
+        border-radius: 1vw;
+        color: #fff;
+        box-shadow: 0 10px 25px rgba(67, 51, 76, 0.15);
+        position: sticky;
+        top: 100px;
+    }
+
+    /* Section Title */
+    .t-checkout-section-title {
+        font-size: 1.5rem;
+        color: var(--dark-purple);
+        margin-bottom: 25px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .t-checkout-section-title i {
+            color: var(--pink-bold);
+        }
+
+    /* Form Styles */
+    .t-checkout-form-group {
+        margin-bottom: 20px;
+    }
+
+        .t-checkout-form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark-purple);
+            font-size: 0.95rem;
+        }
+
+    .t-checkout-input {
+        width: 100%;
+        padding: 14px 15px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 1rem;
+        color: var(--dark-purple);
+        transition: all 0.3s;
+        font-family: inherit;
+    }
+
+        .t-checkout-input:focus {
+            outline: none;
+            border-color: var(--pink-bold);
+            box-shadow: 0 0 0 3px rgba(232, 60, 145, 0.15);
+        }
+
+    textarea.t-checkout-input {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    /* Right Column Details */
+    .t-checkout-summary-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+        color: var(--pink-soft);
+    }
+
+    .t-checkout-summary-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+        .t-checkout-summary-list li {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+            .t-checkout-summary-list li i {
+                width: 25px;
+                color: var(--pink-soft);
+                margin-top: 3px;
+            }
+
+            .t-checkout-summary-list li strong {
+                color: #fff;
+                margin-right: 5px;
+                font-weight: 600;
+            }
+
+            .t-checkout-summary-list li span {
+                opacity: 0.9;
+            }
+
+    /* Action Buttons */
+    .t-checkout-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 40px;
+    }
+
+    .t-btn {
+        flex: 1;
+        padding: 15px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        border: none;
+        font-family: inherit;
+    }
+
+    .t-btn-cancel {
+        background-color: transparent;
+        color: var(--dark-purple);
+        border: 2px solid var(--border-color);
+    }
+
+        .t-btn-cancel:hover {
+            background-color: #f3f4f6;
+            border-color: var(--dark-purple);
+        }
+
+    .t-btn-confirm {
+        background-color: var(--pink-bold);
+        color: #fff;
+        box-shadow: 0 4px 15px rgba(232, 60, 145, 0.3);
+    }
+
+        .t-btn-confirm:hover {
+            background-color: #d1307d;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(232, 60, 145, 0.4);
+        }
+</style>
+
+<div class="t-checkout-container">
+    <div class="t-checkout-wrapper">
+
+        <div class="t-checkout-header">
+            <h1>Xác nhận đặt phòng</h1>
+            <div class="t-checkout-header-decorator"></div>
+            <p style="color: var(--dark-purple); opacity: 0.8; margin-top: 10px;">Vui lòng kiểm tra lại thông tin và điền chi tiết liên hệ của bạn.</p>
+        </div>
+
+        <form onsubmit="handleFinalBooking(event)">
+            <div class="t-checkout-layout">
+
+                <!-- Cột trái: Thông tin khách hàng -->
+                <div class="t-checkout-left">
+                    <h2 class="t-checkout-section-title"><i class="fa-solid fa-address-card"></i> Thông tin người đặt</h2>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="t-checkout-form-group">
+                            <label>Họ và tên *</label>
+                            <input type="text" class="t-checkout-input" id="custName" placeholder="Nhập họ và tên..." required />
+                        </div>
+                        <div class="t-checkout-form-group">
+                            <label>Số điện thoại *</label>
+                            <input type="tel" class="t-checkout-input" id="custPhone" placeholder="Nhập số điện thoại..." required />
+                        </div>
+                    </div>
+
+                    <div class="t-checkout-form-group">
+                        <label>Email (Tùy chọn)</label>
+                        <input type="email" class="t-checkout-input" placeholder="Nhập email để nhận hóa đơn..." />
+                    </div>
+
+                    <div class="t-checkout-form-group">
+                        <label>Yêu cầu đặc biệt (Tùy chọn)</label>
+                        <textarea class="t-checkout-input" placeholder="Ví dụ: Cần trang trí sinh nhật, chuẩn bị sẵn tháp bia..."></textarea>
+                    </div>
+
+                    <!-- Nút bấm (Hiển thị trên mobile hoặc để dưới cùng form) -->
+                    <div class="t-checkout-actions">
+                        <button type="button" class="t-btn t-btn-cancel" onclick="window.history.back()">
+                            <i class="fa-solid fa-arrow-left"></i> Quay lại sửa
+                        </button>
+                        <button type="submit" class="t-btn t-btn-confirm">
+                            HOÀN TẤT ĐẶT PHÒNG <i class="fa-solid fa-check"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cột phải: Tóm tắt đơn hàng -->
+                <div class="t-checkout-right">
+                    <h3 class="t-checkout-summary-title">Tóm tắt dịch vụ</h3>
+
+                    <ul class="t-checkout-summary-list">
+                        <li>
+                            <i class="fa-solid fa-crown"></i>
+                            <div>
+                                <strong>Loại phòng:</strong>
+                                <span>@ViewBag.TypeName</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-door-open"></i>
+                            <div>
+                                <strong>Phòng chọn:</strong>
+                                <span>@ViewBag.RoomName</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fa-regular fa-calendar"></i>
+                            <div>
+                                <strong>Ngày nhận:</strong>
+                                @{
+                                    var dateStr = ViewBag.BookingDate?.ToString();
+                                    DateTime parsedDate = DateTime.MinValue;
+
+                                    if (!string.IsNullOrEmpty(dateStr) && DateTime.TryParse(dateStr, out parsedDate))
+                                    {
+                                        <span>@parsedDate.ToString("dd/MM/yyyy")</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@ViewBag.BookingDate</span>
+                                    }
+                                }
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fa-regular fa-clock"></i>
+                            <div>
+                                <strong>Giờ bắt đầu:</strong>
+                                <span>@ViewBag.StartTime</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-hourglass-half"></i>
+                            <div>
+                                <strong>Thời lượng:</strong>
+                                <span>@ViewBag.Duration phút</span>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed rgba(255,255,255,0.3);">
+                        <p style="font-size: 0.9rem; opacity: 0.8; margin: 0; line-height: 1.5; text-align: center;">
+                            * Giá phòng và dịch vụ sẽ được tính dựa trên thời gian sử dụng thực tế và bảng giá tại thời điểm hát.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function handleFinalBooking(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('custName').value;
+            const phone = document.getElementById('custPhone').value;
+
+            Swal.fire({
+                title: 'Đang xử lý...',
+                text: 'Vui lòng chờ trong giây lát',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Giả lập delay gửi API Backend
+            setTimeout(() => {
+                Swal.fire({
+                    title: 'Đặt phòng thành công!',
+                    html: `Cảm ơn <b>${name}</b> đã lựa chọn Minh Tuấn Karaoke.<br/>Chúng tôi sẽ gọi lại số <b>${phone}</b> để xác nhận trong ít phút tới.`,
+                    icon: 'success',
+                    confirmButtonColor: '#E83C91',
+                    confirmButtonText: 'Về trang chủ'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/Customer/Index';
+                    }
+                });
+            }, 1500);
+        }
+    </script>
+}

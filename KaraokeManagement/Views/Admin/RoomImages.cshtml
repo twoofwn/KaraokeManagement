@@ -1,0 +1,90 @@
+@model IEnumerable<KaraokeManagement.Models.RoomImage>
+@{
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+    ViewData["Title"] = "Ảnh phòng";
+    ViewData["ActiveNav"] = "roomimages";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Ảnh phòng</h1>
+        <nav class="breadcrumb-nav">
+            <span class="breadcrumb-current">RoomImages</span>
+        </nav>
+    </div>
+    <a href="/Admin/RoomImageUpload" class="btn-primary-sm">
+        <i class="fa-solid fa-cloud-arrow-up"></i> Tải ảnh lên
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="admin-alert success">
+        <i class="fa-solid fa-circle-check"></i> @TempData["Success"]
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="admin-alert error">
+        <i class="fa-solid fa-circle-exclamation"></i> @TempData["Error"]
+    </div>
+}
+
+<div class="table-card">
+    <div class="table-card-header">
+        <h2 class="table-card-title">Danh sách ảnh phòng</h2>
+        <form method="get" action="/Admin/RoomImages" class="table-search" style="gap:8px;display:flex;align-items:center;">
+            @Html.DropDownList("roomId", (IEnumerable<SelectListItem>)ViewBag.Rooms, "-- Tất cả phòng --", new { @class = "form-select", style = "min-width:160px;", onchange = "this.form.submit()" })
+        </form>
+        <span class="record-count">@ViewBag.TotalCount records</span>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Phòng</th>
+                <th>Preview</th>
+                <th>Image URL</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var img in Model)
+            {
+                <tr>
+                    <td>@img.RoomImageId</td>
+                    <td><span class="category-chip-plain">@img.Room?.RoomName</span></td>
+                    <td>
+                        <img src="@img.ImageUrl" alt="room img"
+                             style="width:80px;height:50px;object-fit:cover;border-radius:6px;border:1px solid #ddd;"
+                             onerror="this.src='/images/no-image.png'" />
+                    </td>
+                    <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                        title="@img.ImageUrl">@img.ImageUrl</td>
+                    <td class="table-actions">
+                        <a href="/Admin/RoomImageEdit/@img.RoomImageId" class="action-btn edit">
+                            <i class="fa-solid fa-pen"></i>
+                        </a>
+                        <form method="post" action="/Admin/RoomImageDelete/@img.RoomImageId"
+                              onsubmit="return confirm('Xóa ảnh này?')" style="display:inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="action-btn delete">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="5" style="text-align:center;color:#a09098;padding:32px;">
+                        Chưa có ảnh nào. <a href="/Admin/RoomImageCreate">Thêm mới</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @await Html.PartialAsync("_Pager")
+</div>

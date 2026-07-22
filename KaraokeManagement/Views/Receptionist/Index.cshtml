@@ -182,28 +182,34 @@
             const hiddenRoomType = document.getElementById('hiddenRoomType');
             const hiddenStatus = document.getElementById('hiddenStatus');
 
-            roomTypeSelect.addEventListener('change', () => {
-                hiddenRoomType.value = roomTypeSelect.value;
-                form.submit();
-            });
+            if (roomTypeSelect) {
+                roomTypeSelect.addEventListener('change', () => {
+                    if (hiddenRoomType) hiddenRoomType.value = roomTypeSelect.value;
+                    if (form) form.submit();
+                });
+            }
 
-            statusSelect.addEventListener('change', () => {
-                hiddenStatus.value = statusSelect.value;
-                form.submit();
-            });
+            if (statusSelect) {
+                statusSelect.addEventListener('change', () => {
+                    if (hiddenStatus) hiddenStatus.value = statusSelect.value;
+                    if (form) form.submit();
+                });
+            }
 
-            let timeout = null;
-            searchInput.addEventListener('input', () => {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                    form.submit();
-                }, 600);
-            });
+            if (searchInput) {
+                let timeout = null;
+                searchInput.addEventListener('input', () => {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => {
+                        if (form) form.submit();
+                    }, 600);
+                });
 
-            const searchVal = searchInput.value;
-            if (searchVal) {
-                searchInput.focus();
-                searchInput.setSelectionRange(searchVal.length, searchVal.length);
+                const searchVal = searchInput.value;
+                if (searchVal) {
+                    searchInput.focus();
+                    searchInput.setSelectionRange(searchVal.length, searchVal.length);
+                }
             }
 
             const timers = document.querySelectorAll('.time-left-countdown');

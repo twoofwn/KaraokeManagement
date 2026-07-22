@@ -1,0 +1,64 @@
+﻿@using System.Security.Claims
+@{
+	var fullName = User.FindFirstValue(ClaimTypes.Name) ?? "User";
+	var avatar = fullName.Substring(0, 1).ToUpper();
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - AdminPanel</title>
+	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/css/customer.css" asp-append-version="true" />
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+	<div class="guest-home-container">
+		<!-- Header -->
+		<header class="guest-nav-bar">
+			<div class="guest-nav-bar-logo">
+				<img src="~/img/logo.jpg" class="logo" alt="Karaoke Room" />
+			</div>
+
+			<div class="nav-menu">
+				<a href="/Customer/Index" class="@(ViewData["ActiveNav"]?.ToString() == "home" ? "active" : "")">Trang chủ</a>
+				<a href="/Customer/Rooms" class="@(ViewData["ActiveNav"]?.ToString() == "rooms" ? "active" : "")">Phòng hát</a>
+				<a href="/Customer/Services" class="@(ViewData["ActiveNav"]?.ToString() == "services" ? "active" : "")">Dịch vụ</a>
+				<a href="/Customer/Bookings" class="@(ViewData["ActiveNav"]?.ToString() == "bookings" ? "active" : "")">Lịch sử đặt</a>
+				<a href="/Customer/Profile" class="@(ViewData["ActiveNav"]?.ToString() == "profile" ? "active" : "")">Hồ sơ</a>
+			</div>
+
+			<div class="guest-nav-bar-action">
+				<a href="/Customer/Rooms" class="btn-register">Đặt phòng ngay</a>
+			</div>
+		</header>
+
+		<!-- Page content -->
+		<div class="main-content">
+			@RenderBody()
+		</div>
+
+		<footer>
+			<div>
+				<h3>Liên hệ & Địa chỉ</h3>
+				<p>123 Đường Sôi Động, Quận Giải Trí</p>
+				<p>Thành phố Hà Nội</p>
+			</div>
+
+			<div>
+				<h3>Đặt phòng ngay</h3>
+				<p>Hotline: 0988 123 456</p>
+				<p>Zalo: 0988 123 456</p>
+				<p>Email: book@minhtuankaraoke.vn</p>
+			</div>
+		</footer>
+	</div>
+
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+	@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

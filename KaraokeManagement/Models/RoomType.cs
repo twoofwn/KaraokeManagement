@@ -18,4 +18,6 @@ public partial class RoomType
     public int Capacity { get; set; }
 
     public virtual ICollection<Room> Rooms { get; set; } = new List<Room>();
+
+    public virtual ICollection<RoomPrice> RoomPrices { get; set; } = new List<RoomPrice>();
 }

@@ -1,0 +1,710 @@
+﻿@model KaraokeManagement.Models.RoomType
+@{
+	ViewData["Title"] = "Chi tiết phòng hát - Minh Tuấn Karaoke";
+	Layout = "~/Views/Customer/_CustomerLayout.cshtml";
+	ViewData["ActiveNav"] = "rooms";
+}
+
+<!-- Thêm SweetAlert2 cho thông báo đặt phòng -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+	/* VARIABLES */
+	:root {
+		--bg-light: #F8F4EC;
+		--pink-soft: #FF8FB7;
+		--pink-bold: #E83C91;
+		--dark-purple: #43334C;
+	}
+
+	/* General Styles */
+	.t-roomdetail-container {
+		background-color: var(--bg-light);
+		font-family: 'Inter', sans-serif;
+	}
+
+	.t-roomdetail-main-wrapper {
+		max-width: 1280px;
+		margin: 0 auto;
+		padding: 3rem 2rem;
+	}
+
+	/* Header Section */
+	.t-roomdetail-header {
+		text-align: center;
+		margin-bottom: 3rem;
+	}
+
+	.t-roomdetail-header-decorator {
+		display: inline-block;
+		width: 4rem;
+		height: 3px;
+		background-color: var(--pink-bold);
+	}
+
+	.t-roomdetail-header-title {
+		font-size: 3rem;
+		color: var(--dark-purple);
+		margin-top: 1rem;
+		font-weight: 700;
+		text-transform: uppercase;
+	}
+
+	.t-roomdetail-breadcrumbs {
+		font-size: 0.9rem;
+		color: var(--dark-purple);
+		opacity: 0.8;
+		margin-top: 1rem;
+	}
+
+		.t-roomdetail-breadcrumbs a {
+			color: var(--dark-purple);
+			text-decoration: none;
+			transition: color 0.3s;
+		}
+
+			.t-roomdetail-breadcrumbs a:hover {
+				color: var(--pink-bold);
+			}
+
+		.t-roomdetail-breadcrumbs span {
+			margin: 0 0.5rem;
+		}
+
+		.t-roomdetail-breadcrumbs .t-roomdetail-current-page {
+			color: var(--pink-bold);
+			font-weight: 600;
+		}
+
+	/* Main Content Layout (Cố định dàn ngang) */
+	.t-roomdetail-layout {
+		display: flex;
+		flex-direction: row;
+		gap: 3rem;
+	}
+
+	.t-roomdetail-left-column {
+		width: 66.666667%;
+	}
+
+	.t-roomdetail-right-column {
+		width: 33.333333%;
+	}
+
+	.t-roomdetail-gallery-main-img {
+		width: 100%;
+		height: auto;
+		object-fit: cover;
+		border-radius: 1vw;
+		margin-bottom: 1rem;
+		aspect-ratio: 16 / 9;
+		animation: fadeIn 0.4s ease-in-out;
+		box-shadow: 0 5px 15px rgba(67, 51, 76, 0.1);
+	}
+
+	.t-roomdetail-gallery-thumbnails {
+		display: flex;
+		width: 100%;
+		gap: 10px;
+	}
+
+	.t-roomdetail-gallery-thumbnail-item {
+		flex: 1;
+		min-width: 100px;
+		aspect-ratio: 16 / 9;
+	}
+
+	.t-roomdetail-gallery-thumbnail-img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: 0.5vw;
+		cursor: pointer;
+		transition: all 0.2s ease-in-out;
+		opacity: 0.6;
+	}
+
+		.t-roomdetail-gallery-thumbnail-img:hover {
+			opacity: 0.9;
+			transform: scale(1.05);
+		}
+
+		.t-roomdetail-gallery-thumbnail-img.active {
+			opacity: 1;
+			outline: 3px solid var(--pink-bold);
+			outline-offset: 2px;
+			transform: scale(1.02);
+		}
+
+	/* Description */
+	.t-roomdetail-description {
+		margin-top: 2rem;
+		color: var(--dark-purple);
+		line-height: 1.8;
+		font-size: 1.05rem;
+	}
+
+		.t-roomdetail-description p {
+			margin-bottom: 1rem;
+		}
+
+	/* Amenity Section */
+	.t-roomdetail-amenities-section {
+		margin: 5% 0;
+	}
+
+	.t-roomdetail-section-title {
+		font-size: 1.875rem;
+		color: var(--dark-purple);
+		margin-bottom: 1.5rem;
+		font-weight: 700;
+	}
+
+	.t-roomdetail-amenities-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr); /* Cố định 3 cột */
+		gap: 1.5rem;
+	}
+
+	.t-roomdetail-amenity-item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		padding: 1rem;
+		background: #fff;
+		border: 1px solid var(--pink-soft);
+		border-radius: 1vw;
+		height: 8rem;
+		box-shadow: 0 2px 10px rgba(67, 51, 76, 0.05);
+		transition: transform 0.3s ease;
+	}
+
+		.t-roomdetail-amenity-item:hover {
+			transform: translateY(-5px);
+			border-color: var(--pink-bold);
+		}
+
+		.t-roomdetail-amenity-item i {
+			font-size: 2rem;
+			color: var(--pink-bold);
+			margin-bottom: 10px;
+		}
+
+		.t-roomdetail-amenity-item span {
+			color: var(--dark-purple);
+			font-weight: 500;
+			font-size: 0.95rem;
+		}
+
+	/* Room items */
+	.t-roomdetail-rooms-grid {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		align-items: flex-start;
+	}
+
+	.t-roomdetail-rooms-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+	}
+
+	.t-roomdetail-room-item {
+		border: 2px solid var(--pink-bold);
+		border-radius: 0.75vw;
+		padding: 0.5rem 1rem;
+		min-width: 80px;
+		color: var(--pink-bold);
+		font-weight: 600;
+		text-align: center;
+		cursor: pointer;
+		background: #fff;
+		transition: all 0.3s ease;
+	}
+
+		.t-roomdetail-room-item:hover {
+			background-color: var(--pink-soft);
+			color: var(--dark-purple);
+		}
+
+		.t-roomdetail-room-item.selected {
+			background-color: var(--pink-bold);
+			color: #fff;
+		}
+
+	/* Booking Form */
+	.t-roomdetail-booking-card {
+		background-color: #fff;
+		padding: 2rem;
+		border-radius: 1vw;
+		border: 1px solid var(--pink-soft);
+		position: sticky;
+		top: 100px;
+		box-shadow: 0 10px 25px rgba(67, 51, 76, 0.1);
+	}
+
+	.t-roomdetail-booking-card-subtitle {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--pink-bold);
+		letter-spacing: 0.05em;
+		text-align: center;
+	}
+
+	.t-roomdetail-booking-card-title {
+		font-size: 1.875rem;
+		font-weight: 700;
+		color: var(--dark-purple);
+		margin-top: 0.25rem;
+		margin-bottom: 2rem;
+		text-align: center;
+	}
+
+	.t-roomdetail-booking-form {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 16px;
+	}
+
+	.t-roomdetail-form-group {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.full-width {
+		grid-column: 1 / -1;
+	}
+
+	.t-roomdetail-form-label {
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--dark-purple);
+		margin-bottom: 0.5rem;
+	}
+
+	.t-roomdetail-input-wrapper {
+		position: relative;
+	}
+
+	.t-roomdetail-input-icon {
+		position: absolute;
+		left: 0.875rem;
+		top: 50%;
+		transform: translateY(-50%);
+		font-size: 1.2rem;
+		color: var(--pink-bold);
+		pointer-events: none;
+	}
+
+	.t-roomdetail-form-input {
+		width: 100%;
+		padding: 0.75rem 1rem;
+		border: 1px solid #d1d5db;
+		border-radius: 0.5rem;
+		font-size: 1rem;
+		color: var(--dark-purple);
+		background: #fff;
+		transition: border-color 0.2s, box-shadow 0.2s;
+	}
+
+		.t-roomdetail-form-input.with-icon {
+			padding-left: 0.8rem;
+		}
+
+		.t-roomdetail-form-input:focus {
+			outline: none;
+			border-color: var(--pink-bold);
+			box-shadow: 0 0 0 3px rgba(232, 60, 145, 0.2);
+		}
+
+		.t-roomdetail-form-input.readonly {
+			background-color: var(--bg-light);
+			cursor: not-allowed;
+			color: var(--dark-purple);
+			opacity: 0.8;
+		}
+
+	.t-roomdetail-form-button {
+		width: 100%;
+		background-color: var(--pink-bold);
+		color: #fff;
+		font-size: 1.1rem;
+		font-weight: 600;
+		padding: 0.875rem 1rem;
+		border-radius: 25px;
+		transition: all 0.3s ease;
+		border: none;
+		cursor: pointer;
+		margin-top: 10px;
+	}
+
+		.t-roomdetail-form-button:hover {
+			background-color: var(--dark-purple);
+			transform: translateY(-2px);
+		}
+
+	/* Price Card */
+	.t-roomdetail-price-card {
+		background-color: #fff;
+		padding: 1.5rem;
+		border-radius: 1vw;
+		box-shadow: 0 5px 15px rgba(67, 51, 76, 0.08);
+		margin-bottom: 1.5rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		border: 1px solid var(--pink-soft);
+	}
+
+	.t-roomdetail-price-label {
+		font-size: 1rem;
+		color: var(--dark-purple);
+		text-transform: uppercase;
+		font-weight: 600;
+		margin-bottom: 0.5rem;
+	}
+
+	.t-roomdetail-price-amount {
+		font-size: 2.25rem;
+		font-weight: 800;
+		color: var(--pink-bold);
+	}
+
+	/* Custom Dropdown Fake */
+	.t-roomdetail-custom-select-trigger {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 12px 16px;
+		background-color: #fff;
+		border: 1px solid #d1d5db;
+		border-radius: 8px;
+		cursor: pointer;
+		font-size: 1rem;
+		color: var(--dark-purple);
+	}
+
+		.t-roomdetail-custom-select-trigger:hover {
+			border-color: var(--pink-bold);
+		}
+
+	.t-roomdetail-custom-select-options {
+		display: none;
+		position: absolute;
+		top: 100%;
+		left: 0;
+		right: 0;
+		background-color: #fff;
+		border: 1px solid var(--pink-soft);
+		border-top: none;
+		border-radius: 0 0 8px 8px;
+		z-index: 10;
+		max-height: 200px;
+		overflow-y: auto;
+		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+		padding: 10px;
+	}
+
+		.t-roomdetail-custom-select-options.show {
+			display: block;
+		}
+</style>
+
+<div class="t-roomdetail-container">
+	<div class="t-roomdetail-main-wrapper">
+
+		<!-- Header -->
+		<div class="t-roomdetail-header">
+			<div class="t-roomdetail-header-decorator"></div>
+			<!-- Thay bằng TypeName -->
+			<h1 class="t-roomdetail-header-title">@Model.TypeName</h1>
+			<div class="t-roomdetail-breadcrumbs">
+				<a href="/Customer/Index">Trang chủ</a><span>&gt;</span>
+				<a href="/Customer/Rooms">Phòng hát</a><span>&gt;</span>
+				<span class="t-roomdetail-current-page">@Model.TypeName</span>
+			</div>
+		</div>
+
+		<div class="t-roomdetail-layout">
+			<!-- Left Column: Gallery, Description, Amenities -->
+			<div class="t-roomdetail-left-column">
+
+				<!-- Image Gallery -->
+				<div class="t-roomdetail-gallery">
+					<img src="https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?auto=format&fit=crop&q=80&w=800"
+						 alt="Room main view" id="mainRoomImage" class="t-roomdetail-gallery-main-img" />
+
+					<div class="t-roomdetail-gallery-thumbnails">
+						<div class="t-roomdetail-gallery-thumbnail-item">
+							<img src="https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?auto=format&fit=crop&q=80&w=400"
+								 class="t-roomdetail-gallery-thumbnail-img active" onclick="changeImage(this)" />
+						</div>
+						<div class="t-roomdetail-gallery-thumbnail-item">
+							<img src="https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?auto=format&fit=crop&q=80&w=400"
+								 class="t-roomdetail-gallery-thumbnail-img" onclick="changeImage(this)" />
+						</div>
+						<div class="t-roomdetail-gallery-thumbnail-item">
+							<img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=400"
+								 class="t-roomdetail-gallery-thumbnail-img" onclick="changeImage(this)" />
+						</div>
+					</div>
+				</div>
+
+				<!-- Description -->
+				<div class="t-roomdetail-description">
+					<p>@(string.IsNullOrEmpty(Model.Description) ? "Chưa có mô tả cho loại phòng này." : Model.Description)</p>
+				</div>
+
+				<!-- Amenities -->
+				<div class="t-roomdetail-amenities-section">
+					<h2 class="t-roomdetail-section-title">Tiện nghi phòng</h2>
+					<div class="t-roomdetail-amenities-grid">
+						<div class="t-roomdetail-amenity-item"><i class="fa-solid fa-snowflake"></i><span>Điều hòa 2 chiều</span></div>
+						<div class="t-roomdetail-amenity-item"><i class="fa-solid fa-wifi"></i><span>Wifi Tốc độ cao</span></div>
+						<div class="t-roomdetail-amenity-item"><i class="fa-solid fa-tv"></i><span>Smart TV lớn</span></div>
+						<div class="t-roomdetail-amenity-item"><i class="fa-solid fa-martini-glass-citrus"></i><span>Quầy Minibar</span></div>
+						<div class="t-roomdetail-amenity-item"><i class="fa-solid fa-microphone-lines"></i><span>Âm thanh Studio</span></div>
+						<div class="t-roomdetail-amenity-item"><i class="fa-regular fa-lightbulb"></i><span>LED Cảm biến</span></div>
+					</div>
+				</div>
+
+				<!-- Các phòng trống (Đổ từ Model.Rooms) -->
+				<div class="t-roomdetail-section">
+					<h2 class="t-roomdetail-section-title">Danh sách phòng khả dụng</h2>
+					<div class="t-roomdetail-rooms-row">
+						@if (Model.Rooms != null && Model.Rooms.Any())
+						{
+							bool isFirst = true;
+							foreach (var room in Model.Rooms)
+							{
+								// *Ghi chú: Đổi "room.RoomId" thành "room.RoomName" nếu bảng Room của bạn có trường Tên phòng
+								<div class="t-roomdetail-room-item @(isFirst ? "selected" : "")">@room.RoomName</div>
+								isFirst = false;
+							}
+						}
+						else
+						{
+							<span style="color: #666; font-style: italic;">Hiện không có phòng nào thuộc loại này.</span>
+						}
+					</div>
+				</div>
+			</div>
+
+			<!-- Right Column: Booking Form -->
+			<div class="t-roomdetail-right-column">
+				<div class="t-roomdetail-price-card">
+					<span class="t-roomdetail-price-label"><i class="fa-solid fa-tags"></i> Bảng giá niêm yết</span>
+
+					@if (Model.RoomPrices != null && Model.RoomPrices.Any())
+					{
+						<div class="t-roomdetail-price-list">
+							<!-- Lặp qua danh sách cấu hình giá, format thời gian giờ:phút -->
+							@foreach (var priceConfig in Model.RoomPrices.OrderBy(p => p.StartTime))
+							{
+								<div class="t-roomdetail-price-item">
+									<span class="t-roomdetail-price-time">
+										<i class="fa-regular fa-clock" style="margin-right: 5px;"></i>
+										@priceConfig.StartTime.ToString(@"hh\:mm") - @priceConfig.EndTime.ToString(@"hh\:mm")
+									</span>
+									<span class="t-roomdetail-price-val">@priceConfig.PricePerHour.ToString("N0") ₫</span>
+								</div>
+							}
+						</div>
+					}
+					else
+					{
+						<!-- Fallback nếu bảng RoomPrices chưa có dữ liệu cấu hình -->
+						<span class="t-roomdetail-price-amount">@Model.PricePerHour.ToString("N0") ₫<span style="font-size: 1.2rem; font-weight: 500;"> / giờ</span></span>
+					}
+
+					<!-- LƯU Ý PHỤ THU -->
+					@if (ViewBag.ActivePolicies != null && ((IEnumerable<KaraokeManagement.Models.PricingPolicy>)ViewBag.ActivePolicies).Any())
+					{
+						<div class="t-roomdetail-policy-note">
+							<strong>* Lưu ý phụ thu:</strong>
+							<ul class="t-roomdetail-policy-list">
+								@foreach (var policy in (IEnumerable<KaraokeManagement.Models.PricingPolicy>)ViewBag.ActivePolicies)
+								{
+									<!-- Hiển thị value (giả định là % phụ thu) -->
+									<li>@policy.PolicyName: Tăng <b>@policy.Value.ToString("0.##")%</b></li>
+								}
+							</ul>
+						</div>
+					}
+				</div>
+
+				<div class="t-roomdetail-booking-card">
+					<p class="t-roomdetail-booking-card-subtitle">ĐẶT PHÒNG NGAY</p>
+					<h3 class="t-roomdetail-booking-card-title">Thông tin đặt lịch</h3>
+
+					<form class="t-roomdetail-booking-form" onsubmit="handleBooking(event)">
+
+						<!-- Check-in & Check-out -->
+						<div class="t-roomdetail-form-group full-width">
+							<label class="t-roomdetail-form-label">Ngày hát</label>
+							<div class="t-roomdetail-input-wrapper">
+								<i class='bx bxs-calendar t-roomdetail-input-icon'></i>
+								<input type="date" class="t-roomdetail-form-input with-icon" id="bookingDate" required />
+							</div>
+						</div>
+
+						<!-- Giờ bắt đầu & Thời gian hát -->
+						<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;" class="full-width">
+							<div class="t-roomdetail-form-group" style="margin-bottom:0;">
+								<label class="t-roomdetail-form-label">Giờ bắt đầu</label>
+								<div class="t-roomdetail-input-wrapper">
+									<i class='bx bxs-time t-roomdetail-input-icon'></i>
+									<input type="time" class="t-roomdetail-form-input with-icon" id="bookingStartTime" required />
+								</div>
+							</div>
+							<div class="t-roomdetail-form-group" style="margin-bottom:0;">
+								<label class="t-roomdetail-form-label">TG hát (Giờ)</label>
+								<div class="t-roomdetail-input-wrapper">
+									<i class='bx bx-timer t-roomdetail-input-icon'></i>
+									<select class="t-roomdetail-form-input with-icon" id="bookingDuration" required style="cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%2343334C%22%3E%3Cpath d=%22M7 10l5 5 5-5z%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 15px center; background-size: 16px;">
+										<option value="" disabled selected>Chọn...</option>
+										@for (int i = 30; i <= 300; i += 30)
+										{
+											var hours = (double)i / 60;
+											<option value="@i">@i phút @(hours >= 1 ? $"({hours} giờ)" : "")</option>
+										}
+									</select>
+								</div>
+							</div>
+						</div>
+
+						<!-- Dropdown chọn phòng -->
+						<div class="t-roomdetail-form-group full-width">
+							<label class="t-roomdetail-form-label">Phòng</label>
+							<div class="t-roomdetail-input-wrapper">
+								<div class="t-roomdetail-custom-select-trigger" onclick="toggleRoomDropdown()">
+									<span id="selectedRoomText">
+										@(Model.Rooms != null && Model.Rooms.Any() ? $"Phòng {Model.Rooms.First().RoomId}" : "Chọn phòng")
+									</span>
+									<i class='bx bx-chevron-down'></i>
+								</div>
+								<div class="t-roomdetail-custom-select-options" id="roomDropdown">
+									<div style="display:flex; gap: 8px; flex-wrap:wrap;">
+										@if (Model.Rooms != null && Model.Rooms.Any())
+										{
+											bool isFirst = true;
+											foreach (var room in Model.Rooms)
+											{
+												<div class="t-roomdetail-room-item @(isFirst ? "selected" : "")"
+													 onclick="selectFormRoom('@room.RoomName', this)">
+													@room.RoomName
+												</div>
+												isFirst = false;
+											}
+										}
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="full-width">
+							<button type="submit" class="t-roomdetail-form-button">XÁC NHẬN ĐẶT PHÒNG</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	<script>
+		//Js validate thời gian
+		document.addEventListener("DOMContentLoaded", function () {
+			const today = new Date().toISOString().split('T')[0];
+			document.getElementById('bookingDate').setAttribute('min', today);
+		});
+
+		// JS Đổi Ảnh
+		function changeImage(element) {
+			document.getElementById('mainRoomImage').src = element.src;
+			const thumbnails = document.querySelectorAll('.t-roomdetail-gallery-thumbnail-img');
+			thumbnails.forEach(img => img.classList.remove('active'));
+			element.classList.add('active');
+		}
+
+		// JS Dropdown Phòng
+		function toggleRoomDropdown() {
+			document.getElementById('roomDropdown').classList.toggle('show');
+		}
+
+		function selectFormRoom(roomName, element) {
+			document.getElementById('selectedRoomText').innerText = roomName;
+			const items = document.querySelectorAll('#roomDropdown .t-roomdetail-room-item');
+			items.forEach(i => i.classList.remove('selected'));
+			element.classList.add('selected');
+			toggleRoomDropdown();
+		}
+
+		// Đóng dropdown khi click ngoài
+		document.addEventListener('click', function(event) {
+			const trigger = document.querySelector('.t-roomdetail-custom-select-trigger');
+			const dropdown = document.getElementById('roomDropdown');
+			if (trigger && dropdown && !trigger.contains(event.target) && !dropdown.contains(event.target)) {
+				dropdown.classList.remove('show');
+			}
+		});
+
+		// Xử lý Form Đặt Phòng
+		function handleBooking(e) {
+			e.preventDefault();
+
+			const selectedRoom = document.getElementById('selectedRoomText').innerText;
+			const bookingDate = document.getElementById('bookingDate').value;
+			const bookingStartTime = document.getElementById('bookingStartTime').value;
+			const bookingDuration = document.getElementById('bookingDuration').value;
+			const roomTypeName = "@Html.Raw(Model.TypeName)";
+
+			// Gộp ngày và giờ để kiểm tra với thời gian hiện tại
+			const selectedDateTime = new Date(`${bookingDate}T${bookingStartTime}`);
+			const now = new Date();
+
+			// So sánh thời gian
+			if (selectedDateTime < now) {
+				Swal.fire({
+					title: 'Thời gian không hợp lệ!',
+					text: 'Không thể đặt phòng với ngày hoặc giờ trong quá khứ. Vui lòng chọn lại!',
+					icon: 'error',
+					confirmButtonColor: '#E83C91'
+				});
+				return; // Ngăn không cho form tiếp tục submit
+			}
+
+			// Format hiển thị cho SweetAlert
+			const formattedDate = selectedDateTime.toLocaleDateString('vi-VN');
+			const formattedTime = selectedDateTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+			Swal.fire({
+				title: 'Xác nhận thông tin?',
+				icon: 'info',
+				html: `
+					<div style="text-align: left; padding: 0 1rem; color: #43334C;">
+						<p><strong>Loại phòng:</strong> ${roomTypeName}</p>
+						<p><strong>Tên phòng:</strong> ${selectedRoom}</p>
+						<p><strong>Ngày hát:</strong> ${formattedDate}</p>
+						<p><strong>Giờ bắt đầu:</strong> ${formattedTime}</p>
+						<p><strong>TG dự kiến:</strong> ${bookingDuration} phút</p>
+					</div>
+				`,
+				showCancelButton: true,
+				confirmButtonColor: '#E83C91',
+				cancelButtonColor: '#9ca3af',
+				confirmButtonText: 'Đồng ý đặt!',
+				cancelButtonText: 'Hủy'
+			}).then((result) => {
+				if (result.isConfirmed) {
+					const url = `/Customer/BookingConfirmation?roomName=${encodeURIComponent(selectedRoom)}&typeName=${encodeURIComponent(roomTypeName)}&bookingDate=${encodeURIComponent(bookingDate)}&startTime=${encodeURIComponent(bookingStartTime)}&duration=${encodeURIComponent(bookingDuration)}`;
+					window.location.href = url;
+				}
+			})
+		}
+	</script>
+}

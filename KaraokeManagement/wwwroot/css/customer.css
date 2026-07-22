@@ -1,0 +1,554 @@
+﻿/* CSS RESET & VARIABLES */
+:root {
+    --bg-light: #F8F4EC;
+    --pink-soft: #FF8FB7;
+    --pink-bold: #E83C91;
+    --dark-purple: #43334C;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: #ffffff;
+    color: var(--dark-purple);
+}
+
+.guest-home-container {
+    width: 100%;
+}
+
+/* NAVBAR */
+.guest-nav-bar {
+    width: 100%;
+    padding: 0% 6%;
+    border-bottom: 1px solid var(--pink-soft);
+    display: flex;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.guest-nav-bar-logo {
+    width: 20%;
+    display: flex;
+    align-items: center;
+}
+
+    .guest-nav-bar-logo img {
+        width: 40%;
+    }
+
+.nav-menu {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+}
+
+    .nav-menu a {
+        text-decoration: none;
+        color: var(--dark-purple);
+        font-weight: 500;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            color: var(--pink-bold);
+        }
+
+        /* Hiệu ứng gạch dưới khi hover/active menu */
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: var(--pink-bold);
+            transition: width 0.3s ease;
+        }
+
+        .nav-menu a:hover::after,
+        .nav-menu a.active::after {
+            width: 100%;
+        }
+
+.guest-nav-bar-action {
+    width: 30%;
+    display: flex;
+    justify-content: flex-end;
+    align-self: center;
+    gap: 15px;
+}
+
+.btn-login, .btn-register {
+    padding: 10px 25px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-login {
+    color: var(--pink-bold);
+    border: 2px solid var(--pink-bold);
+    background: transparent;
+}
+
+    .btn-login:hover {
+        background: var(--pink-bold);
+        color: #fff;
+    }
+
+.btn-register {
+    background: var(--pink-bold);
+    color: #fff;
+    border: 2px solid var(--pink-bold);
+}
+
+    .btn-register:hover {
+        background: var(--dark-purple);
+        border-color: var(--dark-purple);
+    }
+
+/* MAIN CONTENT */
+.main-content {
+    width: 100%;
+    min-height: 100vh;
+    margin-top: 5%; /* Adjust for fixed header */
+}
+
+.content-1 {
+    width: 80%;
+    margin: 0 10%;
+    margin-top: 5%;
+    display: flex;
+    margin-bottom: 5%;
+}
+
+    .content-1 > .left-content {
+        width: 50%;
+        display: flex;
+        align-items: center;
+    }
+
+    .content-1 > .right-content {
+        width: 50%;
+        height: 100%;
+        position: relative;
+        margin: auto;
+        overflow: hidden;
+        border-radius: 1vw;
+    }
+
+.title {
+    font-size: 250%;
+    font-weight: 500;
+    color: var(--dark-purple);
+    line-height: 1.2;
+}
+
+    .title span {
+        color: var(--pink-bold);
+    }
+
+.right-content > .image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 1vw;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* CONTENT 2: ABOUT */
+.content-2 {
+    width: 80%;
+    margin: 0 10%;
+    display: flex;
+    margin-bottom: 5%;
+}
+
+    .content-2 .left-content {
+        width: 50%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+.title-description {
+    color: var(--pink-bold);
+    font-size: 120%;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.content-2 .left-content .description {
+    color: var(--dark-purple);
+    margin-right: 20%;
+    font-size: 110%;
+    line-height: 180%;
+    opacity: 0.8;
+}
+
+.content-2 .left-content h1 {
+    font-size: 250%;
+    margin-bottom: 20px;
+    color: var(--dark-purple);
+}
+
+.content-2 .right-content {
+    width: 50%;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+    .content-2 .right-content .image {
+        width: 65%;
+        height: auto;
+        border-radius: 1vw;
+    }
+
+    .content-2 .right-content .smaller-image {
+        width: 35%;
+        height: auto;
+        border-radius: 1vw;
+        margin-top: 10%;
+    }
+
+/* CONTENT 3: ROOMS */
+.content-3 {
+    width: 100%;
+    background-color: var(--bg-light);
+    padding-top: 4%;
+    margin-bottom: 5%;
+}
+
+    .content-3 .title-description {
+        margin-left: 10%;
+    }
+
+.big-title-description {
+    margin-left: 10%;
+    font-size: 250%;
+    margin-right: 20%;
+    color: var(--dark-purple);
+}
+
+.blur-description {
+    margin-left: 10%;
+    color: var(--dark-purple);
+    margin-right: 20%;
+    font-size: 110%;
+    width: 50%;
+    line-height: 180%;
+    opacity: 0.8;
+    margin-bottom: 2%;
+}
+
+.rooms {
+    display: flex;
+    overflow-x: auto;
+    padding: 0 10%;
+    gap: 2rem;
+    scroll-behavior: smooth;
+    align-items: flex-start;
+    padding-bottom: 2%;
+}
+
+    .rooms::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .rooms::-webkit-scrollbar-thumb {
+        background: var(--pink-soft);
+        border-radius: 10px;
+    }
+
+.room-card {
+    width: 25vw;
+    flex-shrink: 0;
+    margin: 15px 0;
+    background: #fff;
+    border-radius: 1vw;
+    padding-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(67, 51, 76, 0.1);
+}
+
+.room-card-image {
+    width: 100%;
+    overflow: hidden;
+    border-top-left-radius: 1vw;
+    border-top-right-radius: 1vw;
+}
+
+    .room-card-image img {
+        width: 100%;
+        aspect-ratio: 16/9;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+        .room-card-image img:hover {
+            transform: scale(1.05);
+        }
+
+.room-name {
+    margin: 15px 20px 5px;
+    color: var(--dark-purple);
+}
+
+.room-price {
+    background-color: #fff;
+    border: 1px solid var(--pink-soft);
+    width: fit-content;
+    padding: 5px 15px;
+    border-radius: 5px;
+    margin: 10px 20px;
+    font-weight: 500;
+}
+
+    .room-price strong {
+        color: var(--pink-bold);
+        font-size: 110%;
+    }
+
+.room-description {
+    color: var(--dark-purple);
+    opacity: 0.7;
+    margin: 0 20px 20px;
+    font-size: 95%;
+}
+
+.room-book {
+    margin: 0 20px;
+    text-decoration: none;
+    color: var(--pink-bold);
+    border: 2px solid var(--pink-bold);
+    border-radius: 25px;
+    padding: 8px 25px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+    .room-book:hover {
+        background-color: var(--pink-bold);
+        color: #ffffff;
+    }
+
+.room-controls {
+    display: flex;
+    padding: 0 10%;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.round-button {
+    font-size: 150%;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    color: var(--pink-bold);
+    background-color: #ffffff;
+    border: 2px solid var(--pink-bold);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .round-button:hover {
+        color: #ffffff;
+        background-color: var(--pink-bold);
+    }
+
+/* CONTENT 4: SERVICES/TRAVEL */
+.content-4 {
+    width: 100%;
+    margin-bottom: 5%;
+}
+
+    .content-4 .title-description {
+        margin-left: 10%;
+    }
+
+.travel {
+    width: 80%;
+    margin: 0 10%;
+    display: flex;
+    gap: 2%;
+}
+
+.travel-card {
+    position: relative;
+    width: 25%;
+    height: 350px;
+    overflow: hidden;
+    border-radius: 1vw;
+    box-shadow: 0 4px 15px rgba(67, 51, 76, 0.15);
+    transition: transform 0.3s ease;
+}
+
+    .travel-card:hover {
+        transform: translateY(-10px);
+    }
+
+.travel-card-image {
+    width: 100%;
+    height: 100%;
+}
+
+    .travel-card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+.travel-price-tag {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: var(--bg-light);
+    color: var(--dark-purple);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 90%;
+    font-weight: 500;
+    z-index: 10;
+}
+
+.travel-title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px;
+    color: white;
+    background: linear-gradient(to top, var(--dark-purple), rgba(67, 51, 76, 0.2), transparent);
+    z-index: 5;
+    transform: translateY(40%);
+    transition: transform 0.4s ease;
+}
+
+    .travel-title h3 {
+        font-size: 120%;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: var(--pink-soft);
+        -webkit-text-stroke: 0.5px #fff;
+    }
+
+    .travel-title p {
+        font-size: 95%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        line-height: 1.4;
+    }
+
+.travel-card:hover .travel-title {
+    transform: translateY(0);
+    background: linear-gradient(to top, var(--dark-purple), rgba(67, 51, 76, 0.6), transparent);
+}
+
+    .travel-card:hover .travel-title p {
+        opacity: 1;
+    }
+
+/* CONTENT 5: RESTAURANT / DRINKS */
+.content-5 {
+    width: 100%;
+}
+
+.restaurant {
+    width: 100%;
+    position: relative;
+}
+
+.restaurant-image {
+    width: 100%;
+    position: relative;
+    z-index: 1;
+}
+
+    .restaurant-image img {
+        width: 100%;
+        aspect-ratio: 21/9;
+        object-fit: cover;
+        display: block;
+        filter: brightness(40%);
+    }
+
+.restaurant-description {
+    position: absolute;
+    top: 20%;
+    left: 10%;
+    z-index: 2;
+    color: var(--bg-light);
+    max-width: 40%;
+}
+
+    .restaurant-description p:first-child {
+        color: var(--pink-soft);
+        font-weight: 500;
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+    }
+
+    .restaurant-description h2 {
+        font-size: 300%;
+        margin-bottom: 20px;
+        color: #fff;
+    }
+
+    .restaurant-description p {
+        font-size: 110%;
+        line-height: 180%;
+    }
+
+/* FOOTER */
+footer {
+    background-color: var(--dark-purple);
+    color: var(--bg-light);
+    display: flex;
+    justify-content: space-around;
+    padding: 4% 2%;
+}
+
+    footer h3 {
+        color: var(--pink-soft);
+        margin-bottom: 15px;
+        font-size: 120%;
+    }
+
+    footer p {
+        margin-bottom: 8px;
+        opacity: 0.8;
+        font-size: 100%;
+    }
+
+    footer a {
+        color: var(--pink-bold);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+        footer a:hover {
+            color: var(--pink-soft);
+        }

@@ -25,7 +25,7 @@
 					<i class="fa-solid fa-briefcase"></i>
 				</div>
 				<div>
-					<div class="brand-name">Minh Tuấn KTV</div>
+					<div class="brand-name">Minh Tuấn Karaoke</div>
 					<div class="brand-sub">Quản lý</div>
 				</div>
 			</div>
@@ -59,6 +59,12 @@
 				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "expenses" ? "active" : "")">
 					<i class="fa-solid fa-money-bill-wave nav-icon"></i>
 					<span>Chi phí</span>
+				</a>
+
+				<a href="/Manager/DynamicPricing"
+				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "dynamicpricing" ? "active" : "")">
+					<i class="fa-solid fa-tags nav-icon"></i>
+					<span>Giá & Phụ thu</span>
 				</a>
 
 				<a href="/Manager/Invoices"

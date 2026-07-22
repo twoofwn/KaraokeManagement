@@ -1,0 +1,151 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minh Tuấn KTV - 404 Not Found</title>
+
+    <link rel="stylesheet" href="~/css/Login.css" asp-append-version="true" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <style>
+        * {
+            font-family: 'Inter';
+        }
+        .error-card {
+            text-align: center;
+            padding: 2.8rem;
+        }
+
+        .error-code {
+            font-size: 5rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: .8rem;
+            background: linear-gradient(135deg,#ff3366,#ff7aa8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255,51,102,.15);
+        }
+
+        .error-icon {
+            font-size: 3rem;
+            color: #ff3366;
+            margin-bottom: 1.2rem;
+            text-shadow: 0 0 18px rgba(255,51,102,.4);
+            animation: float 2s ease-in-out infinite alternate;
+        }
+
+        .error-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: black;
+            margin-bottom: 1rem;
+        }
+
+        .error-message {
+            font-size: .95rem;
+            color: black;
+            line-height: 1.7;
+            margin-bottom: 2rem;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            padding: .85rem 1.8rem;
+            border-radius: 12px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: .25s;
+        }
+
+        .btn-primary-error {
+            background: linear-gradient(135deg,#ff3366,#ff6699);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255,51,102,.35);
+        }
+
+            .btn-primary-error:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 22px rgba(255,51,102,.45);
+            }
+
+        .btn-secondary-error {
+            background: rgba(255,255,255,.15);
+            color: black;
+            border: 1px solid rgba(255,255,255,.25);
+            backdrop-filter: blur(12px);
+        }
+
+            .btn-secondary-error:hover {
+                background: rgba(255,255,255,.25);
+                transform: translateY(-3px);
+            }
+
+        @@keyframes float {
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-8px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="mesh-background">
+        <div class="mesh-item top-left mesh-1"></div>
+        <div class="mesh-item bottom-right mesh-1"></div>
+        <div class="mesh-item top-right mesh-2"></div>
+    </div>
+
+    <div class="login-container">
+        <div class="glass-card error-card">
+
+            <div class="error-code">404</div>
+
+            <div class="error-icon">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+
+            <h1 class="error-title">Không tìm thấy trang</h1>
+
+            <p class="error-message">
+                Trang bạn đang tìm kiếm không tồn tại hoặc đã bị di chuyển.<br />
+                Vui lòng kiểm tra lại địa chỉ hoặc quay về trang chính.
+            </p>
+
+            <div class="btn-group">
+                <a href="/Auth/Login" class="btn-action btn-primary-error">
+                    <i class="fa-solid fa-house me-2"></i>
+                    Đăng nhập
+                </a>
+
+                <a href="javascript:history.back()" class="btn-action btn-secondary-error">
+                    <i class="fa-solid fa-arrow-left me-2"></i>
+                    Quay lại
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

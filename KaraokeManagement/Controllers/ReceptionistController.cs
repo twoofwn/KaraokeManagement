@@ -1,12 +1,13 @@
+using KaraokeManagement.Models;
+using KaraokeManagement.ViewModel;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using KaraokeManagement.Models;
-using KaraokeManagement.ViewModel;
 
 namespace KaraokeManagement.Controllers
 {
@@ -58,10 +59,10 @@ namespace KaraokeManagement.Controllers
                         showCheckIn = false;
                         showDots = true;
 
-                        var latestLog = room.Equipment
-                            .SelectMany(e => e.MaintenanceLogs)
-                            .OrderByDescending(l => l.LogDate)
-                            .FirstOrDefault();
+                        var latestLog = await _context.MaintenanceLogs
+                                            .Where(l => l.IssueDescription != null && l.IssueDescription.Contains(room.RoomName))
+                                            .OrderByDescending(l => l.LogDate)
+                                            .FirstOrDefaultAsync();
 
                         maintenanceNote = latestLog != null ? latestLog.IssueDescription : "Đang bảo trì/sửa chữa";
                     }
@@ -398,34 +399,89 @@ namespace KaraokeManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> ChangeRoom([FromBody] ChangeRoomRequest request)
         {
-            var invoice = await _context.Invoices.FindAsync(request.InvoiceId);
-            if (invoice == null)
+            if (request == null || string.IsNullOrWhiteSpace(request.Reason))
             {
-                return Json(new { success = false, message = "Không tìm thấy hóa đơn." });
+                return Json(new { success = false, message = "Vui lòng nhập đầy đủ lý do đổi phòng." });
             }
 
-            var oldRoom = await _context.Rooms.FindAsync(invoice.RoomId);
-            var newRoom = await _context.Rooms.FindAsync(request.NewRoomId);
+            // Lấy Staff ID từ Claims
+            var staffIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                             ?? User.FindFirst("AccountId")?.Value
+                             ?? User.FindFirst("UserId")?.Value;
 
-            if (newRoom == null)
+            if (!int.TryParse(staffIdClaim, out int staffId))
             {
-                return Json(new { success = false, message = "Phòng mới không tồn tại." });
-            }
-            if (newRoom.Status != "Available")
-            {
-                return Json(new { success = false, message = "Phòng mới không sẵn sàng." });
+                staffId = 1;
             }
 
-            if (oldRoom != null)
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                oldRoom.Status = "Available";
+                var invoice = await _context.Invoices.FindAsync(request.InvoiceId);
+                if (invoice == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy hóa đơn." });
+                }
+
+                var oldRoom = await _context.Rooms.FindAsync(invoice.RoomId);
+                var newRoom = await _context.Rooms.FindAsync(request.NewRoomId);
+
+                if (newRoom == null)
+                {
+                    return Json(new { success = false, message = "Phòng mới không tồn tại." });
+                }
+                if (newRoom.Status != "Available")
+                {
+                    return Json(new { success = false, message = "Phòng mới không sẵn sàng." });
+                }
+
+                int oldRoomId = invoice.RoomId;
+
+                //  Ghi lịch sử chuyển phòng vào RoomTransferHistory
+                var transferLog = new RoomTransferHistory
+                {
+                    BookingId = invoice.BookingId.Value,
+                    FromRoomId = oldRoomId,
+                    ToRoomId = request.NewRoomId,
+                    TransferredAt = DateTime.Now,
+                    Reason = request.Reason,
+                    ProcessedById = staffId
+                };
+                _context.RoomTransferHistories.Add(transferLog);
+
+                // Cập nhật trạng thái phòng cũ
+                if (oldRoom != null)
+                {
+                    oldRoom.Status = request.OldRoomStatus;
+
+
+                    if (request.OldRoomStatus == "Maintenance")
+                    {
+                        var maintenanceLog = new MaintenanceLog
+                        {
+                            EquipmentId = 1,
+                            ReportedById = staffId,
+                            IssueDescription = request.Reason,
+                            LogDate = DateTime.Now,
+                            RepairCost = 0
+                        };
+                        _context.MaintenanceLogs.Add(maintenanceLog);
+                    }
+                }
+
+                newRoom.Status = "InUse";
+                invoice.RoomId = request.NewRoomId;
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Json(new { success = true, message = "Đổi phòng thành công." });
             }
-
-            newRoom.Status = "InUse";
-            invoice.RoomId = request.NewRoomId;
-
-            await _context.SaveChangesAsync();
-            return Json(new { success = true, message = "Đổi phòng thành công." });
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return Json(new { success = false, message = "Có lỗi xảy ra trong quá trình đổi phòng: " + ex.Message });
+            }
         }
 
         [HttpPost]
@@ -550,7 +606,8 @@ namespace KaraokeManagement.Controllers
                 return Json(new { found = false });
             }
 
-            return Json(new {
+            return Json(new
+            {
                 found = true,
                 customerId = customer.CustomerId,
                 fullName = customer.FullName,
@@ -596,7 +653,8 @@ namespace KaraokeManagement.Controllers
 
             var tierName = defaultTier?.TierName ?? "THƯỜNG";
 
-            return Json(new {
+            return Json(new
+            {
                 success = true,
                 customerId = customer.CustomerId,
                 fullName = customer.FullName,
@@ -883,11 +941,11 @@ namespace KaraokeManagement.Controllers
 
         [HttpGet]
         public async Task<IActionResult> InvoiceHistory(
-            string searchString, 
-            string customerFilter, 
-            DateTime? fromDate, 
-            DateTime? toDate, 
-            string status = "All", 
+            string searchString,
+            string customerFilter,
+            DateTime? fromDate,
+            DateTime? toDate,
+            string status = "All",
             int page = 1)
         {
             var query = _context.Invoices
@@ -904,7 +962,7 @@ namespace KaraokeManagement.Controllers
                 string cleanTerm = term.Replace("#", "").Replace("lum-", "", StringComparison.OrdinalIgnoreCase);
                 bool isNumeric = int.TryParse(cleanTerm, out searchId);
 
-                query = query.Where(i => 
+                query = query.Where(i =>
                     (isNumeric && i.InvoiceId == searchId) ||
                     (i.Booking != null && i.Booking.Customer != null && i.Booking.Customer.FullName.ToLower().Contains(term)) ||
                     (i.Receptionist != null && i.Receptionist.FullName.ToLower().Contains(term))
@@ -914,9 +972,9 @@ namespace KaraokeManagement.Controllers
             if (!string.IsNullOrEmpty(customerFilter))
             {
                 var term = customerFilter.Trim().ToLower();
-                query = query.Where(i => 
-                    (i.Booking != null && i.Booking.Customer != null && 
-                        (i.Booking.Customer.FullName.ToLower().Contains(term) || 
+                query = query.Where(i =>
+                    (i.Booking != null && i.Booking.Customer != null &&
+                        (i.Booking.Customer.FullName.ToLower().Contains(term) ||
                          i.Booking.Customer.Phone.Contains(term)))
                 );
             }
@@ -1098,8 +1156,9 @@ namespace KaraokeManagement.Controllers
     {
         public int InvoiceId { get; set; }
         public int NewRoomId { get; set; }
+        public string OldRoomStatus { get; set; } = "Available";
+        public string? Reason { get; set; }
     }
-
     public class PaymentRequest
     {
         public int InvoiceId { get; set; }
