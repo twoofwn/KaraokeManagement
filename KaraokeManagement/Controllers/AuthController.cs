@@ -88,6 +88,7 @@ namespace KaraokeManagement.Controllers
 
                 var claims = new List<Claim>
                     {
+                        new Claim(ClaimTypes.NameIdentifier, account?.AccountId.ToString() ?? "0"),
                         new Claim(ClaimTypes.Name, username),
                         new Claim(ClaimTypes.Role, role)
                     };
@@ -108,6 +109,7 @@ namespace KaraokeManagement.Controllers
                 if (role == "Admin") return RedirectToAction("Index", "Admin");
                 if (role == "Manager") return RedirectToAction("Index", "Manager");
                 if (role == "Receptionist") return RedirectToAction("Index", "Receptionist");
+                if (role == "Service Staff" || role.Contains("Phục vụ")) return RedirectToAction("Dashboard", "Staff");
 
                 return RedirectToAction("Index", "Admin");
             }

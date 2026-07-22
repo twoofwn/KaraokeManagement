@@ -1,0 +1,230 @@
+@model KaraokeManagement.ViewModel.StaffDashboardViewModel
+@{
+    ViewData["Title"] = "Bảng Điều Khiển";
+    Layout = "~/Views/Shared/_StaffLayout.cshtml";
+    ViewData["ActiveNav"] = "dashboard";
+    var incomingSwaps = ViewBag.IncomingSwapRequests as List<KaraokeManagement.Models.ShiftSwapRequest> ?? new List<KaraokeManagement.Models.ShiftSwapRequest>();
+}
+
+<style>
+    .card-schedule {
+        border-left: 6px solid #FF1493;
+        border-radius: 12px;
+        transition: transform 0.2s;
+    }
+    .card-schedule:hover {
+        transform: translateY(-2px);
+    }
+    .room-card {
+        border-radius: 16px;
+        transition: all 0.3s;
+        border: none;
+        overflow: hidden;
+    }
+    .room-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+    }
+    .room-header {
+        background-color: #343a40;
+        color: white;
+        padding: 12px 20px;
+        font-weight: 700;
+    }
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+</style>
+
+<!-- Banner Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm bg-white rounded-3">
+            <div class="card-body p-4">
+                <h3 class="fw-bold text-dark mb-1"><i class="fa-solid fa-home me-2"></i>Bảng Điều Khiển Nhân Viên</h3>
+                <p class="text-muted mb-0 small">Xem ca làm việc hôm nay và các phòng hát được phân công phụ trách.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Incoming Swap Requests Notification Block -->
+@if (incomingSwaps.Any())
+{
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-3 border-start border-3 border-warning" style="background-color: #fffdf5;">
+                <div class="card-header bg-warning bg-opacity-10 py-3 border-0">
+                    <h5 class="fw-bold text-warning-emphasis mb-0">
+                        <i class="fa-solid fa-bell fa-bounce text-warning me-2"></i>Yêu cầu đổi ca chờ xác nhận (@incomingSwaps.Count)
+                    </h5>
+                </div>
+                <div class="card-body p-3">
+                    <div class="row g-3">
+                        @foreach (var swap in incomingSwaps)
+                        {
+                            <div class="col-md-6 col-lg-4">
+                                <div class="p-3 border rounded bg-white shadow-xs">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="fw-bold text-dark mb-0">@swap.Requester.FullName</h6>
+                                        <small class="text-muted text-nowrap" style="font-size: 0.7rem;">@swap.CreatedAt?.ToString("dd/MM HH:mm")</small>
+                                    </div>
+                                    <div class="small text-muted mb-3" style="font-size: 0.8rem;">
+                                        <div class="mb-1 text-danger">
+                                            <strong>Ca của họ:</strong> @swap.RequesterSchedule.Shift.ShiftName (@swap.RequesterSchedule.WorkDate.ToString("dd/MM/yyyy"))
+                                        </div>
+                                        <div class="text-success">
+                                            <strong>Ca của bạn:</strong> @swap.TargetSchedule.Shift.ShiftName (@swap.TargetSchedule.WorkDate.ToString("dd/MM/yyyy"))
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2 justify-content-end">
+                                        <button class="btn btn-sm btn-success fw-bold text-white px-3" onclick="acceptSwap(@swap.SwapRequestId)">
+                                            Đồng Ý
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger px-3" onclick="rejectSwap(@swap.SwapRequestId)">
+                                            Từ Chối
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="row g-4">
+    <!-- Schedule Column -->
+    <div class="col-lg-5">
+        <h5 class="fw-bold mb-3 text-dark"><i class="fa-solid fa-calendar-day text-primary me-2"></i>Ca Làm Việc Hôm Nay</h5>
+        
+        @if (!Model.TodaySchedules.Any())
+        {
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-body p-4 text-center">
+                    <div class="text-muted mb-3" style="font-size: 3rem;">
+                        <i class="fa-solid fa-calendar-xmark"></i>
+                    </div>
+                    <h6 class="fw-bold mb-1">Không Có Ca Làm Việc</h6>
+                    <p class="text-muted small mb-0">Hôm nay bạn không được phân công lịch trực nào hoặc lịch của bạn đang tạm thời tắt.</p>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="d-flex flex-column gap-3">
+                @foreach (var item in Model.TodaySchedules)
+                {
+                    <div class="card card-schedule border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-primary px-3 py-2" style="font-size: 0.8rem; border-radius: 8px;">
+                                    @item.Schedule.Shift.ShiftName
+                                </span>
+                                <span class="text-muted small fw-semibold">
+                                    <i class="fa-regular fa-calendar me-1"></i> @item.Schedule.WorkDate.ToString("dd/MM/yyyy")
+                                </span>
+                            </div>
+                            <h3 class="fw-bold text-dark my-3">
+                                @item.Schedule.Shift.StartTime.ToString(@"hh\:mm") - @item.Schedule.Shift.EndTime.ToString(@"hh\:mm")
+                            </h3>
+                            <div class="d-flex align-items-center gap-2 text-muted small">
+                                <span class="text-success fw-bold">
+                                    <i class="fa-solid fa-circle-check"></i> Đang trực
+                                </span>
+                                <span>•</span>
+                                <span>Đang được gán phụ trách: @item.AssignedRooms.Count Phòng</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Assigned Rooms Column -->
+    <div class="col-lg-7">
+        <h5 class="fw-bold mb-3 text-dark"><i class="fa-solid fa-microphone-lines text-success me-2"></i>Phòng Hát Đang Phụ Trách</h5>
+        
+        @if (!Model.TodaySchedules.Any() || !Model.TodaySchedules.SelectMany(s => s.AssignedRooms).Any())
+        {
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-body p-4 text-center">
+                    <div class="text-muted mb-3" style="font-size: 3rem; color: #ffc107;">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <h6 class="fw-bold mb-1">Chưa Được Gán Phòng Hát</h6>
+                    <p class="text-muted small mb-0">Bạn chưa được lễ tân chỉ định vào phòng hát nào trong ca trực hiện tại.</p>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="row row-cols-1 row-cols-md-2 g-3">
+                @foreach (var item in Model.TodaySchedules)
+                {
+                    @foreach (var room in item.AssignedRooms)
+                    {
+                        <div class="col">
+                            <div class="card room-card shadow-sm h-100">
+                                <div class="room-header d-flex justify-content-between align-items-center">
+                                    <span>@room.RoomName</span>
+                                    <i class="fa-solid fa-door-open"></i>
+                                </div>
+                                <div class="card-body p-3 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <p class="text-muted small mb-2">
+                                            <strong>Loại phòng:</strong> @room.RoomType.TypeName
+                                        </p>
+                                        <p class="text-muted small mb-2">
+                                            <strong>Giá phòng:</strong> @room.RoomType.PricePerHour.ToString("N0") đ/giờ
+                                        </p>
+                                    </div>
+                                    <div class="mt-3 d-flex justify-content-between align-items-center">
+                                        <span class="status-badge @(room.Status == "InUse" ? "bg-danger text-white" : "bg-success text-white")">
+                                            @(room.Status == "InUse" ? "ĐANG HÁT" : "SẴN SÀNG")
+                                        </span>
+                                        <small class="text-muted" style="font-size: 0.72rem;">
+                                            Ca: @item.Schedule.Shift.ShiftName
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function acceptSwap(swapRequestId) {
+            if (confirm("Bạn có đồng ý đổi ca làm việc này không? Ca làm việc của hai người sẽ tự động đổi lập tức.")) {
+                $.post('/Staff/AcceptSwap', { swapRequestId: swapRequestId }, function(res) {
+                    alert(res.message || 'Đã chấp nhận đổi ca thành công!');
+                    location.reload();
+                }).fail(function(err) {
+                    alert('Lỗi: ' + (err.responseText || 'Không thể đồng ý yêu cầu đổi ca.'));
+                });
+            }
+        }
+
+        function rejectSwap(swapRequestId) {
+            if (confirm("Bạn có chắc chắn muốn từ chối yêu cầu đổi ca này?")) {
+                $.post('/Staff/RejectSwap', { swapRequestId: swapRequestId }, function(res) {
+                    alert(res.message || 'Đã từ chối đổi ca.');
+                    location.reload();
+                }).fail(function(err) {
+                    alert('Lỗi: ' + (err.responseText || 'Không thể từ chối yêu cầu đổi ca.'));
+                });
+            }
+        }
+    </script>
+}

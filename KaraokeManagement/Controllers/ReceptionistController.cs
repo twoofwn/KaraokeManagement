@@ -480,12 +480,52 @@ namespace KaraokeManagement.Controllers
                 })
                 .ToListAsync();
 
+            // Load active shift service staff
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var nowTime = DateTime.Now.TimeOfDay;
+            var activeShift = await _context.WorkShifts
+                .FirstOrDefaultAsync(s => (s.StartTime <= nowTime && s.EndTime >= nowTime) 
+                                          || (s.StartTime > s.EndTime && (nowTime >= s.StartTime || nowTime <= s.EndTime)));
+
+            var activeShiftId = activeShift?.ShiftId;
+
+            var availableStaff = await _context.EmployeeSchedules
+                .Include(s => s.Account).ThenInclude(a => a.Role)
+                .Where(s => s.WorkDate == today 
+                            && s.ShiftId == activeShiftId 
+                            && s.IsActive 
+                            && s.Status != "Off" 
+                            && (s.Account.Role.RoleName.Contains("Service Staff") || s.Account.Role.RoleName.Contains("Phục vụ")))
+                .Select(s => s.Account)
+                .ToListAsync();
+
+            if (!availableStaff.Any())
+            {
+                availableStaff = await _context.EmployeeSchedules
+                    .Include(s => s.Account).ThenInclude(a => a.Role)
+                    .Where(s => s.WorkDate == today 
+                                && s.IsActive 
+                                && s.Status != "Off" 
+                                && (s.Account.Role.RoleName.Contains("Service Staff") || s.Account.Role.RoleName.Contains("Phục vụ")))
+                    .Select(s => s.Account)
+                    .ToListAsync();
+            }
+
+            if (!availableStaff.Any())
+            {
+                availableStaff = await _context.Accounts
+                    .Include(a => a.Role)
+                    .Where(a => a.Role.RoleName.Contains("Service Staff") || a.Role.RoleName.Contains("Phục vụ"))
+                    .ToListAsync();
+            }
+
             var currentEmployeeName = User.Identity?.Name ?? "Nguyễn Minh Anh";
 
             var viewModel = new CheckInViewModel
             {
                 CurrentEmployeeName = currentEmployeeName,
                 AvailableRooms = availableRooms,
+                AvailableServiceStaff = availableStaff,
                 RoomId = roomId ?? 0,
                 CheckInTime = DateTime.Now
             };
@@ -584,6 +624,47 @@ namespace KaraokeManagement.Controllers
                         PricePerHour = r.RoomType.PricePerHour
                     })
                     .ToListAsync();
+                
+                // Reload service staff
+                var today = DateOnly.FromDateTime(DateTime.Today);
+                var nowTime = DateTime.Now.TimeOfDay;
+                var activeShift = await _context.WorkShifts
+                    .FirstOrDefaultAsync(s => (s.StartTime <= nowTime && s.EndTime >= nowTime) 
+                                              || (s.StartTime > s.EndTime && (nowTime >= s.StartTime || nowTime <= s.EndTime)));
+
+                var activeShiftId = activeShift?.ShiftId;
+
+                var availableStaff = await _context.EmployeeSchedules
+                    .Include(s => s.Account).ThenInclude(a => a.Role)
+                    .Where(s => s.WorkDate == today 
+                                && s.ShiftId == activeShiftId 
+                                && s.IsActive 
+                                && s.Status != "Off" 
+                                && (s.Account.Role.RoleName.Contains("Service Staff") || s.Account.Role.RoleName.Contains("Phục vụ")))
+                    .Select(s => s.Account)
+                    .ToListAsync();
+
+                if (!availableStaff.Any())
+                {
+                    availableStaff = await _context.EmployeeSchedules
+                        .Include(s => s.Account).ThenInclude(a => a.Role)
+                        .Where(s => s.WorkDate == today 
+                                    && s.IsActive 
+                                    && s.Status != "Off" 
+                                    && (s.Account.Role.RoleName.Contains("Service Staff") || s.Account.Role.RoleName.Contains("Phục vụ")))
+                        .Select(s => s.Account)
+                        .ToListAsync();
+                }
+
+                if (!availableStaff.Any())
+                {
+                    availableStaff = await _context.Accounts
+                        .Include(a => a.Role)
+                        .Where(a => a.Role.RoleName.Contains("Service Staff") || a.Role.RoleName.Contains("Phục vụ"))
+                        .ToListAsync();
+                }
+
+                model.AvailableServiceStaff = availableStaff;
                 model.CurrentEmployeeName = User.Identity?.Name ?? "Phạm Mai (Lễ Tân ca 2)";
                 return View(model);
             }
@@ -647,6 +728,53 @@ namespace KaraokeManagement.Controllers
 
             room.Status = "InUse";
             await _context.SaveChangesAsync();
+
+            // Save room assignments if selected
+            if (model.AssignedStaffIds != null && model.AssignedStaffIds.Any())
+            {
+                var todayDate = DateOnly.FromDateTime(DateTime.Today);
+                var curTime = DateTime.Now.TimeOfDay;
+                var activeShift = await _context.WorkShifts
+                    .FirstOrDefaultAsync(s => (s.StartTime <= curTime && s.EndTime >= curTime) 
+                                              || (s.StartTime > s.EndTime && (curTime >= s.StartTime || curTime <= s.EndTime)));
+                
+                int activeShiftId = activeShift?.ShiftId ?? 1;
+
+                foreach (var staffId in model.AssignedStaffIds)
+                {
+                    var sched = await _context.EmployeeSchedules
+                        .FirstOrDefaultAsync(s => s.AccountId == staffId && s.WorkDate == todayDate && s.ShiftId == activeShiftId);
+
+                    if (sched == null)
+                    {
+                        sched = await _context.EmployeeSchedules
+                            .FirstOrDefaultAsync(s => s.AccountId == staffId && s.WorkDate == todayDate);
+                    }
+
+                    if (sched == null)
+                    {
+                        sched = new EmployeeSchedule
+                        {
+                            AccountId = staffId,
+                            ShiftId = activeShiftId,
+                            WorkDate = todayDate,
+                            Status = "Scheduled",
+                            IsActive = true
+                        };
+                        _context.EmployeeSchedules.Add(sched);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    var roomAssignment = new RoomAssignment
+                    {
+                        RoomId = booking.RoomId,
+                        ScheduleId = sched.ScheduleId,
+                        AssignedAt = DateTime.Now
+                    };
+                    _context.RoomAssignments.Add(roomAssignment);
+                }
+                await _context.SaveChangesAsync();
+            }
 
             return RedirectToAction("Index");
         }

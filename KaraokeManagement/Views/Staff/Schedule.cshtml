@@ -1,0 +1,262 @@
+@{
+    ViewData["Title"] = "Lịch Làm Việc";
+    Layout = "~/Views/Shared/_StaffLayout.cshtml";
+    ViewData["ActiveNav"] = "schedule";
+
+    var startOfWeek = (DateTime)ViewBag.StartOfWeek;
+    var endOfWeek = (DateTime)ViewBag.EndOfWeek;
+    var shifts = ViewBag.Shifts as List<KaraokeManagement.Models.WorkShift> ?? new List<KaraokeManagement.Models.WorkShift>();
+    var schedules = ViewBag.Schedules as List<KaraokeManagement.Models.EmployeeSchedule> ?? new List<KaraokeManagement.Models.EmployeeSchedule>();
+    var prevWeek = startOfWeek.AddDays(-7).ToString("yyyy-MM-dd");
+    var nextWeek = startOfWeek.AddDays(7).ToString("yyyy-MM-dd");
+    
+    string[] dayNames = { "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật" };
+}
+
+<div class="schedule-grid-container" style="max-width: 1440px; margin: 0 auto; padding: 15px;">
+    <!-- Calendar Controls -->
+    <div class="card shadow-sm border-0 mb-4 bg-white rounded-3">
+        <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-calendar-week me-2"></i>Lịch Làm Việc Cá Nhân</h3>
+                <p class="text-muted mb-0 small">Theo dõi lịch trình phân ca cá nhân của bạn trong tuần.</p>
+            </div>
+            
+            <div class="d-flex align-items-center gap-2">
+                <a href="/Staff/Schedule?startDate=@prevWeek" class="btn btn-outline-secondary btn-sm">
+                    <i class="fa-solid fa-chevron-left"></i> Tuần trước
+                </a>
+                <span class="fw-bold px-2 text-dark small">
+                    @startOfWeek.ToString("dd/MM/yyyy") - @endOfWeek.ToString("dd/MM/yyyy")
+                </span>
+                <a href="/Staff/Schedule?startDate=@nextWeek" class="btn btn-outline-secondary btn-sm">
+                    Tuần sau <i class="fa-solid fa-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar Table Grid -->
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-4">
+        <div class="table-responsive">
+            <table class="table table-bordered table-align-middle mb-0 text-center" style="font-size: 0.9rem; min-width: 900px; border-color: #e9ecef;">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 150px; vertical-align: middle;" class="py-3">Ca làm việc</th>
+                        @for (int i = 0; i < 7; i++)
+                        {
+                            var currentDay = startOfWeek.AddDays(i);
+                            <th class="py-3" style="font-weight: 600;">
+                                <div>@dayNames[i]</div>
+                                <div class="text-white-50 small" style="font-size: 0.75rem;">@currentDay.ToString("dd/MM")</div>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var shift in shifts)
+                    {
+                        <tr>
+                            <td class="bg-light fw-bold text-dark py-3" style="vertical-align: middle;">
+                                <div>@shift.ShiftName</div>
+                                <div class="text-muted small" style="font-size: 0.72rem;">@shift.StartTime.ToString(@"hh\:mm") - @shift.EndTime.ToString(@"hh\:mm")</div>
+                            </td>
+
+                            @for (int i = 0; i < 7; i++)
+                            {
+                                var currentDay = DateOnly.FromDateTime(startOfWeek.AddDays(i));
+                                var cellSched = schedules.FirstOrDefault(s => s.WorkDate == currentDay && s.ShiftId == shift.ShiftId);
+
+                                @if (cellSched != null)
+                                {
+                                    <td class="p-2" style="vertical-align: middle; background-color: #fff0f6; cursor: pointer;" onclick="openDetails(@cellSched.ScheduleId, '@currentDay.ToString("dd/MM/yyyy")', '@shift.ShiftName', '@shift.StartTime.ToString(@"hh\:mm") - @shift.EndTime.ToString(@"hh\:mm")')">
+                                        <div class="p-2 border-start border-3 border-danger bg-white shadow-xs rounded text-start">
+                                            <div class="fw-bold text-danger mb-1" style="font-size: 0.8rem;">
+                                                <i class="fa-solid fa-circle-check me-1"></i>Đã phân ca
+                                            </div>
+                                            <div class="text-muted small" style="font-size: 0.7rem;">Nhấp xem chi tiết</div>
+                                        </div>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td class="p-2 bg-light bg-opacity-25" style="vertical-align: middle; color: #adb5bd;">
+                                        <div class="p-2 border border-dashed rounded text-center small text-muted-soft" style="font-size: 0.75rem; border-color: #dee2e6;">
+                                            Trống ca
+                                        </div>
+                                    </td>
+                                }
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 1: Shift Details -->
+<div class="modal fade" id="shiftDetailsModal" tabindex="-1" aria-labelledby="shiftDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-3">
+            <div class="modal-header bg-primary text-white py-3">
+                <h5 class="modal-title fw-bold" id="shiftDetailsModalLabel"><i class="fa-solid fa-circle-info me-2"></i>Chi Tiết Ca Làm Việc</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- Shift General Info -->
+                <div class="mb-4">
+                    <h6 class="fw-bold text-muted text-uppercase mb-2 small" style="letter-spacing: 0.5px;">Thông tin ca</h6>
+                    <div class="p-3 bg-light rounded-3">
+                        <div class="mb-2"><strong>Ngày làm việc:</strong> <span id="modalDate" class="text-dark"></span></div>
+                        <div><strong>Thời gian:</strong> <span id="modalTime" class="text-dark"></span></div>
+                    </div>
+                </div>
+
+                <!-- Coworkers List -->
+                <div class="mb-4">
+                    <h6 class="fw-bold text-muted text-uppercase mb-2 small" style="letter-spacing: 0.5px;">Đồng nghiệp cùng ca</h6>
+                    <div id="coworkersList" class="list-group rounded-3 shadow-xs" style="max-height: 200px; overflow-y: auto;">
+                        <!-- JS injected -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer p-3 border-0 bg-light d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" id="btnRequestSwap" class="btn btn-primary fw-bold px-4" onclick="openSwapSelection()">
+                    <i class="fa-solid fa-rotate me-1"></i> Xin đổi ca
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 2: Shift Swap Selection -->
+<div class="modal fade" id="shiftSwapModal" tabindex="-1" aria-labelledby="shiftSwapModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-3">
+            <div class="modal-header bg-danger text-white py-3">
+                <h5 class="modal-title fw-bold" id="shiftSwapModalLabel"><i class="fa-solid fa-rotate me-2"></i>Yêu Cầu Đổi Ca Làm Việc</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted small mb-4">
+                    <i class="fa-solid fa-triangle-exclamation text-warning me-1"></i> 
+                    Chọn đồng nghiệp cùng chức vụ (Role) đang được phân lịch trực vào cùng ngày để đổi ca làm việc của bạn.
+                </p>
+
+                <div class="mb-3">
+                    <label for="swapTargetSelect" class="form-label fw-bold text-dark">Chọn đồng nghiệp muốn đổi ca</label>
+                    <select id="swapTargetSelect" class="form-select border-2" style="border-radius: 8px;" required>
+                        <option value="" disabled selected>-- Chọn đồng nghiệp --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer p-3 border-0 bg-light">
+                <button type="button" class="btn btn-outline-secondary" onclick="backToDetails()">Quay lại</button>
+                <button type="button" class="btn btn-danger fw-bold px-4" onclick="submitSwapRequest()">
+                    Gửi yêu cầu đổi ca
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentScheduleId = null;
+        let detailsModalObj = null;
+        let swapModalObj = null;
+
+        $(document).ready(function() {
+            detailsModalObj = new bootstrap.Modal(document.getElementById('shiftDetailsModal'));
+            swapModalObj = new bootstrap.Modal(document.getElementById('shiftSwapModal'));
+        });
+
+        function openDetails(scheduleId, dateStr, shiftName, timeRange) {
+            currentScheduleId = scheduleId;
+            $('#modalDate').text(dateStr);
+            $('#modalTime').text(shiftName + ' (' + timeRange + ')');
+            
+            // Query coworkers
+            $('#coworkersList').html('<div class="text-center py-3 text-muted small"><i class="fa-solid fa-spinner fa-spin me-1"></i> Đang tải danh sách đồng nghiệp...</div>');
+            
+            $.get('/Staff/GetShiftCoworkers', { scheduleId: scheduleId }, function(data) {
+                if (data && data.length > 0) {
+                    let html = '';
+                    data.forEach(function(item) {
+                        html += `
+                            <div class="list-group-item d-flex justify-content-between align-items-center border-0 bg-light mb-2 rounded p-3">
+                                <div>
+                                    <div class="fw-bold text-dark">${item.fullName}</div>
+                                    <span class="badge bg-secondary-subtle text-secondary small" style="font-size: 0.7rem;">${item.roleName}</span>
+                                </div>
+                                <i class="fa-solid fa-user text-muted"></i>
+                            </div>
+                        `;
+                    });
+                    $('#coworkersList').html(html);
+                } else {
+                    $('#coworkersList').html('<div class="text-center py-4 text-muted small">Không có đồng nghiệp nào khác trực cùng ca này.</div>');
+                }
+            }).fail(function() {
+                $('#coworkersList').html('<div class="text-center py-3 text-danger small">Lỗi tải danh sách đồng nghiệp.</div>');
+            });
+
+            detailsModalObj.show();
+        }
+
+        function openSwapSelection() {
+            // Load swap targets
+            $('#swapTargetSelect').html('<option value="" disabled selected>Đang tải danh sách đồng nghiệp...</option>');
+            
+            $.get('/Staff/GetEligibleSwapTargets', { scheduleId: currentScheduleId }, function(data) {
+                if (data && data.length > 0) {
+                    let html = '<option value="" disabled selected>-- Chọn đồng nghiệp --</option>';
+                    data.forEach(function(item) {
+                        html += `
+                            <option value="${item.accountId}" data-target-sched="${item.scheduleId}">
+                                ${item.fullName} (${item.shiftName}: ${item.startTime} - ${item.endTime})
+                            </option>
+                        `;
+                    });
+                    $('#swapTargetSelect').html(html);
+                } else {
+                    $('#swapTargetSelect').html('<option value="" disabled selected>Không tìm thấy nhân viên cùng chức vụ trực ngày này</option>');
+                }
+            }).fail(function() {
+                $('#swapTargetSelect').html('<option value="" disabled selected>Lỗi tải danh sách.</option>');
+            });
+
+            detailsModalObj.hide();
+            swapModalObj.show();
+        }
+
+        function backToDetails() {
+            swapModalObj.hide();
+            detailsModalObj.show();
+        }
+
+        function submitSwapRequest() {
+            let targetAccountId = $('#swapTargetSelect').val();
+            let targetSchedId = $('#swapTargetSelect').find(':selected').data('target-sched');
+
+            if (!targetAccountId || !targetSchedId) {
+                alert('Vui lòng chọn đồng nghiệp muốn đổi ca!');
+                return;
+            }
+
+            $.post('/Staff/SubmitSwap', {
+                requesterScheduleId: currentScheduleId,
+                targetScheduleId: targetSchedId,
+                targetEmployeeId: targetAccountId
+            }, function(res) {
+                alert(res.message || 'Đã gửi yêu cầu đổi ca thành công!');
+                swapModalObj.hide();
+                location.reload();
+            }).fail(function(err) {
+                alert('Lỗi: ' + (err.responseText || 'Không thể tạo yêu cầu đổi ca.'));
+            });
+        }
+    </script>
+}

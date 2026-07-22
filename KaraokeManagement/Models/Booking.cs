@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace KaraokeManagement.Models;
@@ -20,6 +20,10 @@ public partial class Booking
     public DateTime? EndTime { get; set; }
 
     public string? Status { get; set; }
+
+    public int? GuestCount { get; set; }
+
+    public string? Note { get; set; }
 
     public virtual Account CreatedBy { get; set; } = null!;
 

@@ -1,0 +1,133 @@
+@model KaraokeManagement.Models.ScheduleListViewModel
+@{
+    ViewData["Title"] = "Phân Ca Làm Việc";
+    Layout = "~/Views/Manager/_ManagerLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Phân Ca Làm Việc</h2>
+    <form class="d-flex" method="get" action="/HRM/Schedules">
+        <input type="date" class="form-control me-2" name="date" value="@Model.FilterDate.ToString("yyyy-MM-dd")" onchange="this.form.submit()" />
+    </form>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Thêm Ca Mới</h5>
+            </div>
+            <div class="card-body">
+                <form id="scheduleForm">
+                    <input type="hidden" id="Date" name="Date" value="@Model.FilterDate.ToString("yyyy-MM-dd")" />
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Ngày làm việc</label>
+                        <input type="text" class="form-control" value="@Model.FilterDate.ToString("dd/MM/yyyy")" disabled />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Ca làm việc *</label>
+                        <select class="form-select" id="ShiftId" required>
+                            <option value="">-- Chọn ca --</option>
+                            @foreach (var shift in Model.Shifts)
+                            {
+                                <option value="@shift.ShiftId">@shift.ShiftName (@shift.StartTime - @shift.EndTime)</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nhân viên *</label>
+                        <select class="form-select" id="AccountId" required>
+                            <option value="">-- Chọn nhân viên --</option>
+                            @foreach (var staff in Model.StaffList)
+                            {
+                                <option value="@staff.AccountId">@staff.FullName (@staff.Username)</option>
+                            }
+                        </select>
+                    </div>
+
+                    <button type="button" class="btn btn-primary w-100" onclick="saveSchedule()">
+                        <i class="fa-solid fa-plus"></i> Thêm Phân Ca
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Lịch làm việc ngày @Model.FilterDate.ToString("dd/MM/yyyy")</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Ca làm</th>
+                                <th>Thời gian</th>
+                                <th>Nhân viên</th>
+                                <th>Trạng thái</th>
+                                <th class="text-end">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if(!Model.Schedules.Any())
+                            {
+                                <tr><td colspan="5" class="text-center text-muted">Chưa có dữ liệu phân ca</td></tr>
+                            }
+                            @foreach (var s in Model.Schedules.OrderBy(x => x.Shift.StartTime))
+                            {
+                                <tr>
+                                    <td class="fw-bold">@s.Shift.ShiftName</td>
+                                    <td>@s.Shift.StartTime.ToString(@"hh\:mm") - @s.Shift.EndTime.ToString(@"hh\:mm")</td>
+                                    <td>
+                                        <div>@s.Account.FullName</div>
+                                        <div class="text-muted small">@s.Account.Username</div>
+                                    </td>
+                                    <td><span class="badge bg-secondary">@s.Status</span></td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteSchedule(@s.ScheduleId)">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function saveSchedule() {
+            const shiftId = document.getElementById('ShiftId').value;
+            const accountId = document.getElementById('AccountId').value;
+            const date = document.getElementById('Date').value;
+
+            if(!shiftId || !accountId) {
+                alert('Vui lòng chọn ca làm việc và nhân viên!');
+                return;
+            }
+
+            $.post('/HRM/SaveSchedule', { accountId: accountId, shiftId: shiftId, date: date }, function() {
+                location.reload();
+            }).fail(function(err) {
+                alert(err.responseText || 'Đã xảy ra lỗi.');
+            });
+        }
+
+        function deleteSchedule(id) {
+            if(confirm('Bạn có chắc chắn muốn xóa phân ca này?')) {
+                $.post('/HRM/DeleteSchedule/' + id, function() {
+                    location.reload();
+                }).fail(function(err) {
+                    alert('Lỗi khi xóa.');
+                });
+            }
+        }
+    </script>
+}

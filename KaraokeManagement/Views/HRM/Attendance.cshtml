@@ -1,0 +1,160 @@
+@model KaraokeManagement.Models.AttendanceListViewModel
+@{
+    ViewData["Title"] = "Quản lý Chấm Công";
+    Layout = "~/Views/Manager/_ManagerLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Quản lý Chấm Công</h2>
+    <button class="btn btn-primary" onclick="openAttendanceModal()"><i class="fa-solid fa-plus"></i> Thêm Check-in Tay</button>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body bg-light rounded">
+        <form class="row g-3 align-items-end" method="get" action="/HRM/Attendance">
+            <div class="col-md-3">
+                <label class="form-label text-muted small">Từ ngày</label>
+                <input type="date" class="form-control" name="start" value="@Model.FilterStartDate.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-muted small">Đến ngày</label>
+                <input type="date" class="form-control" name="end" value="@Model.FilterEndDate.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-secondary w-100"><i class="fa-solid fa-filter"></i> Lọc</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nhân viên</th>
+                        <th>Ca làm (Nếu có)</th>
+                        <th>Giờ Check-in</th>
+                        <th>Giờ Check-out</th>
+                        <th>Tổng giờ</th>
+                        <th>Tình trạng</th>
+                        <th>Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if(!Model.Attendances.Any())
+                    {
+                        <tr><td colspan="7" class="text-center text-muted">Không có dữ liệu chấm công trong khoảng thời gian này</td></tr>
+                    }
+                    @foreach (var a in Model.Attendances)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-bold">@a.Account.FullName</div>
+                            </td>
+                            <td>@(a.Schedule?.Shift?.ShiftName ?? "Làm ngoài ca")</td>
+                            <td>@a.CheckInTime.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@(a.CheckOutTime?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa out")</td>
+                            <td>@(a.TotalHours?.ToString("0.0") ?? "-")</td>
+                            <td>
+                                @if(a.Status == "OnTime") { <span class="badge bg-success">Đúng giờ</span> }
+                                else if(a.Status == "Late") { <span class="badge bg-warning text-dark">Đi muộn</span> }
+                                else { <span class="badge bg-secondary">@a.Status</span> }
+                            </td>
+                            <td class="small text-muted">@a.Note</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="attendanceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Bổ sung Chấm Công</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="attendanceForm">
+                    <div class="mb-3">
+                        <label class="form-label">Nhân viên *</label>
+                        <select class="form-select" id="AccountId" required>
+                            <option value="">-- Chọn nhân viên --</option>
+                            @foreach (var staff in Model.StaffList)
+                            {
+                                <option value="@staff.AccountId">@staff.FullName</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Giờ Check-in *</label>
+                        <input type="datetime-local" class="form-control" id="CheckIn" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Giờ Check-out</label>
+                        <input type="datetime-local" class="form-control" id="CheckOut" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tình trạng *</label>
+                        <select class="form-select" id="Status" required>
+                            <option value="OnTime">Đúng giờ</option>
+                            <option value="Late">Đi muộn</option>
+                            <option value="EarlyLeave">Về sớm</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Ghi chú</label>
+                        <textarea class="form-control" id="Note" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" onclick="saveAttendance()">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const attModal = new bootstrap.Modal(document.getElementById('attendanceModal'));
+
+        function openAttendanceModal() {
+            document.getElementById('attendanceForm').reset();
+            attModal.show();
+        }
+
+        function saveAttendance() {
+            const form = document.getElementById('attendanceForm');
+            if(!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const data = {
+                accountId: document.getElementById('AccountId').value,
+                scheduleId: null,
+                checkIn: document.getElementById('CheckIn').value,
+                checkOut: document.getElementById('CheckOut').value || null,
+                status: document.getElementById('Status').value,
+                note: document.getElementById('Note').value
+            };
+
+            $.post('/HRM/AddAttendance', data, function() {
+                location.reload();
+            }).fail(function(err) {
+                alert('Lỗi: ' + (err.responseText || 'Xảy ra lỗi khi lưu.'));
+            });
+        }
+    </script>
+}

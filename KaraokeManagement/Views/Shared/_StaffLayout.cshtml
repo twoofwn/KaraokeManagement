@@ -1,0 +1,88 @@
+@using System.Security.Claims
+@{
+	var fullName = User.FindFirstValue(ClaimTypes.Name) ?? "Nhân viên";
+	var avatar = fullName.Substring(0, 1).ToUpper();
+	var roleName = User.FindFirstValue(ClaimTypes.Role) ?? "Nhân viên phục vụ";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - Staff Portal</title>
+	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+	@RenderSection("Styles", required: false)
+</head>
+<body>
+	<div class="admin-wrapper">
+
+		<!-- Sidebar -->
+		<aside class="admin-sidebar">
+			<div class="sidebar-brand">
+				<div class="brand-icon">
+					<i class="fa-solid fa-user-tie"></i>
+				</div>
+				<div>
+					<div class="brand-name">KTV Staff</div>
+					<div class="brand-sub">@roleName</div>
+				</div>
+			</div>
+
+			<nav class="sidebar-nav">
+				<a href="/Staff/Dashboard"
+				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "dashboard" ? "active" : "")">
+					<i class="fa-solid fa-table-columns nav-icon"></i>
+					<span>Bảng điều khiển</span>
+				</a>
+
+				<a href="/Staff/Schedule"
+				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "schedule" ? "active" : "")">
+					<i class="fa-solid fa-calendar-week nav-icon"></i>
+					<span>Lịch làm việc</span>
+				</a>
+
+				<a href="/Staff/LeaveRequest"
+				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "leave_request" ? "active" : "")">
+					<i class="fa-solid fa-calendar-minus nav-icon"></i>
+					<span>Xin nghỉ phép</span>
+				</a>
+			</nav>
+
+			<div class="sidebar-bottom">
+				<a href="/Auth/Logout" class="sidebar-footer-link">
+					<i class="fa-solid fa-arrow-right-from-bracket"></i>
+					<span>Đăng xuất</span>
+				</a>
+			</div>
+		</aside>
+
+		<!-- Main area -->
+		<div class="admin-main">
+
+			<!-- Top header -->
+			<header class="admin-header">
+				<div></div>
+				<nav class="header-tabs"></nav>
+				<div class="header-actions">
+					<div class="header-user">
+						<span>@fullName</span>
+					</div>
+					<div class="header-avatar">@avatar</div>
+				</div>
+			</header>
+
+			<!-- Page content -->
+			<div class="admin-content">
+				@RenderBody()
+			</div>
+		</div>
+	</div>
+
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+	@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

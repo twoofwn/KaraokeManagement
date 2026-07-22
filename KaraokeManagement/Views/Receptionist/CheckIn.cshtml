@@ -133,6 +133,28 @@
                         </div>
 
                         <div class="form-group">
+                            <label class="form-label">Phân công Nhân Viên Phục Vụ (Service Staff)</label>
+                            @if (Model.AvailableServiceStaff.Any())
+                            {
+                                <div class="service-staff-checkbox-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; max-height: 150px; overflow-y: auto; padding: 10px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa;">
+                                    @foreach (var staff in Model.AvailableServiceStaff)
+                                    {
+                                        <label class="checkbox-item d-flex align-items-center gap-2" style="cursor: pointer; font-size: 0.85rem; margin: 0;">
+                                            <input type="checkbox" name="AssignedStaffIds" value="@staff.AccountId" style="accent-color: #FF1493;" />
+                                            <span>@staff.FullName</span>
+                                        </label>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert-no-staff" style="padding: 10px; border-radius: 8px; background-color: #fff3cd; color: #856404; font-size: 0.8rem; border: 1px solid #ffeeba;">
+                                    <i class="fa-solid fa-triangle-exclamation me-1"></i> Không có nhân viên phục vụ nào đang trực trong ca hiện tại.
+                                </div>
+                            }
+                        </div>
+
+                        <div class="form-group">
                             <label class="form-label" for="Notes">Ghi chú</label>
                             <textarea id="Notes" name="Notes" rows="3" class="form-input" 
                                       style="resize: none;" placeholder="Ghi chú thêm (ví dụ: nước uống đi kèm, yêu cầu mic...)">@Model.Notes</textarea>

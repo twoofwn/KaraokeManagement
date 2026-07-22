@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace KaraokeManagement.Models;
@@ -21,6 +21,8 @@ public partial class Account
 
     public DateTime? CreatedAt { get; set; }
 
+    public int? DefaultShiftId { get; set; }
+
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 
     public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
@@ -30,4 +32,6 @@ public partial class Account
     public virtual ICollection<PurchaseOrder> PurchaseOrders { get; set; } = new List<PurchaseOrder>();
 
     public virtual Role Role { get; set; } = null!;
+
+    public virtual WorkShift? DefaultShift { get; set; }
 }

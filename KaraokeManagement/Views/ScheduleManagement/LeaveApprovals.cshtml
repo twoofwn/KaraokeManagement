@@ -1,0 +1,150 @@
+@{
+    ViewData["Title"] = "Phê Duyệt Nghỉ Phép";
+    Layout = "~/Views/Manager/_ManagerLayout.cshtml";
+    var pendingRequests = ViewBag.PendingRequests as List<KaraokeManagement.Models.LeaveRequest> ?? new List<KaraokeManagement.Models.LeaveRequest>();
+    var historyRequests = ViewBag.HistoryRequests as List<KaraokeManagement.Models.LeaveRequest> ?? new List<KaraokeManagement.Models.LeaveRequest>();
+}
+
+<div class="schedule-management-container" style="max-width: 1440px; margin: 0 auto; padding: 15px;">
+    <!-- Header -->
+    <div class="card shadow-sm border-0 mb-4 bg-white rounded-3">
+        <div class="card-body p-4 d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="fw-bold text-danger mb-1"><i class="fa-solid fa-user-minus me-2"></i>Duyệt Đơn Xin Nghỉ Phép</h3>
+                <p class="text-muted mb-0 small">Xét duyệt và quản lý các yêu cầu vắng mặt từ nhân viên.</p>
+            </div>
+            <a href="/ScheduleManagement/WeeklyGrid" class="btn btn-outline-secondary fw-semibold">
+                <i class="fa-solid fa-arrow-left me-1"></i> Quay lại Lịch tuần
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Pending Approvals Area -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-3 mb-4">
+                <div class="card-header bg-warning bg-opacity-10 py-3 border-0">
+                    <h5 class="fw-bold text-warning-emphasis mb-0">
+                        <i class="fa-solid fa-clock me-2"></i>Yêu cầu chờ phê duyệt (@pendingRequests.Count)
+                    </h5>
+                </div>
+                <div class="card-body p-3">
+                    @if (!pendingRequests.Any())
+                    {
+                        <div class="text-center py-5 text-muted">
+                            <i class="fa-regular fa-folder-open mb-3" style="font-size: 3rem;"></i>
+                            <p class="mb-0 small">Không có đơn xin nghỉ phép nào đang chờ duyệt.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex flex-column gap-3">
+                            @foreach (var leave in pendingRequests)
+                            {
+                                <div class="p-3 border rounded bg-white shadow-xs position-relative border-warning border-opacity-50">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="fw-bold mb-0 text-dark">@(leave.Account?.FullName ?? "N/A")</h6>
+                                            <span class="badge bg-secondary small" style="font-size: 0.68rem;">@(leave.Account?.Role?.RoleName ?? "Staff")</span>
+                                        </div>
+                                        <span class="badge bg-warning text-dark px-2 py-1">Pending</span>
+                                    </div>
+                                    <div class="small text-muted mb-3">
+                                        <div class="mb-1">
+                                            <strong>Ca đăng ký nghỉ:</strong> @(leave.Schedule?.Shift?.ShiftName ?? "N/A") (@(leave.Schedule?.WorkDate.ToString("dd/MM/yyyy") ?? "N/A"))
+                                        </div>
+                                        <div class="p-2 bg-light rounded mt-2 border-start border-3 border-warning text-dark fst-italic">
+                                            <strong>Lý do:</strong> "@leave.Reason"
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <button class="btn btn-sm btn-success fw-bold me-1" onclick="approveLeave(@leave.LeaveRequestId, 2)">
+                                            <i class="fa-solid fa-check me-1"></i> Duyệt Nghỉ
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="rejectLeave(@leave.LeaveRequestId, 2)">
+                                            Từ Chối
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- History Log Area -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-dark text-white py-3 border-0">
+                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-history me-2"></i>Lịch sử phê duyệt</h5>
+                </div>
+                <div class="card-body p-0">
+                    @if (!historyRequests.Any())
+                    {
+                        <div class="text-center py-5 text-muted">
+                            <p class="mb-0 small">Chưa có lịch sử xét duyệt nào.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="px-3 py-3">Nhân viên</th>
+                                        <th>Ca & Ngày nghỉ</th>
+                                        <th>Lý do</th>
+                                        <th>Trạng thái</th>
+                                        <th class="px-3">Người duyệt</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var leave in historyRequests)
+                                    {
+                                        var statusClass = leave.Status == "Approved" ? "bg-success" : "bg-danger";
+                                        var statusText = leave.Status == "Approved" ? "Đã Duyệt" : "Đã Từ Chối";
+                                        <tr>
+                                            <td class="px-3 fw-bold">@(leave.Account?.FullName ?? "N/A")</td>
+                                            <td>
+                                                <div>@(leave.Schedule?.Shift?.ShiftName ?? "N/A")</div>
+                                                <div class="text-muted" style="font-size: 0.75rem;">@(leave.Schedule?.WorkDate.ToString("dd/MM/yyyy") ?? "N/A")</div>
+                                            </td>
+                                            <td class="text-wrap text-muted" style="max-width: 150px;">@leave.Reason</td>
+                                            <td>
+                                                <span class="badge @statusClass text-white">@statusText</span>
+                                            </td>
+                                            <td class="px-3 text-muted">@(leave.ApprovedBy?.FullName ?? "Hệ thống")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function approveLeave(id, managerId) {
+            if (confirm("Bạn có chắc chắn muốn duyệt đơn xin nghỉ này? Ca làm việc liên quan sẽ được tự động tắt (deactivated).")) {
+                $.post('/ScheduleManagement/ApproveLeaveRequest', { leaveRequestId: id, managerId: managerId }, function(res) {
+                    alert(res.message || 'Đã phê duyệt đơn nghỉ phép.');
+                    location.reload();
+                }).fail(function(err) { alert('Lỗi: ' + err.responseText); });
+            }
+        }
+
+        function rejectLeave(id, managerId) {
+            if (confirm("Từ chối đơn xin nghỉ phép này?")) {
+                $.post('/ScheduleManagement/RejectLeaveRequest', { leaveRequestId: id, managerId: managerId }, function(res) {
+                    alert(res.message || 'Đã từ chối đơn nghỉ phép.');
+                    location.reload();
+                }).fail(function(err) { alert('Lỗi: ' + err.responseText); });
+            }
+        }
+    </script>
+}

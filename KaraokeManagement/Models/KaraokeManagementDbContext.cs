@@ -56,6 +56,22 @@ public partial class KaraokeManagementDbContext : DbContext
 
     public virtual DbSet<Supplier> Suppliers { get; set; }
 
+    public virtual DbSet<WorkShift> WorkShifts { get; set; }
+    public virtual DbSet<EmployeeSchedule> EmployeeSchedules { get; set; }
+    public virtual DbSet<Attendance> Attendances { get; set; }
+    public virtual DbSet<Payroll> Payrolls { get; set; }
+    public virtual DbSet<EmployeeProfile> EmployeeProfiles { get; set; }
+    public virtual DbSet<TrainingRecord> TrainingRecords { get; set; }
+    public virtual DbSet<EmployeeTask> EmployeeTasks { get; set; }
+    public virtual DbSet<NotificationLog> NotificationLogs { get; set; }
+    public virtual DbSet<CustomerReview> CustomerReviews { get; set; }
+    public virtual DbSet<MarketingCampaign> MarketingCampaigns { get; set; }
+    public virtual DbSet<CustomerCareLog> CustomerCareLogs { get; set; }
+    public virtual DbSet<CustomerAutomationRule> CustomerAutomationRules { get; set; }
+    public virtual DbSet<ShiftSwapRequest> ShiftSwapRequests { get; set; }
+    public virtual DbSet<LeaveRequest> LeaveRequests { get; set; }
+    public virtual DbSet<RoomAssignment> RoomAssignments { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
@@ -496,6 +512,134 @@ public partial class KaraokeManagementDbContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<WorkShift>(entity =>
+        {
+            entity.HasKey(e => e.ShiftId);
+            entity.ToTable("WorkShift");
+        });
+
+        modelBuilder.Entity<EmployeeSchedule>(entity =>
+        {
+            entity.HasKey(e => e.ScheduleId);
+            entity.ToTable("EmployeeSchedule");
+        });
+
+        modelBuilder.Entity<Attendance>(entity =>
+        {
+            entity.HasKey(e => e.AttendanceId);
+            entity.ToTable("Attendance");
+        });
+
+        modelBuilder.Entity<Payroll>(entity =>
+        {
+            entity.HasKey(e => e.PayrollId);
+            entity.ToTable("Payroll");
+        });
+
+        modelBuilder.Entity<EmployeeProfile>(entity =>
+        {
+            entity.HasKey(e => e.ProfileId);
+            entity.ToTable("EmployeeProfile");
+        });
+
+        modelBuilder.Entity<TrainingRecord>(entity =>
+        {
+            entity.HasKey(e => e.TrainingId);
+            entity.ToTable("TrainingRecord");
+        });
+
+        modelBuilder.Entity<EmployeeTask>(entity =>
+        {
+            entity.HasKey(e => e.TaskId);
+            entity.ToTable("EmployeeTask");
+        });
+
+        modelBuilder.Entity<NotificationLog>(entity =>
+        {
+            entity.HasKey(e => e.NotificationId);
+            entity.ToTable("NotificationLog");
+        });
+
+        modelBuilder.Entity<CustomerReview>(entity =>
+        {
+            entity.HasKey(e => e.ReviewId);
+            entity.ToTable("CustomerReview");
+        });
+
+        modelBuilder.Entity<MarketingCampaign>(entity =>
+        {
+            entity.HasKey(e => e.CampaignId);
+            entity.ToTable("MarketingCampaign");
+        });
+
+        modelBuilder.Entity<CustomerCareLog>(entity =>
+        {
+            entity.HasKey(e => e.LogId);
+            entity.ToTable("CustomerCareLog");
+        });
+
+        modelBuilder.Entity<CustomerAutomationRule>(entity =>
+        {
+            entity.HasKey(e => e.RuleId);
+            entity.ToTable("CustomerAutomationRule");
+        });
+
+        modelBuilder.Entity<ShiftSwapRequest>(entity =>
+        {
+            entity.HasKey(e => e.SwapRequestId);
+            entity.ToTable("ShiftSwapRequest");
+
+            entity.HasOne(d => d.Requester).WithMany()
+                .HasForeignKey(d => d.RequesterId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.RequesterSchedule).WithMany()
+                .HasForeignKey(d => d.RequesterScheduleId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Target).WithMany()
+                .HasForeignKey(d => d.TargetId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.TargetSchedule).WithMany()
+                .HasForeignKey(d => d.TargetScheduleId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.ApprovedBy).WithMany()
+                .HasForeignKey(d => d.ApprovedById);
+        });
+
+        modelBuilder.Entity<LeaveRequest>(entity =>
+        {
+            entity.HasKey(e => e.LeaveRequestId);
+            entity.ToTable("LeaveRequest");
+
+            entity.HasOne(d => d.Account).WithMany()
+                .HasForeignKey(d => d.AccountId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Schedule).WithMany()
+                .HasForeignKey(d => d.ScheduleId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.ApprovedBy).WithMany()
+                .HasForeignKey(d => d.ApprovedById);
+        });
+
+        modelBuilder.Entity<RoomAssignment>(entity =>
+        {
+            entity.HasKey(e => e.RoomAssignmentId);
+            entity.ToTable("RoomAssignment");
+
+            entity.HasOne(d => d.Room).WithMany()
+                .HasForeignKey(d => d.RoomId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Schedule).WithMany()
+                .HasForeignKey(d => d.ScheduleId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -1,4 +1,4 @@
-﻿@using System.Security.Claims
+@using System.Security.Claims
 @{
 	var fullName = User.FindFirstValue(ClaimTypes.Name) ?? "User";
 	var avatar = fullName.Substring(0, 1).ToUpper();
@@ -77,6 +77,39 @@
 				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "profitreport" ? "active" : "")">
 					<i class="fa-solid fa-coins nav-icon"></i>
 					<span>Báo cáo lợi nhuận</span>
+				</a>
+
+                <!-- HRM MODULE -->
+                <div class="mt-3 mb-1 px-3 text-uppercase text-muted" style="font-size: 0.75rem; font-weight: 600;">HRM</div>
+
+				<a href="/HRM/Employees"
+				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "hrm_employees" ? "active" : "")">
+					<i class="fa-solid fa-users nav-icon"></i>
+					<span>Hồ sơ Nhân sự</span>
+				</a>
+
+				<a href="/HRM/Schedules"
+				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "hrm_schedules" ? "active" : "")">
+					<i class="fa-solid fa-calendar-days nav-icon"></i>
+					<span>Phân ca làm việc</span>
+				</a>
+
+				<a href="/ScheduleManagement/LeaveApprovals"
+				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "leave_approvals" ? "active" : "")">
+					<i class="fa-solid fa-user-xmark nav-icon"></i>
+					<span>Duyệt nghỉ phép</span>
+				</a>
+
+				<a href="/ScheduleManagement/WeeklyGrid"
+				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "weekly_grid" ? "active" : "")">
+					<i class="fa-solid fa-calendar-week nav-icon"></i>
+					<span>Lịch Lưới (Weekly Grid)</span>
+				</a>
+
+				<a href="/HRM/Attendance"
+				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "hrm_attendance" ? "active" : "")">
+					<i class="fa-solid fa-clock nav-icon"></i>
+					<span>Chấm công</span>
 				</a>
 
 			</nav>

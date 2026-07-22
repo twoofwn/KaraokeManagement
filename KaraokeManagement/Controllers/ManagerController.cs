@@ -1,4 +1,4 @@
-﻿using KaraokeManagement.Models;
+using KaraokeManagement.Models;
 using KaraokeManagement.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
@@ -32,7 +32,7 @@ namespace KaraokeManagement.Controllers
             // 1. Số khách hôm nay (Distinct CustomerId từ các hoá đơn có Booking phát sinh hôm nay)
             int customersToday = await _context.Invoices
                 .Where(i => i.CheckInTime >= startOfDay && i.CheckInTime <= endOfDay && i.BookingId != null)
-                .Select(i => i.Booking.CustomerId)
+                .Select(i => i.Booking!.CustomerId)
                 .Distinct()
                 .CountAsync();
 
@@ -44,7 +44,7 @@ namespace KaraokeManagement.Controllers
             // 3. Số khách tháng này
             int customersThisMonth = await _context.Invoices
                 .Where(i => i.CheckInTime >= startOfMonth && i.CheckInTime <= endOfMonth && i.BookingId != null)
-                .Select(i => i.Booking.CustomerId)
+                .Select(i => i.Booking!.CustomerId)
                 .Distinct()
                 .CountAsync();
 
@@ -659,7 +659,7 @@ namespace KaraokeManagement.Controllers
                 .ThenInclude(r => r.RoomType)
                 .Include(i => i.Receptionist)
                 .Include(i => i.Booking)
-                .ThenInclude(b => b.Customer)
+                .ThenInclude(b => b!.Customer)
                 .ThenInclude(c => c.Tier)
                 .Include(i => i.InvoiceDetails)
                 .ThenInclude(d => d.Service)

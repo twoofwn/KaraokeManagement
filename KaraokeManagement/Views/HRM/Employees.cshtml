@@ -1,0 +1,230 @@
+@model KaraokeManagement.Models.EmployeeListViewModel
+@{
+    ViewData["Title"] = "Quản lý Hồ sơ Nhân sự";
+    Layout = "~/Views/Manager/_ManagerLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Quản lý Hồ sơ Nhân sự</h2>
+    <button class="btn btn-primary" onclick="openEmployeeModal()"><i class="fa-solid fa-plus"></i> Thêm Nhân Viên</button>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Họ tên</th>
+                        <th>Chức vụ</th>
+                        <th>Điện thoại</th>
+                        <th>Ngày vào làm</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var emp in Model.Employees)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-bold">@emp.FullName</div>
+                                <div class="text-muted small">@emp.Username</div>
+                            </td>
+                            <td><span class="badge bg-info text-dark">@emp.RoleName</span></td>
+                            <td>@emp.Phone</td>
+                            <td>@emp.HireDate.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                @if(emp.EmploymentStatus == "Active") { <span class="badge bg-success">Đang làm việc</span> }
+                                else if(emp.EmploymentStatus == "OnLeave") { <span class="badge bg-warning text-dark">Nghỉ phép</span> }
+                                else { <span class="badge bg-secondary">Đã nghỉ</span> }
+                            </td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-primary" onclick="editEmployee(@emp.AccountId, '@emp.Username', '@emp.FullName', '@emp.Phone', '@emp.Email', '@emp.IdentityCardNumber', '@(emp.DateOfBirth.HasValue ? emp.DateOfBirth.Value.ToString("yyyy-MM-dd") : "")', '@emp.Address', '@emp.HireDate.ToString("yyyy-MM-dd")', '@emp.BaseHourlyRate', '@emp.EmploymentStatus', @emp.RoleId)">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteEmployee(@emp.AccountId)">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="employeeModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Thêm Nhân Viên Mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="employeeForm">
+                    <input type="hidden" id="AccountId" name="AccountId" value="0" />
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Tên đăng nhập *</label>
+                            <input type="text" class="form-control" id="Username" name="Username" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Mật khẩu (Mặc định: 123456 cho tạo mới)</label>
+                            <input type="password" class="form-control" id="Password" disabled placeholder="*****" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Họ và Tên *</label>
+                            <input type="text" class="form-control" id="FullName" name="FullName" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Chức vụ *</label>
+                            <select class="form-select" id="RoleId" name="RoleId" required>
+                                @foreach (var role in Model.Roles)
+                                {
+                                    <option value="@role.RoleId">@role.RoleName</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Điện thoại</label>
+                            <input type="text" class="form-control" id="Phone" name="Phone" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="Email" name="Email" />
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Số CMND/CCCD *</label>
+                            <input type="text" class="form-control" id="IdentityCardNumber" name="IdentityCardNumber" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ngày sinh</label>
+                            <input type="date" class="form-control" id="DateOfBirth" name="DateOfBirth" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Địa chỉ</label>
+                        <input type="text" class="form-control" id="Address" name="Address" />
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Ngày vào làm *</label>
+                            <input type="date" class="form-control" id="HireDate" name="HireDate" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Lương cơ bản/giờ</label>
+                            <input type="number" class="form-control" id="BaseHourlyRate" name="BaseHourlyRate" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Trạng thái *</label>
+                            <select class="form-select" id="EmploymentStatus" name="EmploymentStatus" required>
+                                <option value="Active">Đang làm việc</option>
+                                <option value="Resigned">Đã nghỉ</option>
+                                <option value="OnLeave">Nghỉ phép</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" onclick="saveEmployee()">Lưu Hồ Sơ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const myModal = new bootstrap.Modal(document.getElementById('employeeModal'));
+
+        function openEmployeeModal() {
+            document.getElementById('employeeForm').reset();
+            document.getElementById('AccountId').value = 0;
+            document.getElementById('Username').readOnly = false;
+            document.getElementById('modalTitle').innerText = 'Thêm Nhân Viên Mới';
+            myModal.show();
+        }
+
+        function editEmployee(id, user, name, phone, email, idcard, dob, addr, hire, rate, status, roleId) {
+            document.getElementById('AccountId').value = id;
+            document.getElementById('Username').value = user;
+            document.getElementById('Username').readOnly = true; 
+            document.getElementById('FullName').value = name;
+            document.getElementById('Phone').value = phone;
+            document.getElementById('Email').value = email;
+            document.getElementById('IdentityCardNumber').value = idcard;
+            document.getElementById('DateOfBirth').value = dob;
+            document.getElementById('Address').value = addr;
+            document.getElementById('HireDate').value = hire;
+            document.getElementById('BaseHourlyRate').value = rate;
+            document.getElementById('EmploymentStatus').value = status;
+            document.getElementById('RoleId').value = roleId;
+
+            document.getElementById('modalTitle').innerText = 'Chỉnh sửa Hồ Sơ';
+            myModal.show();
+        }
+
+        function saveEmployee() {
+            const form = document.getElementById('employeeForm');
+            if(!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const data = {
+                AccountId: parseInt(document.getElementById('AccountId').value),
+                Username: document.getElementById('Username').value,
+                FullName: document.getElementById('FullName').value,
+                Phone: document.getElementById('Phone').value,
+                Email: document.getElementById('Email').value,
+                IdentityCardNumber: document.getElementById('IdentityCardNumber').value,
+                DateOfBirth: document.getElementById('DateOfBirth').value || null,
+                Address: document.getElementById('Address').value,
+                HireDate: document.getElementById('HireDate').value,
+                BaseHourlyRate: document.getElementById('BaseHourlyRate').value ? parseFloat(document.getElementById('BaseHourlyRate').value) : null,
+                EmploymentStatus: document.getElementById('EmploymentStatus').value,
+                RoleId: parseInt(document.getElementById('RoleId').value)
+            };
+
+            $.ajax({
+                url: '/HRM/SaveEmployee',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function() {
+                    myModal.hide();
+                    location.reload();
+                },
+                error: function(err) {
+                    alert('Lỗi: ' + err.responseText);
+                }
+            });
+        }
+
+        function deleteEmployee(id) {
+            if(confirm('Bạn có chắc chắn muốn xóa hồ sơ nhân viên này? Dữ liệu lịch sử có thể bị ảnh hưởng.')) {
+                $.post('/HRM/DeleteEmployee/' + id, function() {
+                    location.reload();
+                }).fail(function(err) {
+                    alert('Lỗi khi xóa.');
+                });
+            }
+        }
+    </script>
+}

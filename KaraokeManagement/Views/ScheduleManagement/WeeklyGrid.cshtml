@@ -1,0 +1,223 @@
+@using KaraokeManagement.Models
+@{
+    ViewData["Title"] = "Schedule Management";
+    Layout = "~/Views/Manager/_ManagerLayout.cshtml";
+
+    var startOfWeek = (DateTime)(ViewData["StartOfWeek"] ?? new DateTime(2026, 7, 20));
+    var endOfWeek = (DateTime)(ViewData["EndOfWeek"] ?? new DateTime(2026, 7, 26));
+    var dbShifts = ViewData["Shifts"] as List<WorkShift> ?? new List<WorkShift>();
+    var dbSchedules = ViewData["RawSchedules"] as List<EmployeeSchedule> ?? new List<EmployeeSchedule>();
+}
+
+<style>
+    .bg-orange {
+        background-color: #fd7e14 !important;
+        color: #ffffff !important;
+    }
+    .btn-orange {
+        background-color: #fd7e14 !important;
+        border-color: #fd7e14 !important;
+        color: #ffffff !important;
+        font-weight: 500;
+    }
+    .btn-orange:hover {
+        background-color: #e66a00 !important;
+        color: #ffffff !important;
+    }
+    .badge-receptionist {
+        background-color: #fef9c3 !important;
+        color: #854d0e !important;
+        border: 1px solid #fef08a;
+    }
+    .badge-manager {
+        background-color: #e0f2fe !important;
+        color: #0369a1 !important;
+        border: 1px solid #bae6fd;
+    }
+    .badge-admin {
+        background-color: #ffe4e6 !important;
+        color: #9f1239 !important;
+        border: 1px solid #fecdd3;
+    }
+    .grid-cell {
+        position: relative;
+        min-height: 120px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .grid-cell:hover {
+        background-color: #f8f9fa;
+    }
+    .btn-add-cell {
+        position: absolute;
+        bottom: 4px;
+        right: 4px;
+        width: 22px;
+        height: 22px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        border-radius: 4px;
+    }
+</style>
+
+<!-- Header & Controls -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">Schedule Management</h2>
+    
+    <!-- Left Controls -->
+    <div class="d-flex align-items-center gap-2">
+        <a href="/ScheduleManagement/WeeklyGrid?startDate=@startOfWeek.AddDays(-7).ToString("yyyy-MM-dd")" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-chevron-left"></i></a>
+        <select class="form-select form-select-sm fw-medium" style="width: auto;" onchange="window.location.href='/ScheduleManagement/WeeklyGrid?startDate='+this.value">
+            <option value="@startOfWeek.ToString("yyyy-MM-dd")" selected>@startOfWeek.ToString("dd-M-yyyy") -> @endOfWeek.ToString("dd-M-yyyy") (Current)</option>
+            <option value="@startOfWeek.AddDays(-7).ToString("yyyy-MM-dd")">@startOfWeek.AddDays(-7).ToString("dd-M-yyyy") -> @startOfWeek.AddDays(-1).ToString("dd-M-yyyy")</option>
+            <option value="@startOfWeek.AddDays(7).ToString("yyyy-MM-dd")">@startOfWeek.AddDays(7).ToString("dd-M-yyyy") -> @startOfWeek.AddDays(13).ToString("dd-M-yyyy")</option>
+        </select>
+        <a href="/ScheduleManagement/WeeklyGrid?startDate=@startOfWeek.AddDays(7).ToString("yyyy-MM-dd")" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-chevron-right"></i></a>
+    </div>
+
+    <!-- Right Controls -->
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary fw-bold text-nowrap text-white" onclick="runAutoSchedule('@startOfWeek.ToString("yyyy-MM-dd")')" 
+                style="background-color: #0d6efd; border-color: #0d6efd; box-shadow: 0 4px 6px rgba(13, 110, 253, 0.15); border-radius: 6px;">
+            <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Tự Động Xếp Lịch
+        </button>
+        <a href="/ScheduleManagement/LeaveApprovals" class="btn btn-orange">
+            <i class="fa-solid fa-user-xmark me-1"></i> Duyệt Nghỉ Phép
+        </a>
+    </div>
+</div>
+
+<!-- The Schedule Grid -->
+<div class="card border-0 shadow-sm overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-bordered mb-0 align-middle">
+            <thead>
+                <tr class="bg-orange text-center">
+                    <th style="width: 14%;" class="py-3">Shifts</th>
+                    @for (int i = 0; i < 7; i++)
+                    {
+                        var dayDate = startOfWeek.AddDays(i);
+                        string[] dayNames = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+                        <th style="width: 12.2%;" class="py-3">@dayNames[i] @dayDate.Day</th>
+                    }
+                </tr>
+            </thead>
+            <tbody id="gridTbody">
+                <!-- JavaScript renders real database schedules -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const dbShifts = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(dbShifts.Select(s => new {
+            id = s.ShiftId,
+            name = s.ShiftName,
+            timeRange = $"{s.StartTime} - {s.EndTime}"
+        })));
+
+        const dbSchedulesRaw = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(dbSchedules.Select(s => new {
+            shiftId = s.ShiftId,
+            workDate = s.WorkDate.ToString("yyyy-MM-dd"),
+            roleName = s.Account.Role.RoleName,
+            accountName = s.Account.FullName
+        })));
+
+        const days = [
+            "@startOfWeek.ToString("yyyy-MM-dd")",
+            "@startOfWeek.AddDays(1).ToString("yyyy-MM-dd")",
+            "@startOfWeek.AddDays(2).ToString("yyyy-MM-dd")",
+            "@startOfWeek.AddDays(3).ToString("yyyy-MM-dd")",
+            "@startOfWeek.AddDays(4).ToString("yyyy-MM-dd")",
+            "@startOfWeek.AddDays(5).ToString("yyyy-MM-dd")",
+            "@startOfWeek.AddDays(6).ToString("yyyy-MM-dd")"
+        ];
+
+        function getRoleBadgeClass(roleName) {
+            if (roleName.includes("Receptionist") || roleName.includes("Lễ tân")) return "badge-receptionist";
+            if (roleName.includes("Manager") || roleName.includes("Quản lý")) return "badge-manager";
+            if (roleName.includes("Admin") || roleName.includes("Quản trị")) return "badge-admin";
+            return "bg-light text-dark border";
+        }
+
+        function renderGrid() {
+            const tbody = document.getElementById("gridTbody");
+            tbody.innerHTML = "";
+
+            if (dbShifts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">Chưa có danh mục ca làm việc trong CSDL.</td></tr>`;
+                return;
+            }
+
+            dbShifts.forEach(shift => {
+                const tr = document.createElement("tr");
+
+                // Shift Column
+                const tdShift = document.createElement("td");
+                tdShift.className = "bg-light align-middle text-center fw-bold";
+                tdShift.innerHTML = `
+                    <div>${shift.name}</div>
+                    <div class="text-muted small fw-normal mt-1">${shift.timeRange}</div>
+                `;
+                tr.appendChild(tdShift);
+
+                // Day Columns
+                days.forEach(dayStr => {
+                    const td = document.createElement("td");
+                    td.className = "grid-cell p-2 align-top";
+                    td.onclick = function() {
+                        window.location.href = `/ScheduleManagement/ShiftDetails?shiftId=${shift.id}&date=${dayStr}`;
+                    };
+
+                    // Check DB schedules for this cell
+                    const dbCellScheds = dbSchedulesRaw.filter(s => s.shiftId === shift.id && s.workDate === dayStr);
+                    
+                    let blocks = [];
+                    if (dbCellScheds.length > 0) {
+                        const roleCounts = {};
+                        dbCellScheds.forEach(s => {
+                            roleCounts[s.roleName] = (roleCounts[s.roleName] || 0) + 1;
+                        });
+                        Object.keys(roleCounts).forEach(r => {
+                            blocks.push({ role: r, count: roleCounts[r] });
+                        });
+                    }
+
+                    let innerHtml = `<div class="d-flex flex-column gap-1">`;
+                    blocks.forEach(b => {
+                        const badgeClass = getRoleBadgeClass(b.role);
+                        innerHtml += `
+                            <div class="p-1 px-2 rounded small fw-medium text-center ${badgeClass}">
+                                ${b.count} ${b.role}
+                            </div>
+                        `;
+                    });
+                    innerHtml += `</div>`;
+                    innerHtml += `<button class="btn btn-sm btn-outline-secondary btn-add-cell" title="Add Staff" onclick="event.stopPropagation(); window.location.href='/ScheduleManagement/ShiftDetails?shiftId=${shift.id}&date=${dayStr}';"><i class="fa-solid fa-plus"></i></button>`;
+
+                    td.innerHTML = innerHtml;
+                    tr.appendChild(td);
+                });
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        function runAutoSchedule(startDateStr) {
+            if (confirm("Bạn có chắc muốn tự động xếp lịch cho tất cả nhân viên trong tuần này dựa trên Ca mặc định của họ?")) {
+                $.post('/ScheduleManagement/GenerateSchedule', { startDate: startDateStr }, function(res) {
+                    alert(res.message || 'Tự động xếp lịch thành công!');
+                    location.reload();
+                }).fail(function(err) {
+                    alert('Lỗi: ' + (err.responseText || 'Không thể tự động xếp lịch.'));
+                });
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", renderGrid);
+    </script>
+}

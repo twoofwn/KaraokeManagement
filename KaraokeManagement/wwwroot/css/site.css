@@ -1,4 +1,4 @@
-﻿html {
+html {
     font-size: 14px;
 }
 
@@ -57,3 +57,70 @@ body {
     ::-webkit-scrollbar-thumb:hover {
         background: #E83C91; /* Màu hồng đậm (Primary) khi di chuột vào */
     }
+
+/* ==========================================================================
+   SHIFT & SCHEDULE MANAGEMENT SYSTEM CUSTOM STYLES
+   ========================================================================== */
+
+/* Schedule cards base styling */
+.staff-schedule-card {
+    transition: all 0.2s ease-in-out;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.staff-schedule-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+}
+
+/* Receptionist Role: Light Yellow Theme */
+.staff-schedule-card.role-receptionist {
+    background-color: #fffde6 !important;
+    border-color: #ffe89e !important;
+    color: #856404 !important;
+}
+
+.staff-schedule-card.role-receptionist .text-dark {
+    color: #856404 !important;
+}
+
+/* Service Staff Role: Light Pink Theme */
+.staff-schedule-card.role-service-staff {
+    background-color: #fff0f5 !important;
+    border-color: #ffb6c1 !important;
+    color: #c71585 !important;
+}
+
+.staff-schedule-card.role-service-staff .text-dark {
+    color: #c71585 !important;
+}
+
+/* Deactivated / OFF Schedules */
+.staff-schedule-card.schedule-off {
+    background-color: #f8d7da !important;
+    border-color: #f5c6cb !important;
+    color: #721c24 !important;
+    text-decoration: line-through;
+    opacity: 0.65;
+    border-style: dashed !important;
+}
+
+.staff-schedule-card.schedule-off .text-dark {
+    color: #721c24 !important;
+    text-decoration: line-through;
+}
+
+/* Request Cards & Animations */
+.animate-bounce {
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
