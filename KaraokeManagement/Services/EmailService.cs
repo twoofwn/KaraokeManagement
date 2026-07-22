@@ -3,12 +3,7 @@ using System.Net.Mail;
 
 namespace KaraokeManagement.Services
 {
-    public interface IEmailService
-    {
-        Task SendEmailAsync(string toEmail, string subject, string body);
-    }
-
-    public class EmailService : IEmailService
+    public class EmailService
     {
         private readonly IConfiguration _configuration;
 

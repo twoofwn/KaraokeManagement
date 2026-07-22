@@ -1,7 +1,6 @@
 using KaraokeManagement.Helpers;
 using KaraokeManagement.Models;
 using KaraokeManagement.Services;
-using KaraokeManagement.Services;
 using KaraokeManagement.ViewModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
@@ -16,9 +15,8 @@ namespace KaraokeManagement.Controllers
     public class AuthController : Controller
     {
         private readonly KaraokeManagementDbContext _context;
-        private readonly IEmailService _emailService;
-
-        public AuthController(KaraokeManagementDbContext context, IEmailService emailService)
+        private readonly EmailService _emailService;
+        public AuthController(KaraokeManagementDbContext context, EmailService emailService)
         {
             _context = context;
             _emailService = emailService;
