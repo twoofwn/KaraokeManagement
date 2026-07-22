@@ -238,6 +238,7 @@ namespace KaraokeManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> Logout()
         {
+            bool isCustomer = User.IsInRole("Customer");
             try
             {
                 await HttpContext.SignOutAsync("CookieAuth");
@@ -247,6 +248,10 @@ namespace KaraokeManagement.Controllers
             Response.Cookies.Delete("UserSession");
             Response.Cookies.Delete("UserRole");
 
+            if (isCustomer)
+            {
+                return RedirectToAction("CustomerLogin", "Auth");
+            }
             return RedirectToAction("Login");
         }
 

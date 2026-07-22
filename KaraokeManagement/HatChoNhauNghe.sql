@@ -1,4 +1,4 @@
-﻿USE master;
+USE master;
 GO
 
 IF EXISTS (SELECT name FROM sys.databases WHERE name = N'KaraokeManagementDB')
@@ -254,7 +254,7 @@ CREATE TABLE [EmployeeSchedule] (
     ShiftID INT NOT NULL,
     WorkDate DATE NOT NULL,
     Status NVARCHAR(30) NULL DEFAULT 'Scheduled',
-    IsActive BIT NOT NULL DEFAULT 1,
+    IsActive BIT NULL DEFAULT 1,
     FOREIGN KEY (AccountID) REFERENCES [Account](AccountID),
     FOREIGN KEY (ShiftID) REFERENCES [WorkShift](ShiftID)
 );

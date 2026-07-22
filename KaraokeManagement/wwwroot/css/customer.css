@@ -1,4 +1,4 @@
-﻿/* CSS RESET & VARIABLES */
+/* CSS RESET & VARIABLES */
 :root {
     --bg-light: #F8F4EC;
     --pink-soft: #FF8FB7;
@@ -114,13 +114,16 @@ body {
 
 .btn-register {
     background: var(--pink-bold);
-    color: #fff;
+    color: #fff !important;
     border: 2px solid var(--pink-bold);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
     .btn-register:hover {
         background: var(--dark-purple);
         border-color: var(--dark-purple);
+        color: #fff !important;
     }
 
 /* MAIN CONTENT */
