@@ -25,5 +25,20 @@ namespace KaraokeManagement.Helpers
 
             return VietnamPhoneRegex.IsMatch(cleanPhone);
         }
+
+        public static bool IsValidPhoneNumberCustomer(string phoneNumber)
+        {
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+            {
+                return false;
+            }
+
+            var cleanPhone = phoneNumber.Replace(" ", "")
+                                        .Replace("-", "")
+                                        .Replace("(", "")
+                                        .Replace(")", "");
+
+            return VietnamPhoneRegex.IsMatch(cleanPhone);
+        }
     }
 }

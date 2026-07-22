@@ -120,6 +120,105 @@ namespace KaraokeManagement.Controllers
             return View(model);
         }
 
+        // Customer Login
+        [HttpGet]
+        public IActionResult CustomerLogin()
+        {
+            if (User.Identity?.IsAuthenticated == true && User.IsInRole("Customer"))
+            {
+                return RedirectToAction("Index", "Customer");
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CustomerLogin(string PhoneOrEmail, string Password)
+        {
+            if (string.IsNullOrEmpty(PhoneOrEmail) || string.IsNullOrEmpty(Password))
+            {
+                ViewBag.Error = "Vui lòng nhập đầy đủ thông tin đăng nhập.";
+                return View();
+            }
+
+            var customer = await _context.Customers
+                .FirstOrDefaultAsync(c => c.Phone == PhoneOrEmail || c.Email == PhoneOrEmail);
+
+            if (customer != null && !string.IsNullOrEmpty(customer.PasswordHash))
+            {
+                bool isValid = PasswordHelper.VerifyPassword(Password, customer.PasswordHash);
+                if (isValid)
+                {
+                    var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, customer.CustomerId.ToString()),
+                new Claim(ClaimTypes.Name, customer.FullName),
+                new Claim(ClaimTypes.Role, "Customer")
+            };
+
+                    if (!string.IsNullOrEmpty(customer.Email))
+                    {
+                        claims.Add(new Claim(ClaimTypes.Email, customer.Email));
+                    }
+
+                    var claimsIdentity = new ClaimsIdentity(claims, "CookieAuth");
+                    await HttpContext.SignInAsync("CookieAuth", new ClaimsPrincipal(claimsIdentity));
+
+                    return RedirectToAction("Index", "Customer");
+                }
+            }
+
+            ViewBag.Error = "Số điện thoại/Email hoặc mật khẩu không đúng.";
+            return View();
+        }
+
+        // Register 
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Error = "Vui lòng nhập đầy đủ thông tin.";
+                return View(model);
+            }
+
+            if (!ValidationHelper.IsValidPhoneNumberCustomer(model.Phone))
+            {
+                ViewBag.Error = "Số điện thoại không hợp lệ.";
+                return View(model);
+            }
+
+            bool exists = await _context.Customers.AnyAsync(c => c.Phone == model.Phone || c.Email == model.Email);
+            if (exists)
+            {
+                ViewBag.Error = "Số điện thoại hoặc Email đã được đăng ký.";
+                return View(model);
+            }
+            
+
+            // Tạo đối tượng Customer mới
+            var newCustomer = new Customer
+            {
+                FullName = model.FullName,
+                Phone = model.Phone,
+                Email = model.Email,
+                PasswordHash = PasswordHelper.HashPassword(model.Password),
+                LoyaltyPoints = 0,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Customers.Add(newCustomer);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+            return RedirectToAction("CustomerLogin");
+        }
+
         [HttpGet]
         public async Task<IActionResult> Logout()
         {
