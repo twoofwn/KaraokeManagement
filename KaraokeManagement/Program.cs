@@ -1,5 +1,4 @@
 using KaraokeManagement.Models;
-using KaraokeManagement.Service;
 using KaraokeManagement.Services;
 using Microsoft.EntityFrameworkCore;
 

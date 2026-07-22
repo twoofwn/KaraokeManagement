@@ -1,14 +1,14 @@
 :root {
-    --bg-light: #FDF5F7; /* Main background: kem/hồng nhạt */
-    --panel-bg: #FFFFFF; /* Sidebar panel background */
-    --card-bg: #FFFFFF; /* Card backgrounds */
-    --border-color: #EAC8D1; /* Light pink border color */
+    --bg-light: #FDF5F7; 
+    --panel-bg: #FFFFFF; 
+    --card-bg: #FFFFFF; 
+    --border-color: #EAC8D1; 
     
-    --text-main: #333333; /* Dark gray/black primary text */
-    --text-gray: #777777; /* Neutral gray secondary text */
-    --text-muted: #888888; /* Muted text */
+    --text-main: #333333; 
+    --text-gray: #777777; 
+    --text-muted: #888888; 
     
-    --primary: #D8005A; /* Deep Pink / Magenta primary accent */
+    --primary: #D8005A; 
     --primary-hover: #C2185B;
     --primary-glow: rgba(216, 0, 90, 0.1);
     
@@ -21,19 +21,20 @@
     --danger-bg: rgba(239, 68, 68, 0.1);
     --warning: #f59e0b;
     --warning-bg: rgba(245, 158, 11, 0.1);
-    
-    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-* {
-    box-sizing: border-box;
+*, *::before, *::after {
     margin: 0;
     padding: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+input, button, select, textarea {
+    font-family: 'Inter', sans-serif;
 }
 
 body {
-    font-family: var(--font-sans);
+    font-family: 'Inter', sans-serif;
     background-color: var(--bg-light);
     color: var(--text-main);
     height: 100vh;

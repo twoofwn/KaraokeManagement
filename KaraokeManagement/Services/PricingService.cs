@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using KaraokeManagement.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace KaraokeManagement.Service
+namespace KaraokeManagement.Services
 {
     public class PricingService : IPricingService
     {

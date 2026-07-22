@@ -1,7 +1,7 @@
 ﻿@{
     Layout = null;
     string email = ViewBag.Email as string ?? "";
-    string actionType = ViewBag.ActionType as string ?? "Register"; // Register hoặc ResetPassword
+    string actionType = ViewBag.ActionType as string ?? "Register";
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Minh Tuấn Karaoke - Xác thực OTP</title>
 
-    <link rel="stylesheet" href="~/css/Login.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Auth.css" asp-append-version="true" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,10 +33,12 @@
                 </svg>
             </div>
             <h1 class="login-title">Xác thực mã OTP</h1>
-            <p class="login-subtitle">Mã xác thực đã được gửi tới @email</p>
+            <p class="login-subtitle">Mã xác thực đã được gửi tới <b>@email</b></p>
         </div>
 
         <div class="login-card">
+
+            <div id="toastMessage" class="alert-toast"></div>
 
             @if (ViewBag.Error != null)
             {
@@ -47,9 +49,8 @@
             }
 
             <form asp-controller="Auth" asp-action="VerifyOtp" method="post" class="login-form">
-                <!-- Hidden inputs để lưu ngữ cảnh -->
-                <input type="hidden" name="email" value="@email" />
-                <input type="hidden" name="actionType" value="@actionType" />
+                <input type="hidden" id="userEmail" name="email" value="@email" />
+                <input type="hidden" id="actionType" name="actionType" value="@actionType" />
 
                 <div class="form-group">
                     <label for="otpCode" class="input-label">Mã OTP (6 chữ số)</label>
@@ -57,8 +58,8 @@
                         <span class="input-icon">
                             <i class="fa-solid fa-shield-halved"></i>
                         </span>
-                        <input type="text" name="otpCode" id="otpCode" placeholder="123456" maxlength="6" required
-                               class="input-field" style="letter-spacing: 0.2em; font-weight: 700; text-align: center;" />
+                        <input type="text" name="otpCode" id="otpCode" placeholder="X X X X X X" maxlength="6" required
+                               class="input-field" style="letter-spacing: 0.25em; font-weight: 700; text-align: center;" />
                     </div>
                 </div>
 
@@ -70,8 +71,94 @@
                 </div>
             </form>
 
+            <div class="resend-container">
+                <span>Chưa nhận được mã? </span>
+                <button type="button" id="btnResend" class="btn-resend" onclick="handleResendOtp()">
+                    Gửi lại mã
+                </button>
+                <span id="timerText" style="display: none; font-weight: 600; color: #4f46e5;"> (30s)</span>
+            </div>
+
         </div>
     </div>
 
+    <script>
+        let countdown = 30;
+        let timer = null;
+
+        function startTimer() {
+            const btnResend = document.getElementById('btnResend');
+            const timerText = document.getElementById('timerText');
+
+            btnResend.disabled = true;
+            timerText.style.display = 'inline';
+            countdown = 30;
+            timerText.innerText = ` (${countdown}s)`;
+
+            timer = setInterval(() => {
+                countdown--;
+                timerText.innerText = ` (${countdown}s)`;
+
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    btnResend.disabled = false;
+                    timerText.style.display = 'none';
+                }
+            }, 1000);
+        }
+
+        // Tự động đếm ngược ngay khi vào trang lần đầu
+        document.addEventListener('DOMContentLoaded', () => {
+            startTimer();
+        });
+
+        async function handleResendOtp() {
+            const email = document.getElementById('userEmail').value;
+            const actionType = document.getElementById('actionType').value;
+            const toast = document.getElementById('toastMessage');
+
+            if (!email) {
+                showToast('Không tìm thấy thông tin email!', 'error');
+                return;
+            }
+
+            // Khóa nút ngay lập tức để tránh click liên tục
+            document.getElementById('btnResend').disabled = true;
+
+            try {
+                const response = await fetch('/Auth/ResendOtp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `email=${encodeURIComponent(email)}&actionType=${encodeURIComponent(actionType)}`
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast(result.message, 'success');
+                    startTimer(); // Bắt đầu đếm ngược 30s mới
+                } else {
+                    showToast(result.message, 'error');
+                    document.getElementById('btnResend').disabled = false;
+                }
+            } catch (err) {
+                showToast('Có lỗi xảy ra, vui lòng thử lại sau!', 'error');
+                document.getElementById('btnResend').disabled = false;
+            }
+        }
+
+        function showToast(message, type) {
+            const toast = document.getElementById('toastMessage');
+            toast.className = `alert-toast ${type}`;
+            toast.innerText = message;
+            toast.style.display = 'block';
+
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 4000);
+        }
+    </script>
 </body>
 </html>
