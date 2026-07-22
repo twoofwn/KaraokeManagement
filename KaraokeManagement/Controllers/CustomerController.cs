@@ -70,15 +70,20 @@ namespace KaraokeManagement.Controllers
         [HttpGet]
         public IActionResult RoomDetail(int id)
         {
-            // Truy vấn RoomType kèm theo danh sách các Phòng (Rooms) thuộc loại đó
             var roomType = _context.RoomTypes
-                .Include(rt => rt.Rooms) // Include để lấy ICollection<Room>
+                .Include(rt => rt.Rooms)
+                .Include(rt => rt.RoomPrices)
                 .FirstOrDefault(rt => rt.RoomTypeId == id);
 
             if (roomType == null)
             {
-                return NotFound(); // Trả về lỗi 404 nếu không tìm thấy loại phòng
+                return NotFound();
             }
+
+            // Lấy danh sách các chính sách phụ thu đang hoạt động
+            ViewBag.ActivePolicies = _context.PricingPolicies
+                .Where(p => p.IsActive)
+                .ToList();
 
             return View(roomType);
         }
@@ -169,6 +174,19 @@ namespace KaraokeManagement.Controllers
 
             // Trả Model ServiceItem ra View
             return View(service);
+        }
+
+        [HttpGet]
+        public IActionResult BookingConfirmation(string roomName, string typeName, string bookingDate, string startTime, int duration)
+        {
+            // Truyền dữ liệu sang View thông qua ViewBag
+            ViewBag.RoomName = roomName;
+            ViewBag.TypeName = typeName;
+            ViewBag.BookingDate = bookingDate;
+            ViewBag.StartTime = startTime;
+            ViewBag.Duration = duration;
+
+            return View();
         }
     }
 }
