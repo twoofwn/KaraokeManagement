@@ -195,12 +195,6 @@ namespace KaraokeManagement.Controllers
                 return View(model);
             }
 
-            if (!ValidationHelper.IsValidPhoneNumberCustomer(model.Phone))
-            {
-                ViewBag.Error = "Số điện thoại không hợp lệ.";
-                return View(model);
-            }
-
             bool exists = await _context.Customers.AnyAsync(c => c.Phone == model.Phone || c.Email == model.Email);
             if (exists)
             {
@@ -208,11 +202,8 @@ namespace KaraokeManagement.Controllers
                 return View(model);
             }
 
+            string otp = GenerateOtpCode();
 
-            // Tạo Token xác thực email
-            string verificationToken = Guid.NewGuid().ToString("N");
-
-            // Tạo tài khoản Khách hàng
             var newCustomer = new Customer
             {
                 FullName = model.FullName,
@@ -220,70 +211,28 @@ namespace KaraokeManagement.Controllers
                 Email = model.Email,
                 PasswordHash = PasswordHelper.HashPassword(model.Password),
                 LoyaltyPoints = 0,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 IsEmailVerified = false,
-                EmailVerificationToken = verificationToken,
-                EmailVerificationTokenExpiry = DateTime.UtcNow.AddHours(24) 
+                OtpCode = otp,
+                OtpExpiry = DateTime.Now.AddMinutes(30) // Hiệu lực 30 phút
             };
 
             _context.Customers.Add(newCustomer);
             await _context.SaveChangesAsync();
-            string verifyLink = Url.Action("VerifyEmail", "Auth", new { token = verificationToken, email = model.Email }, Request.Scheme)!;
 
+            // Gửi Email OTP
             string emailBody = $@"
-        <h2>Xác thực tài khoản - Minh Tuấn Karaoke</h2>
-        <p>Chào <b>{model.FullName}</b>,</p>
-        <p>Cảm ơn bạn đã đăng ký tài khoản tại Minh Tuấn Karaoke.</p>
-        <p>Vui lòng bấm vào nút bên dưới để kích hoạt tài khoản của bạn (Liên kết có hiệu lực trong 24 giờ):</p>
-        <p>
-            <a href='{verifyLink}' style='padding: 12px 20px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;'>
-                Xác nhận đăng ký
-            </a>
-        </p>
-        <p>Nếu bạn không đăng ký tài khoản này, vui lòng bỏ qua email.</p>";
+            <h2>Mã xác thực OTP - Minh Tuấn Karaoke</h2>
+            <p>Chào <b>{model.FullName}</b>,</p>
+            <p>Mã OTP đăng ký tài khoản của bạn là: <b style='font-size: 20px; color: #4F46E5;'>{otp}</b></p>
+            <p>Mã này có hiệu lực trong 30 phút.</p>";
 
-            await _emailService.SendEmailAsync(model.Email, "Xác nhận đăng ký tài khoản - Minh Tuấn Karaoke", emailBody);
+            await _emailService.SendEmailAsync(model.Email, "Mã OTP Kích hoạt tài khoản - Minh Tuấn Karaoke", emailBody);
 
-            TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng kiểm tra Email để kích hoạt tài khoản.";
-            return RedirectToAction("CustomerLogin");
-        }
-
-        // Verify Email
-        [HttpGet]
-        public async Task<IActionResult> VerifyEmail(string token, string email)
-        {
-            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
-            {
-                ViewBag.Error = "Liên kết xác thực không hợp lệ.";
-                return View("CustomerLogin");
-            }
-
-            var customer = await _context.Customers.FirstOrDefaultAsync(c =>
-                c.Email == email &&
-                c.EmailVerificationToken == token);
-
-            if (customer == null)
-            {
-                ViewBag.Error = "Xác thực không thành công. Mã xác nhận không đúng.";
-                return View("CustomerLogin");
-            }
-
-            if (customer.EmailVerificationTokenExpiry < DateTime.UtcNow)
-            {
-                ViewBag.Error = "Mã xác nhận đã hết hạn. Vui lòng đăng ký lại hoặc yêu cầu gửi lại email.";
-                return View("CustomerLogin");
-            }
-
-            // Đánh dấu tài khoản đã được verify
-            customer.IsEmailVerified = true;
-            customer.EmailVerificationToken = null; 
-            customer.EmailVerificationTokenExpiry = null;
-
-            _context.Customers.Update(customer);
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = "Xác thực Email thành công! Bạn có thể đăng nhập ngay.";
-            return RedirectToAction("CustomerLogin");
+            // Chuyển sang trang VerifyOtp với actionType = Register
+            ViewBag.Email = model.Email;
+            ViewBag.ActionType = "Register";
+            return View("VerifyOtp");
         }
 
         [HttpGet]
@@ -328,81 +277,108 @@ namespace KaraokeManagement.Controllers
             }
 
             var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == email);
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == email);
+
+            if (account == null && customer == null)
+            {
+                ViewBag.Error = "Email không tồn tại trong hệ thống.";
+                return View();
+            }
+
+            string otp = GenerateOtpCode();
+            DateTime expiry = DateTime.Now.AddMinutes(30);
 
             if (account != null)
             {
-                string token = Guid.NewGuid().ToString("N");
-                account.ResetPasswordToken = token;
-                account.ResetPasswordTokenExpiry = DateTime.UtcNow.AddMinutes(30);
-
+                account.OtpCode = otp;
+                account.OtpExpiry = expiry;
                 _context.Accounts.Update(account);
-                await _context.SaveChangesAsync();
-
-                string resetLink = Url.Action("ResetPassword", "Auth", new { token = token, email = email }, Request.Scheme)!;
-
-                string emailBody = $@"
-                    <h2>Yêu cầu đặt lại mật khẩu - Minh Tuấn Karaoke</h2>
-                    <p>Chào bạn,</p>
-                    <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản liên kết với email này.</p>
-                    <p>Vui lòng bấm vào liên kết bên dưới để tiến hành đặt lại mật khẩu (Liên kết có hiệu lực trong 30 phút):</p>
-                    <p><a href='{resetLink}' style='padding: 10px 15px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 5px;'>Đặt lại mật khẩu</a></p>
-                    <p>Nếu bạn không gửi yêu cầu này, vui lòng bỏ qua email này.</p>";
-
-                await _emailService.SendEmailAsync(account.Email!, "Reset Password - Minh Tuấn Karaoke", emailBody);
+            }
+            else if (customer != null)
+            {
+                customer.OtpCode = otp;
+                customer.OtpExpiry = expiry;
+                _context.Customers.Update(customer);
             }
 
-            ViewBag.Success = "Nếu Email tồn tại trong hệ thống, chúng tôi đã gửi link đặt lại mật khẩu vào hòm thư của bạn.";
-            return View();
-        }
+            await _context.SaveChangesAsync();
 
-        [HttpGet]
-        public async Task<IActionResult> ResetPassword(string token, string email)
-        {
-            //if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
-            //{
-            //    return RedirectToAction("Login");
-            //}
+            string emailBody = $@"
+            <h2>Mã OTP Đặt lại mật khẩu - Minh Tuấn Karaoke</h2>
+            <p>Mã OTP của bạn là: <b style='font-size: 20px; color: #4F46E5;'>{otp}</b></p>
+            <p>Mã này có hiệu lực trong 30 phút.</p>";
 
-            var account = await _context.Accounts.FirstOrDefaultAsync(a =>
-                a.Email == email &&
-                a.ResetPasswordToken == token &&
-                a.ResetPasswordTokenExpiry > DateTime.UtcNow);
+            await _emailService.SendEmailAsync(email, "Mã OTP Đặt lại mật khẩu - Minh Tuấn Karaoke", emailBody);
 
-            //if (account == null)
-            //{
-            //    ViewBag.Error = "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.";
-            //    return View("Error");
-            //}
-
-            var model = new ResetPasswordViewModel { Token = token, Email = email };
-            return View(model);
+            // Chuyển sang trang VerifyOtp với actionType = ResetPassword
+            ViewBag.Email = email;
+            ViewBag.ActionType = "ResetPassword";
+            return View("VerifyOtp");
         }
 
         [HttpPost]
-        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        public async Task<IActionResult> VerifyOtp(string email, string otpCode, string actionType)
         {
-            if (!ModelState.IsValid) return View(model);
-
-            var account = await _context.Accounts.FirstOrDefaultAsync(a =>
-                a.Email == model.Email &&
-                a.ResetPasswordToken == model.Token &&
-                a.ResetPasswordTokenExpiry > DateTime.UtcNow);
-
-            if (account == null)
+            if (string.IsNullOrEmpty(otpCode))
             {
-                ViewBag.Error = "Yêu cầu không hợp lệ hoặc đã hết hạn.";
-                return View(model);
+                ViewBag.Error = "Vui lòng nhập mã OTP.";
+                ViewBag.Email = email;
+                ViewBag.ActionType = actionType;
+                return View();
             }
 
-            account.PasswordHash = PasswordHelper.HashPassword(model.NewPassword);
-            account.ResetPasswordToken = null;
-            account.ResetPasswordTokenExpiry = null;
+            // 1. Luồng kích hoạt Đăng ký Khách hàng
+            if (actionType == "Register")
+            {
+                var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == email && c.OtpCode == otpCode);
 
-            _context.Accounts.Update(account);
-            await _context.SaveChangesAsync();
+                if (customer == null || customer.OtpExpiry < DateTime.Now)
+                {
+                    ViewBag.Error = "Mã OTP không đúng hoặc đã hết hạn.";
+                    ViewBag.Email = email;
+                    ViewBag.ActionType = actionType;
+                    return View();
+                }
 
-            TempData["SuccessMessage"] = "Đặt lại mật khẩu thành công. Vui lòng đăng nhập.";
+                customer.IsEmailVerified = true;
+                customer.OtpCode = null;
+                customer.OtpExpiry = null;
+
+                _context.Customers.Update(customer);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Kích hoạt tài khoản thành công! Vui lòng đăng nhập.";
+                return RedirectToAction("CustomerLogin");
+            }
+            // 2. Luồng Quên mật khẩu
+            else if (actionType == "ResetPassword")
+            {
+                var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == email && a.OtpCode == otpCode);
+                var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == email && c.OtpCode == otpCode);
+
+                bool isValid = (account != null && account.OtpExpiry >= DateTime.Now) ||
+                               (customer != null && customer.OtpExpiry >= DateTime.Now);
+
+                if (!isValid)
+                {
+                    ViewBag.Error = "Mã OTP không đúng hoặc đã hết hạn.";
+                    ViewBag.Email = email;
+                    ViewBag.ActionType = actionType;
+                    return View();
+                }
+
+                // Chuyển sang trang Đặt lại mật khẩu mới (truyền email & otp làm token)
+                var model = new ResetPasswordViewModel { Email = email, Token = otpCode };
+                return View("ResetPassword", model);
+            }
+
             return RedirectToAction("Login");
+        }
+
+        private string GenerateOtpCode()
+        {
+            Random random = new Random();
+            return random.Next(100000, 999999).ToString();
         }
     } 
 }

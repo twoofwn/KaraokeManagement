@@ -39,8 +39,8 @@ CREATE TABLE [Account] (
     Email VARCHAR(100) NULL,
     CreatedAt DATETIME DEFAULT GETDATE(),
     DefaultShiftID INT NULL,
-    ResetPasswordToken VARCHAR(256) NULL,
-    ResetPasswordTokenExpiry DATETIME NULL,
+    OtpCode VARCHAR(10) NULL,
+    OtpExpiry DATETIME NULL
     FOREIGN KEY (RoleID) REFERENCES [Role](RoleID),
     FOREIGN KEY (DefaultShiftID) REFERENCES [WorkShift](ShiftID)
 );
@@ -58,8 +58,12 @@ CREATE TABLE [Customer] (
     FullName NVARCHAR(100) NOT NULL,
     Phone VARCHAR(15) NOT NULL,
     Email VARCHAR(100) NULL,
+    PasswordHash VARCHAR(255) NOT NULL, 
     LoyaltyPoints INT DEFAULT 0,
     CreatedAt DATETIME DEFAULT GETDATE(),
+    OtpCode VARCHAR(10) NULL,
+    OtpExpiry DATETIME NULL,
+    IsEmailVerified BIT NOT NULL DEFAULT 0, 
     FOREIGN KEY (TierID) REFERENCES [MembershipTier](TierID)
 );
 
@@ -572,30 +576,74 @@ INSERT INTO [CustomerAutomationRule] (RuleID, RuleName, EventType, ActionPayload
 SET IDENTITY_INSERT [CustomerAutomationRule] OFF;
 
 SET IDENTITY_INSERT [Account] ON;
-INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, ResetPasswordToken, ResetPasswordTokenExpiry) VALUES (1, 1, N'admin_tong', N'hash1', N'Nguyễn Quản Trị', N'0900000001', N'admin@karaoke.com', '2026-06-27 21:58:47', NULL, NULL, NULL);
-INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, ResetPasswordToken, ResetPasswordTokenExpiry) VALUES (2, 2, N'quanly_hung', N'$2a$11$CjOg29A9Gm7.e/1W67beVOUlQOqmQpos88YYtFi7p3RhTwAFRrXy6', N'Trần Hùng (Quản Lý)', N'0900000002', N'hung@karaoke.com', '2026-06-27 21:58:47', NULL, NULL, NULL);
-INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, ResetPasswordToken, ResetPasswordTokenExpiry) VALUES (3, 3, N'letan_lan', N'hash3', N'Lê Thị Lan', N'0900000003', N'lan@karaoke.com', '2026-06-27 21:58:47', 1, NULL, NULL);
-INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, ResetPasswordToken, ResetPasswordTokenExpiry) VALUES (4, 3, N'letan_mai', N'hash4', N'Phạm Mai', N'0900000004', N'mai@karaoke.com', '2026-06-27 21:58:47', 2, NULL, NULL);
-INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, ResetPasswordToken, ResetPasswordTokenExpiry) VALUES (9, 3, N'servicestaff_c', N'123456', N'Ho�ng Anh Em', N'0922334455', N'hoanganhe@gmail.com', '2026-07-21 16:03:17', 3, NULL, NULL);
-INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, ResetPasswordToken, ResetPasswordTokenExpiry) VALUES (11, 7, N'service1', N'$2a$11$HVndyctqKCNvh4i.ViA3K.BL3A1LGNTOT9x4NK5gP7GPodRnUHUsi', N'Nguyễn Phục Vụ 1', N'0912345601', N'service1@karaoke.com', '2026-07-22 15:47:51', 1, NULL, NULL);
-INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, ResetPasswordToken, ResetPasswordTokenExpiry) VALUES (12, 7, N'service2', N'$2a$11$V3ktyWiSuJelX/m6bTDLVOT5q1kcy4lNE3UE3vlnd9zP8hXbtDU2C', N'Trần Phục Vụ 2', N'0912345602', N'service2@karaoke.com', '2026-07-22 15:47:51', 2, NULL, NULL);
-INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, ResetPasswordToken, ResetPasswordTokenExpiry) VALUES (13, 7, N'service3', N'$2a$11$XejQsKYIfIpXWWCnydOAEuklMK5pCDt6ZeXUEYQ63/UDhdAxCvE/S', N'Lê Phục Vụ 3', N'0912345603', N'service3@karaoke.com', '2026-07-22 15:47:51', 3, NULL, NULL);
-INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, ResetPasswordToken, ResetPasswordTokenExpiry) VALUES (14, 7, N'service4', N'hash1', N'Phạm Phục Vụ 4', N'0912345604', N'service4@karaoke.com', '2026-07-22 15:47:51', 1, NULL, NULL);
+
+INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
+VALUES (1, 1, 'admin_tong', '123456', N'Nguyễn Quản Trị', '0900000001', 'admin@karaoke.com', '2026-06-27 21:58:47', NULL, NULL, NULL);
+
+INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
+VALUES (2, 2, 'quanly_hung', '123456', N'Trần Hùng (Quản Lý)', '0900000002', 'hung@karaoke.com', '2026-06-27 21:58:47', NULL, NULL, NULL);
+
+INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
+VALUES (3, 3, 'letan_lan', '123456', N'Lê Thị Lan', '0900000003', 'lan@karaoke.com', '2026-06-27 21:58:47', 1, NULL, NULL);
+
+INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
+VALUES (4, 3, 'letan_mai', '123456', N'Phạm Mai', '0900000004', 'mai@karaoke.com', '2026-06-27 21:58:47', 2, NULL, NULL);
+
+INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
+VALUES (9, 3, 'servicestaff_c', '123456', N'Hoàng Anh Em', '0922334455', 'hoanganhe@gmail.com', '2026-07-21 16:03:17', 3, NULL, NULL);
+
+INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
+VALUES (11, 7, 'service1', '123456', N'Nguyễn Phục Vụ 1', '0912345601', 'service1@karaoke.com', '2026-07-22 15:47:51', 1, NULL, NULL);
+
+INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
+VALUES (12, 7, 'service2', '123456', N'Trần Phục Vụ 2', '0912345602', 'service2@karaoke.com', '2026-07-22 15:47:51', 2, NULL, NULL);
+
+INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
+VALUES (13, 7, 'service3', '123456', N'Lê Phục Vụ 3', '0912345603', 'service3@karaoke.com', '2026-07-22 15:47:51', 3, NULL, NULL);
+
+INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
+VALUES (14, 7, 'service4', '123456', N'Phạm Phục Vụ 4', '0912345604', 'service4@karaoke.com', '2026-07-22 15:47:51', 1, NULL, NULL);
+
 SET IDENTITY_INSERT [Account] OFF;
 
 SET IDENTITY_INSERT [Customer] ON;
-INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, LoyaltyPoints, CreatedAt) VALUES (1, 5, N'Lê Minh Tuấn (VIP)', N'0911111111', N'tuanvip@gmail.com', 16500, '2026-06-27 21:58:47');
-INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, LoyaltyPoints, CreatedAt) VALUES (2, 4, N'Nguyễn Việt Hoàng', N'0922222222', N'hoangnv@gmail.com', 8200, '2026-06-27 21:58:47');
-INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, LoyaltyPoints, CreatedAt) VALUES (3, 3, N'Trần Tiến Dũng', N'0933333333', N'dungtt@gmail.com', 3500, '2026-06-27 21:58:47');
-INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, LoyaltyPoints, CreatedAt) VALUES (4, 2, N'Phạm Thu Thủy', N'0944444444', N'thuypham@gmail.com', 1200, '2026-06-27 21:58:47');
-INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, LoyaltyPoints, CreatedAt) VALUES (5, 1, N'Đinh Thanh Hà', N'0955555555', N'hadinh@gmail.com', 150, '2026-06-27 21:58:47');
-INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, LoyaltyPoints, CreatedAt) VALUES (6, 1, N'Kh�ch V�ng Lai', N'0000000000', NULL, 0, '2026-06-27 21:58:47');
-INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, LoyaltyPoints, CreatedAt) VALUES (7, 5, N'Lê Minh Tuấn (VIP)', N'0911111111', N'tuanvip@gmail.com', 16500, '2026-07-22 19:45:15');
-INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, LoyaltyPoints, CreatedAt) VALUES (8, 4, N'Nguyễn Việt Hoàng', N'0922222222', N'hoangnv@gmail.com', 8200, '2026-07-22 19:45:15');
-INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, LoyaltyPoints, CreatedAt) VALUES (9, 3, N'Trần Tiến Dũng', N'0933333333', N'dungtt@gmail.com', 3500, '2026-07-22 19:45:15');
-INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, LoyaltyPoints, CreatedAt) VALUES (10, 2, N'Phạm Thu Thủy', N'0944444444', N'thuypham@gmail.com', 1200, '2026-07-22 19:45:15');
-INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, LoyaltyPoints, CreatedAt) VALUES (11, 1, N'Đinh Thanh Hà', N'0955555555', N'hadinh@gmail.com', 150, '2026-07-22 19:45:15');
-INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, LoyaltyPoints, CreatedAt) VALUES (12, 1, N'Kh�ch V�ng Lai', N'0000000000', NULL, 0, '2026-07-22 19:45:15');
+
+INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, PasswordHash, LoyaltyPoints, CreatedAt, OtpCode, OtpExpiry, IsEmailVerified) 
+VALUES (1, 5, N'Lê Minh Tuấn (VIP)', '0911111111', 'tuanvip@gmail.com', '123456', 16500, '2026-06-27 21:58:47', NULL, NULL, 1);
+
+INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, PasswordHash, LoyaltyPoints, CreatedAt, OtpCode, OtpExpiry, IsEmailVerified) 
+VALUES (2, 4, N'Nguyễn Việt Hoàng', '0922222222', 'hoangnv@gmail.com', '123456', 8200, '2026-06-27 21:58:47', NULL, NULL, 1);
+
+INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, PasswordHash, LoyaltyPoints, CreatedAt, OtpCode, OtpExpiry, IsEmailVerified) 
+VALUES (3, 3, N'Trần Tiến Dũng', '0933333333', 'dungtt@gmail.com', '123456', 3500, '2026-06-27 21:58:47', NULL, NULL, 1);
+
+INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, PasswordHash, LoyaltyPoints, CreatedAt, OtpCode, OtpExpiry, IsEmailVerified) 
+VALUES (4, 2, N'Phạm Thu Thủy', '0944444444', 'thuypham@gmail.com', '123456', 1200, '2026-06-27 21:58:47', NULL, NULL, 1);
+
+INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, PasswordHash, LoyaltyPoints, CreatedAt, OtpCode, OtpExpiry, IsEmailVerified) 
+VALUES (5, 1, N'Đinh Thanh Hà', '0955555555', 'hadinh@gmail.com', '123456', 150, '2026-06-27 21:58:47', NULL, NULL, 1);
+
+INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, PasswordHash, LoyaltyPoints, CreatedAt, OtpCode, OtpExpiry, IsEmailVerified) 
+VALUES (6, 1, N'Khách Vãng Lai', '0000000000', NULL, '123456', 0, '2026-06-27 21:58:47', NULL, NULL, 0);
+
+INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, PasswordHash, LoyaltyPoints, CreatedAt, OtpCode, OtpExpiry, IsEmailVerified) 
+VALUES (7, 5, N'Lê Minh Tuấn (VIP)', '0911111111', 'tuanvip@gmail.com', '123456', 16500, '2026-07-22 19:45:15', NULL, NULL, 1);
+
+INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, PasswordHash, LoyaltyPoints, CreatedAt, OtpCode, OtpExpiry, IsEmailVerified) 
+VALUES (8, 4, N'Nguyễn Việt Hoàng', '0922222222', 'hoangnv@gmail.com', '123456', 8200, '2026-07-22 19:45:15', NULL, NULL, 1);
+
+INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, PasswordHash, LoyaltyPoints, CreatedAt, OtpCode, OtpExpiry, IsEmailVerified) 
+VALUES (9, 3, N'Trần Tiến Dũng', '0933333333', 'dungtt@gmail.com', '123456', 3500, '2026-07-22 19:45:15', NULL, NULL, 1);
+
+INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, PasswordHash, LoyaltyPoints, CreatedAt, OtpCode, OtpExpiry, IsEmailVerified) 
+VALUES (10, 2, N'Phạm Thu Thủy', '0944444444', 'thuypham@gmail.com', '123456', 1200, '2026-07-22 19:45:15', NULL, NULL, 1);
+
+INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, PasswordHash, LoyaltyPoints, CreatedAt, OtpCode, OtpExpiry, IsEmailVerified) 
+VALUES (11, 1, N'Đinh Thanh Hà', '0955555555', 'hadinh@gmail.com', '123456', 150, '2026-07-22 19:45:15', NULL, NULL, 1);
+
+INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, PasswordHash, LoyaltyPoints, CreatedAt, OtpCode, OtpExpiry, IsEmailVerified) 
+VALUES (12, 1, N'Khách Vãng Lai', '0000000000', NULL, '123456', 0, '2026-07-22 19:45:15', NULL, NULL, 0);
+
 SET IDENTITY_INSERT [Customer] OFF;
 
 SET IDENTITY_INSERT [Room] ON;
