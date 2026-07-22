@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -63,6 +63,8 @@ public partial class KaraokeManagementDbContext : DbContext
     public virtual DbSet<ServiceItem> ServiceItems { get; set; }
 
     public virtual DbSet<Supplier> Suppliers { get; set; }
+
+    public virtual DbSet<RoomTransferHistory> RoomTransferHistories { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -559,6 +561,46 @@ public partial class KaraokeManagementDbContext : DbContext
                   .WithMany()
                   .HasForeignKey(e => e.RoomId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<RoomTransferHistory>(entity =>
+        {
+            entity.HasKey(e => e.TransferId);
+
+            entity.ToTable("RoomTransferHistory");
+
+            entity.Property(e => e.TransferId).HasColumnName("TransferID");
+            entity.Property(e => e.BookingId).HasColumnName("BookingID");
+            entity.Property(e => e.FromRoomId).HasColumnName("FromRoomID");
+            entity.Property(e => e.ToRoomId).HasColumnName("ToRoomID");
+            entity.Property(e => e.ProcessedById).HasColumnName("ProcessedByID");
+
+            entity.Property(e => e.TransferredAt)
+                .HasColumnType("datetime")
+                .HasDefaultValueSql("(getdate())");
+
+            entity.Property(e => e.Reason)
+                .HasMaxLength(255);
+
+            entity.HasOne(d => d.Booking)
+                .WithMany(p => p.RoomTransferHistories)
+                .HasForeignKey(d => d.BookingId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.FromRoom)
+                .WithMany()
+                .HasForeignKey(d => d.FromRoomId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.ToRoom)
+                .WithMany()
+                .HasForeignKey(d => d.ToRoomId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.ProcessedBy)
+                .WithMany()
+                .HasForeignKey(d => d.ProcessedById)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         OnModelCreatingPartial(modelBuilder);

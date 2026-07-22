@@ -2,518 +2,559 @@
 
 @model KaraokeManagement.ViewModel.RoomDetailPosViewModel
 @{
-	Layout = null;
-	var checkInTimeISO = Model.CheckInTime?.ToString("yyyy-MM-ddTHH:mm:ss.fff");
+    Layout = null;
+    var checkInTimeISO = Model.CheckInTime?.ToString("yyyy-MM-ddTHH:mm:ss.fff");
 }
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>POS - @Model.RoomName</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>POS - @Model.RoomName</title>
 
-	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-	<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-	<link rel="stylesheet" href="~/css/DetailRoom.css" asp-append-version="true" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/DetailRoom.css" asp-append-version="true" />
 </head>
 <body>
-	<div class="pos-container">
-		<aside class="billing-sidebar">
-			<div class="sidebar-header">
-				<a href="/Receptionist/Index" class="btn-back">
-					<i class="fa-solid fa-chevron-left"></i>
-					Quay lại
-				</a>
-				<div class="header-title-wrapper">
-					<div class="brand-title">Minh Tuấn Karaoke</div>
-					<div class="room-badge">
-						<span class="dot"></span>
-						@Model.RoomName
-					</div>
-				</div>
-			</div>
+    <div class="pos-container">
+        <aside class="billing-sidebar">
+            <div class="sidebar-header">
+                <a href="/Receptionist/Index" class="btn-back">
+                    <i class="fa-solid fa-chevron-left"></i>
+                    Quay lại
+                </a>
+                <div class="header-title-wrapper">
+                    <div class="brand-title">Minh Tuấn Karaoke</div>
+                    <div class="room-badge">
+                        <span class="dot"></span>
+                        @Model.RoomName
+                    </div>
+                </div>
+            </div>
 
-			<div class="room-info-card">
-				<div class="room-card-header">
-					<div>
-						<div class="room-label-name">@Model.RoomName</div>
-						<div style="font-size: 0.75rem; color: var(--text-gray); margin-top: 2px;">Trạng thái: Đang sử dụng</div>
-					</div>
-					<span class="room-label-type">@Model.RoomTypeName</span>
-				</div>
+            <div class="room-info-card">
+                <div class="room-card-header">
+                    <div>
+                        <div class="room-label-name">@Model.RoomName</div>
+                        <div style="font-size: 0.75rem; color: var(--text-gray); margin-top: 2px;">Trạng thái: Đang sử dụng</div>
+                    </div>
+                    <span class="room-label-type">@Model.RoomTypeName</span>
+                </div>
 
-				<div class="room-metrics">
-					<div class="metric-item">
-						<span class="metric-label">Bắt đầu hát</span>
-						<span class="metric-value">@(Model.CheckInTime?.ToString("HH:mm - dd/MM/yyyy") ?? "--:--")</span>
-					</div>
-					<div class="metric-item">
-						<span class="metric-label">Thời gian đã hát</span>
-						<span class="metric-value time-singing" id="singing-timer">00:00:00</span>
-					</div>
-					<div class="metric-item">
-						<span class="metric-label">Đơn giá phòng</span>
-						<span class="metric-value">@(Model.PricePerHour.ToString("N0")) đ/giờ</span>
-					</div>
-					<div class="metric-item">
-						<span class="metric-label">Mã hóa đơn</span>
-						<span class="metric-value">#@Model.InvoiceId</span>
-					</div>
-				</div>
-			</div>
+                <div class="room-metrics">
+                    <div class="metric-item">
+                        <span class="metric-label">Bắt đầu hát</span>
+                        <span class="metric-value">@(Model.CheckInTime?.ToString("HH:mm - dd/MM/yyyy") ?? "--:--")</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Thời gian đã hát</span>
+                        <span class="metric-value time-singing" id="singing-timer">00:00:00</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Đơn giá phòng</span>
+                        <span class="metric-value">@(Model.PricePerHour.ToString("N0")) đ/giờ</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Mã hóa đơn</span>
+                        <span class="metric-value">#@Model.InvoiceId</span>
+                    </div>
+                </div>
+            </div>
 
-			<div class="invoice-items-container" id="invoice-items-list">
-				@if (Model.OrderItems.Any())
-				{
-					@foreach (var item in Model.OrderItems)
-					{
-						<div class="invoice-item-row" data-id="@item.InvoiceDetailId" data-service-id="@item.ServiceId">
-							<div class="invoice-item-meta">
-								<span class="invoice-item-name" title="@item.ServiceName">@item.ServiceName</span>
-								<button type="button" class="btn-remove-item" onclick="removeItem(@item.InvoiceDetailId)" aria-label="Xóa món">
-									<i class="fa-regular fa-trash-can"></i>
-								</button>
-							</div>
-							<div class="invoice-item-actions">
-								<div class="quantity-controller">
-									<button type="button" class="btn-qty minus" onclick="adjustQty(@item.InvoiceDetailId, @(item.Quantity - 1))">
-										<i class="fa-solid fa-minus"></i>
-									</button>
-									<span class="qty-val">@item.Quantity</span>
-									<button type="button" class="btn-qty plus" onclick="adjustQty(@item.InvoiceDetailId, @(item.Quantity + 1))">
-										<i class="fa-solid fa-plus"></i>
-									</button>
-								</div>
-								<div style="text-align: right">
-									<div class="invoice-item-price-unit">@(item.UnitPrice.ToString("N0")) đ/@(item.Unit ?? "món")</div>
-									<div class="item-subtotal-price" data-raw-subtotal="@(item.TotalPrice)">@(item.TotalPrice.ToString("N0")) đ</div>
-								</div>
-							</div>
-						</div>
-					}
-				}
-				else
-				{
-					<div class="empty-invoice-state">
-						<i class="fa-solid fa-receipt"></i>
-						<p>Chưa có dịch vụ nào được gọi</p>
-						<p style="font-size: 0.75rem; margin-top: 4px; color: var(--text-muted);">Chọn các món ở cột bên phải để thêm</p>
-					</div>
-				}
-			</div>
+            <div class="invoice-items-container" id="invoice-items-list">
+                @if (Model.OrderItems.Any())
+                {
+                    @foreach (var item in Model.OrderItems)
+                    {
+                        <div class="invoice-item-row" data-id="@item.InvoiceDetailId" data-service-id="@item.ServiceId">
+                            <div class="invoice-item-meta">
+                                <span class="invoice-item-name" title="@item.ServiceName">@item.ServiceName</span>
+                                <button type="button" class="btn-remove-item" onclick="removeItem(@item.InvoiceDetailId)" aria-label="Xóa món">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </div>
+                            <div class="invoice-item-actions">
+                                <div class="quantity-controller">
+                                    <button type="button" class="btn-qty minus" onclick="adjustQty(@item.InvoiceDetailId, @(item.Quantity - 1))">
+                                        <i class="fa-solid fa-minus"></i>
+                                    </button>
+                                    <span class="qty-val">@item.Quantity</span>
+                                    <button type="button" class="btn-qty plus" onclick="adjustQty(@item.InvoiceDetailId, @(item.Quantity + 1))">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </div>
+                                <div style="text-align: right">
+                                    <div class="invoice-item-price-unit">@(item.UnitPrice.ToString("N0")) đ/@(item.Unit ?? "món")</div>
+                                    <div class="item-subtotal-price" data-raw-subtotal="@(item.TotalPrice)">@(item.TotalPrice.ToString("N0")) đ</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-invoice-state">
+                        <i class="fa-solid fa-receipt"></i>
+                        <p>Chưa có dịch vụ nào được gọi</p>
+                        <p style="font-size: 0.75rem; margin-top: 4px; color: var(--text-muted);">Chọn các món ở cột bên phải để thêm</p>
+                    </div>
+                }
+            </div>
 
-			<div class="billing-totals-section">
-				<div class="summary-row">
-					<span>Tiền phòng tạm tính</span>
-					<span id="room-charge-display" data-raw-price="@Model.PricePerHour">0 đ</span>
-				</div>
-				<div class="summary-row">
-					<span>Tiền dịch vụ</span>
-					<span id="service-charge-display" data-raw-val="@Model.OrderItems.Sum(o => o.TotalPrice)">@(Model.OrderItems.Sum(o => o.TotalPrice).ToString("N0")) đ</span>
-				</div>
-				<div class="summary-row">
-					<span>Khuyến mãi / Giảm giá</span>
-					<span>0 đ</span>
-				</div>
-				<div class="summary-row grand-total">
-					<span>Tổng cộng tạm tính</span>
-					<span class="price-tag" id="grand-total-display">0 đ</span>
-				</div>
-			</div>
+            <div class="billing-totals-section">
+                <div class="summary-row">
+                    <span>Tiền phòng tạm tính</span>
+                    <span id="room-charge-display" data-raw-price="@Model.PricePerHour">0 đ</span>
+                </div>
+                <div class="summary-row">
+                    <span>Tiền dịch vụ</span>
+                    <span id="service-charge-display" data-raw-val="@Model.OrderItems.Sum(o => o.TotalPrice)">@(Model.OrderItems.Sum(o => o.TotalPrice).ToString("N0")) đ</span>
+                </div>
+                <div class="summary-row">
+                    <span>Khuyến mãi / Giảm giá</span>
+                    <span>0 đ</span>
+                </div>
+                <div class="summary-row grand-total">
+                    <span>Tổng cộng tạm tính</span>
+                    <span class="price-tag" id="grand-total-display">0 đ</span>
+                </div>
+            </div>
 
-			<div class="billing-actions-grid">
-				<button type="button" class="btn-action btn-transfer" onclick="openTransferModal()" style="grid-column: span 2;">
-					<i class="fa-solid fa-right-left"></i>
-					Đổi phòng
-				</button>
-				<button type="button" class="btn-action btn-pay" onclick="processPayment()">
-					<i class="fa-solid fa-credit-card"></i>
-					THANH TOÁN (XUẤT BILL)
-				</button>
-			</div>
-		</aside>
+            <div class="billing-actions-grid">
+                <button type="button" class="btn-action btn-transfer" onclick="openTransferModal()" style="grid-column: span 2;">
+                    <i class="fa-solid fa-right-left"></i>
+                    Đổi phòng
+                </button>
+                <button type="button" class="btn-action btn-pay" onclick="processPayment()">
+                    <i class="fa-solid fa-credit-card"></i>
+                    THANH TOÁN (XUẤT BILL)
+                </button>
+            </div>
+        </aside>
 
-		<main class="menu-main-panel">
-			<div class="menu-top-bar">
-				<div class="search-input-wrapper">
-					<i class="fa-solid fa-magnifying-glass"></i>
-					<input type="text" class="menu-search-input" id="menu-search" placeholder="Tìm kiếm tên nước uống, đồ ăn, trái cây..." autocomplete="off" />
-				</div>
-			</div>
+        <main class="menu-main-panel">
+            <div class="menu-top-bar">
+                <div class="search-input-wrapper">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" class="menu-search-input" id="menu-search" placeholder="Tìm kiếm tên nước uống, đồ ăn, trái cây..." autocomplete="off" />
+                </div>
+            </div>
 
-			<div class="category-tabs-container" id="category-tabs">
-				<div class="tab-item active" data-category-id="all">Tất cả</div>
-				@foreach (var cat in Model.Categories)
-				{
-					<div class="tab-item" data-category-id="@cat.CategoryId">@cat.CategoryName</div>
-				}
-			</div>
+            <div class="category-tabs-container" id="category-tabs">
+                <div class="tab-item active" data-category-id="all">Tất cả</div>
+                @foreach (var cat in Model.Categories)
+                {
+                    <div class="tab-item" data-category-id="@cat.CategoryId">@cat.CategoryName</div>
+                }
+            </div>
 
-			<div class="products-grid-scroll">
-				<div class="products-grid" id="products-list">
-					@foreach (var prod in Model.ProductItems)
-					{
-						var isOutOfStock = prod.StockQuantity <= 0;
-						<div class="product-card @(isOutOfStock ? "disabled" : "")" data-category="@prod.CategoryId" data-name="@prod.ServiceName.ToLower()">
-							<div class="product-image-container">
-								@{
-									string imgPath = "/img/Reception_img/";
-									string prodName = prod.ServiceName;
-									string imgFile = "";
-									if (prodName.Contains("Heineken"))
-									{
-										imgFile = "bia_heineken.jpg";
-									}
-									else if (prodName.Contains("Tiger"))
-									{
-										imgFile = "bia_tiger.jpg";
-									}
-									else if (prodName.Contains("Chivas 12"))
-									{
-										imgFile = "chivas12.jpg";
-									}
-									else if (prodName.Contains("Aquafina"))
-									{
-										imgFile = "aquafina.jpg";
-									}
-									else if (prodName.Contains("Khô Bò"))
-									{
-										imgFile = "kho_bo.jpg";
-									}
-									else if (prodName.Contains("Trái Cây VIP"))
-									{
-										imgFile = "dia_trai_cay.jpg";
-									}
-									else if (prodName.Contains("Combo Sinh Nhật"))
-									{
-										imgFile = "combo_sinh_nhat.jpg";
-									}
-									else
-									{
-										imgFile = "dia_trai_cay.jpg";
-									}
-								}
-								<img src="@(imgPath + imgFile)" alt="@prod.ServiceName" />
-							</div>
-							<div style="border-top: 1px solid #f0eae0;"></div>
-							<div class="product-info">
-								<div class="product-name" title="@prod.ServiceName">@prod.ServiceName</div>
-								<div class="product-stock" style="font-size: 0.75rem; color: @(isOutOfStock ? "#DC2626" : "#059669"); margin-top: 2px; font-weight: 500;">
-									@(isOutOfStock ? "Hết hàng" : $"Còn: {prod.StockQuantity} {prod.Unit}")
-								</div>
-								<div class="product-price-row">
-									<span class="product-price">@(prod.SellingPrice.ToString("N0")) đ</span>
-									<button type="button" class="btn-add-menu" onclick="addService(@prod.ServiceId)" aria-label="Thêm vào hóa đơn">
-										<i class="fa-solid fa-plus"></i>
-									</button>
-								</div>
-							</div>
-						</div>
-					}
-				</div>
-			</div>
-		</main>
-	</div>
-
-
-	<div class="modal-overlay" id="transfer-modal">
-		<div class="modal-box">
-			<div class="modal-header">
-				<h3 class="modal-title">Chuyển / Đổi phòng hát</h3>
-				<button type="button" class="btn-modal-close" onclick="closeTransferModal()">&times;</button>
-			</div>
-			<div class="modal-body">
-				<div class="form-group">
-					<label class="form-label">Phòng hiện tại</label>
-					<input type="text" class="form-select" value="@Model.RoomName (@Model.RoomTypeName) - Đang sử dụng" disabled style="opacity: 0.7" />
-				</div>
-				<div class="form-group">
-					<label class="form-label" for="new-room-select">Chọn phòng muốn chuyển đến</label>
-					<select class="form-select" id="new-room-select">
-						@if (Model.AvailableRooms.Any())
-						{
-							@foreach (var r in Model.AvailableRooms)
-							{
-								<option value="@r.RoomId">@r.RoomName - @r.RoomTypeName (@(r.PricePerHour.ToString("N0")) đ/giờ)</option>
-							}
-						}
-						else
-						{
-							<option value="">Không có phòng trống nào sẵn sàng</option>
-						}
-					</select>
-				</div>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn-action btn-transfer" onclick="closeTransferModal()" style="margin: 0; padding: 10px 20px;">Hủy bỏ</button>
-				<button type="button" class="btn-action btn-pay" onclick="submitTransfer()" style="margin: 0; padding: 10px 20px; grid-column: auto; width: auto;">Xác nhận đổi</button>
-			</div>
-		</div>
-	</div>
+            <div class="products-grid-scroll">
+                <div class="products-grid" id="products-list">
+                    @foreach (var prod in Model.ProductItems)
+                    {
+                        var isOutOfStock = prod.StockQuantity <= 0;
+                        <div class="product-card @(isOutOfStock ? "disabled" : "")" data-category="@prod.CategoryId" data-name="@prod.ServiceName.ToLower()">
+                            <div class="product-image-container">
+                                @{
+                                    string imgPath = "/img/Reception_img/";
+                                    string prodName = prod.ServiceName;
+                                    string imgFile = "";
+                                    if (prodName.Contains("Heineken"))
+                                    {
+                                        imgFile = "bia_heineken.jpg";
+                                    }
+                                    else if (prodName.Contains("Tiger"))
+                                    {
+                                        imgFile = "bia_tiger.jpg";
+                                    }
+                                    else if (prodName.Contains("Chivas 12"))
+                                    {
+                                        imgFile = "chivas12.jpg";
+                                    }
+                                    else if (prodName.Contains("Aquafina"))
+                                    {
+                                        imgFile = "aquafina.jpg";
+                                    }
+                                    else if (prodName.Contains("Khô Bò"))
+                                    {
+                                        imgFile = "kho_bo.jpg";
+                                    }
+                                    else if (prodName.Contains("Trái Cây VIP"))
+                                    {
+                                        imgFile = "dia_trai_cay.jpg";
+                                    }
+                                    else if (prodName.Contains("Combo Sinh Nhật"))
+                                    {
+                                        imgFile = "combo_sinh_nhat.jpg";
+                                    }
+                                    else
+                                    {
+                                        imgFile = "dia_trai_cay.jpg";
+                                    }
+                                }
+                                
+                                <img src="@(imgPath + imgFile)" alt="@prod.ServiceName" />
+                            </div>
+                            <div style="border-top: 1px solid #f0eae0;"></div>
+                            <div class="product-info">
+                                <div class="product-name" title="@prod.ServiceName">@prod.ServiceName</div>
+                                <div class="product-stock" style="font-size: 0.75rem; color: @(isOutOfStock ? "#DC2626" : "#059669"); margin-top: 2px; font-weight: 500;">
+                                    @(isOutOfStock ? "Hết hàng" : $"Còn: {prod.StockQuantity} {prod.Unit}")
+                                </div>
+                                <div class="product-price-row">
+                                    <span class="product-price">@(prod.SellingPrice.ToString("N0")) đ</span>
+                                    <button type="button" class="btn-add-menu" onclick="addService(@prod.ServiceId)" aria-label="Thêm vào hóa đơn">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </main>
+    </div>
 
 
-	<script>
-		const checkInTimeISO = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(checkInTimeISO));
+    <div class="modal-overlay" id="transfer-modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">Chuyển / Đổi phòng hát</h3>
+                <button type="button" class="btn-modal-close" onclick="closeTransferModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Phòng hiện tại -->
+                <div class="form-group mb-3">
+                    <label class="form-label">Phòng hiện tại</label>
+                    <input type="text" class="form-select" value="@Model.RoomName (@Model.RoomTypeName) - Đang sử dụng" disabled style="opacity: 0.7" />
+                </div>
 
-		const roomId = @Model.RoomId;
-		const invoiceId = @(Model.InvoiceId ?? 0);
+                <!-- Chọn phòng mới -->
+                <div class="form-group mb-3">
+                    <label class="form-label" for="new-room-select">Chọn phòng muốn chuyển đến</label>
+                    <select class="form-select" id="new-room-select">
+                        @if (Model.AvailableRooms != null && Model.AvailableRooms.Any())
+                        {
+                            @foreach (var r in Model.AvailableRooms)
+                            {
+                                <option value="@r.RoomId">@r.RoomName - @r.RoomTypeName (@(r.PricePerHour.ToString("N0")) đ/giờ)</option>
+                            }
+                        }
+                        else
+                        {
+                            <option value="">Không có phòng trống nào sẵn sàng</option>
+                        }
+                    </select>
+                </div>
 
-		const pricePerHour =
-			@Html.Raw(Model.PricePerHour.ToString(CultureInfo.InvariantCulture));
+                <!-- Trạng thái phòng cũ sau khi đổi -->
+                <div class="form-group mb-3">
+                    <label class="form-label" for="old-room-status-select">Trạng thái phòng cũ sau khi đổi</label>
+                    <select class="form-select" id="old-room-status-select">
+                        <option value="Available">Trống (Sẵn sàng đón khách mới)</option>
+                        <option value="Maintenance">Bảo trì (Tạo nhật ký sự cố)</option>
+                    </select>
+                </div>
 
-		let serviceSubtotal =
-			@Html.Raw(Model.OrderItems.Sum(o => o.TotalPrice).ToString(CultureInfo.InvariantCulture));
+                <!-- Lý do đổi phòng -->
+                <div class="form-group mb-3">
+                    <label class="form-label" for="transfer-reason">Lý do đổi phòng</label>
+                    <textarea class="form-control" id="transfer-reason" rows="2" style="resize: vertical;"></textarea>
+                </div>
 
-		let roomCharge = 0;
-		let grandTotal = 0;
-
-		console.log({
-			checkInTimeISO,
-			roomId,
-			invoiceId,
-			pricePerHour,
-			serviceSubtotal
-		});
-
-		document.addEventListener("DOMContentLoaded", () => {
-			console.log("DOM Loaded");
-
-			if (checkInTimeISO) {
-				initSingingTimer();
-			}
-
-			initCategoryFilter();
-			initSearchFilter();
-		});
-
-		// Đếm thời gian sử dụng phòng và tính tiền phòng
-		function initSingingTimer() {
-			const checkInDate = new Date(checkInTimeISO);
-			const timerEl = document.getElementById('singing-timer');
-			const roomChargeEl = document.getElementById('room-charge-display');
-			const grandTotalEl = document.getElementById('grand-total-display');
-
-			const nowOnLoad = new Date();
-			const initialDiffMs = nowOnLoad - checkInDate;
-			if (initialDiffMs >= 0) {
-				const hoursFloat = initialDiffMs / (1000 * 60 * 60);
-				roomCharge = Math.round(hoursFloat * pricePerHour);
-				roomChargeEl.textContent = formatCurrency(roomCharge) + " đ";
-
-				grandTotal = roomCharge + serviceSubtotal;
-				grandTotalEl.textContent = formatCurrency(grandTotal) + " đ";
-			} else {
-				roomChargeEl.textContent = "0 đ";
-				grandTotal = serviceSubtotal;
-				grandTotalEl.textContent = formatCurrency(grandTotal) + " đ";
-			}
-
-			function updateTime() {
-				const now = new Date();
-				const diffMs = now - checkInDate;
-
-				if (diffMs < 0) {
-					timerEl.textContent = "00:00:00";
-					return;
-				}
-
-				const diffSecs = Math.floor(diffMs / 1000);
-				const hrs = Math.floor(diffSecs / 3600);
-				const mins = Math.floor((diffSecs % 3600) / 60);
-				const secs = diffSecs % 60;
-
-				const formattedTime = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-				timerEl.textContent = formattedTime;
-			}
-
-			updateTime();
-			setInterval(updateTime, 1000);
-		}
-		// Chức năng lọc dịch vụ theo danh mục
-		function initCategoryFilter() {
-			const tabs = document.querySelectorAll('#category-tabs .tab-item');
-			const cards = document.querySelectorAll('#products-list .product-card');
-
-			tabs.forEach(tab => {
-				tab.addEventListener('click', () => {
-					tabs.forEach(t => t.classList.remove('active'));
-					tab.classList.add('active');
-
-					const categoryId = tab.getAttribute('data-category-id');
-
-					cards.forEach(card => {
-						const cardCategory = card.getAttribute('data-category');
-						if (categoryId === 'all' || cardCategory === categoryId) {
-							card.style.display = 'flex';
-						} else {
-							card.style.display = 'none';
-						}
-					});
-
-					document.getElementById('menu-search').value = '';
-				});
-			});
-		}
-
-		// Chức năng tìm kiếm dịch vụ
-		function initSearchFilter() {
-			const searchInput = document.getElementById('menu-search');
-
-			searchInput.addEventListener('input', () => {
-				const query = searchInput.value.trim().toLowerCase();
-				const cards = document.querySelectorAll('#products-list .product-card');
-				const activeTab = document.querySelector('#category-tabs .tab-item.active');
-				const activeCategoryId = activeTab ? activeTab.getAttribute('data-category-id') : 'all';
-
-				cards.forEach(card => {
-					const cardCategory = card.getAttribute('data-category');
-					const name = card.getAttribute('data-name');
-
-					const matchesCategory = (activeCategoryId === 'all' || cardCategory === activeCategoryId);
-					const matchesSearch = name.includes(query);
-
-					if (matchesCategory && matchesSearch) {
-						card.style.display = 'flex';
-					} else {
-						card.style.display = 'none';
-					}
-				});
-			});
-		}
-
-		 // Thêm dịch vụ vào hóa đơn
-		function addService(serviceId) {
-			postData('/Receptionist/AddServiceItem', { roomId: roomId, serviceId: serviceId })
-				.then(res => {
-					if (res.success) {
-						showToast('Thêm sản phẩm thành công', 'success');
-						setTimeout(() => window.location.reload(), 300);
-					} else {
-						showToast(res.message || 'Lỗi khi thêm sản phẩm', 'error');
-					}
-				})
-				.catch(err => {
-					showToast('Lỗi kết nối máy chủ', 'error');
-					console.error(err);
-				});
-		}
-
-		// Cập nhật số lượng dịch vụ trong hóa đơn
-		function adjustQty(detailId, newQty) {
-			if (newQty <= 0) {
-				removeItem(detailId);
-				return;
-			}
-
-			postData('/Receptionist/UpdateServiceItem', { invoiceDetailId: detailId, quantity: newQty })
-				.then(res => {
-					if (res.success) {
-						showToast('Cập nhật số lượng thành công', 'success');
-						setTimeout(() => window.location.reload(), 300);
-					} else {
-						showToast(res.message || 'Không thể cập nhật số lượng', 'error');
-					}
-				})
-				.catch(err => {
-					showToast('Lỗi kết nối máy chủ', 'error');
-					console.error(err);
-				});
-		}
-
-		// Xóa dịch vụ khỏi hóa đơn
-		function removeItem(detailId) {
-			if (!confirm('Bạn có muốn xóa món ăn này khỏi danh sách gọi dịch vụ?')) return;
-
-			postData('/Receptionist/RemoveServiceItem', { invoiceDetailId: detailId })
-				.then(res => {
-					if (res.success) {
-						showToast('Đã xóa món khỏi hóa đơn', 'success');
-						setTimeout(() => window.location.reload(), 300);
-					} else {
-						showToast(res.message || 'Lỗi khi xóa món', 'error');
-					}
-				})
-				.catch(err => {
-					showToast('Lỗi kết nối máy chủ', 'error');
-					console.error(err);
-				});
-		}
-
-		// Xử lý chuyển phòng cho khách
-		function submitTransfer() {
-			const selectEl = document.getElementById('new-room-select');
-			const newRoomId = parseInt(selectEl.value);
-
-			if (!newRoomId) {
-				showToast('Vui lòng chọn phòng trống', 'error');
-				return;
-			}
-
-			postData('/Receptionist/ChangeRoom', { invoiceId: invoiceId, newRoomId: newRoomId })
-				.then(res => {
-					if (res.success) {
-						alert(res.message);
-						window.location.href = `/Receptionist/Detail?roomId=${newRoomId}`;
-					} else {
-						showToast(res.message || 'Lỗi khi chuyển phòng', 'error');
-					}
-				})
-				.catch(err => {
-					showToast('Lỗi kết nối máy chủ', 'error');
-					console.error(err);
-				});
-		}
-
-		// Chuyển đến trang thanh toán hóa đơn
-		function processPayment() {
-			if (invoiceId && invoiceId !== 0) {
-				window.location.href = `/Receptionist/Checkout?invoiceId=${invoiceId}`;
-			} else {
-				showToast('Không tìm thấy hóa đơn hoạt động cho phòng này.', 'error');
-			}
-		}
-
-		function openTransferModal() {
-			document.getElementById('transfer-modal').style.display = 'flex';
-		}
-		function closeTransferModal() {
-			document.getElementById('transfer-modal').style.display = 'none';
-		}
+                <!-- Tên nhân viên thực hiện -->
+                <div class="form-group">
+                    <small class="text-muted">
+                        <strong>Nhân viên thực hiện:</strong> @(User.FindFirst("FullName")?.Value ?? User.Identity?.Name ?? "Nhân viên")
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-action btn-transfer" onclick="closeTransferModal()" style="margin: 0; padding: 10px 20px;">Hủy bỏ</button>
+                <button type="button" class="btn-action btn-pay" onclick="submitTransfer()" style="margin: 0; padding: 10px 20px; grid-column: auto; width: auto;">Xác nhận đổi</button>
+            </div>
+        </div>
+    </div>
 
 
-		function formatCurrency(value) {
-			return new Intl.NumberFormat('vi-VN').format(value);
-		}
+    <script>
+        const checkInTimeISO = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(checkInTimeISO));
 
-		function showToast(message, type = 'success') {
-			const existingToast = document.querySelector('.toast');
-			if (existingToast) existingToast.remove();
+        const roomId = @Model.RoomId;
+        const invoiceId = @(Model.InvoiceId ?? 0);
 
-			const toast = document.createElement('div');
-			toast.className = `toast ${type}`;
-			toast.innerHTML = `
-				<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
-				<span>${message}</span>
-			`;
-			document.body.appendChild(toast);
+        const pricePerHour =
+            @Html.Raw(Model.PricePerHour.ToString(CultureInfo.InvariantCulture));
 
-			setTimeout(() => {
-				toast.style.opacity = '0';
-				toast.style.transition = 'opacity 0.3s ease';
-				setTimeout(() => toast.remove(), 300);
-			}, 2500);
-		}
+        let serviceSubtotal =
+            @Html.Raw(Model.OrderItems.Sum(o => o.TotalPrice).ToString(CultureInfo.InvariantCulture));
 
-		function postData(url = '', data = {}) {
-			return fetch(url, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(data)
-			}).then(response => response.json());
-		}
-	</script>
+        let roomCharge = 0;
+        let grandTotal = 0;
+
+        console.log({
+            checkInTimeISO,
+            roomId,
+            invoiceId,
+            pricePerHour,
+            serviceSubtotal
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log("DOM Loaded");
+
+            if (checkInTimeISO) {
+                initSingingTimer();
+            }
+
+            initCategoryFilter();
+            initSearchFilter();
+        });
+
+        // Đếm thời gian sử dụng phòng và tính tiền phòng
+        function initSingingTimer() {
+            const checkInDate = new Date(checkInTimeISO);
+            const timerEl = document.getElementById('singing-timer');
+            const roomChargeEl = document.getElementById('room-charge-display');
+            const grandTotalEl = document.getElementById('grand-total-display');
+
+            const nowOnLoad = new Date();
+            const initialDiffMs = nowOnLoad - checkInDate;
+            if (initialDiffMs >= 0) {
+                const hoursFloat = initialDiffMs / (1000 * 60 * 60);
+                roomCharge = Math.round(hoursFloat * pricePerHour);
+                roomChargeEl.textContent = formatCurrency(roomCharge) + " đ";
+
+                grandTotal = roomCharge + serviceSubtotal;
+                grandTotalEl.textContent = formatCurrency(grandTotal) + " đ";
+            } else {
+                roomChargeEl.textContent = "0 đ";
+                grandTotal = serviceSubtotal;
+                grandTotalEl.textContent = formatCurrency(grandTotal) + " đ";
+            }
+
+            function updateTime() {
+                const now = new Date();
+                const diffMs = now - checkInDate;
+
+                if (diffMs < 0) {
+                    timerEl.textContent = "00:00:00";
+                    return;
+                }
+
+                const diffSecs = Math.floor(diffMs / 1000);
+                const hrs = Math.floor(diffSecs / 3600);
+                const mins = Math.floor((diffSecs % 3600) / 60);
+                const secs = diffSecs % 60;
+
+                const formattedTime = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                timerEl.textContent = formattedTime;
+            }
+
+            updateTime();
+            setInterval(updateTime, 1000);
+        }
+        // Chức năng lọc dịch vụ theo danh mục
+        function initCategoryFilter() {
+            const tabs = document.querySelectorAll('#category-tabs .tab-item');
+            const cards = document.querySelectorAll('#products-list .product-card');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    const categoryId = tab.getAttribute('data-category-id');
+
+                    cards.forEach(card => {
+                        const cardCategory = card.getAttribute('data-category');
+                        if (categoryId === 'all' || cardCategory === categoryId) {
+                            card.style.display = 'flex';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+
+                    document.getElementById('menu-search').value = '';
+                });
+            });
+        }
+
+        // Chức năng tìm kiếm dịch vụ
+        function initSearchFilter() {
+            const searchInput = document.getElementById('menu-search');
+
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.trim().toLowerCase();
+                const cards = document.querySelectorAll('#products-list .product-card');
+                const activeTab = document.querySelector('#category-tabs .tab-item.active');
+                const activeCategoryId = activeTab ? activeTab.getAttribute('data-category-id') : 'all';
+
+                cards.forEach(card => {
+                    const cardCategory = card.getAttribute('data-category');
+                    const name = card.getAttribute('data-name');
+
+                    const matchesCategory = (activeCategoryId === 'all' || cardCategory === activeCategoryId);
+                    const matchesSearch = name.includes(query);
+
+                    if (matchesCategory && matchesSearch) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+         // Thêm dịch vụ vào hóa đơn
+        function addService(serviceId) {
+            postData('/Receptionist/AddServiceItem', { roomId: roomId, serviceId: serviceId })
+                .then(res => {
+                    if (res.success) {
+                        showToast('Thêm sản phẩm thành công', 'success');
+                        setTimeout(() => window.location.reload(), 300);
+                    } else {
+                        showToast(res.message || 'Lỗi khi thêm sản phẩm', 'error');
+                    }
+                })
+                .catch(err => {
+                    showToast('Lỗi kết nối máy chủ', 'error');
+                    console.error(err);
+                });
+        }
+
+        // Cập nhật số lượng dịch vụ trong hóa đơn
+        function adjustQty(detailId, newQty) {
+            if (newQty <= 0) {
+                removeItem(detailId);
+                return;
+            }
+
+            postData('/Receptionist/UpdateServiceItem', { invoiceDetailId: detailId, quantity: newQty })
+                .then(res => {
+                    if (res.success) {
+                        showToast('Cập nhật số lượng thành công', 'success');
+                        setTimeout(() => window.location.reload(), 300);
+                    } else {
+                        showToast(res.message || 'Không thể cập nhật số lượng', 'error');
+                    }
+                })
+                .catch(err => {
+                    showToast('Lỗi kết nối máy chủ', 'error');
+                    console.error(err);
+                });
+        }
+
+        // Xóa dịch vụ khỏi hóa đơn
+        function removeItem(detailId) {
+            if (!confirm('Bạn có muốn xóa món ăn này khỏi danh sách gọi dịch vụ?')) return;
+
+            postData('/Receptionist/RemoveServiceItem', { invoiceDetailId: detailId })
+                .then(res => {
+                    if (res.success) {
+                        showToast('Đã xóa món khỏi hóa đơn', 'success');
+                        setTimeout(() => window.location.reload(), 300);
+                    } else {
+                        showToast(res.message || 'Lỗi khi xóa món', 'error');
+                    }
+                })
+                .catch(err => {
+                    showToast('Lỗi kết nối máy chủ', 'error');
+                    console.error(err);
+                });
+        }
+
+                // Xử lý chuyển phòng cho khách
+        function submitTransfer() {
+            const selectEl = document.getElementById('new-room-select');
+            const newRoomId = parseInt(selectEl.value);
+
+            const oldRoomStatus = document.getElementById('old-room-status-select').value;
+            const reason = document.getElementById('transfer-reason').value.trim();
+
+            if (!newRoomId) {
+                showToast('Vui lòng chọn phòng trống', 'error');
+                return;
+            }
+
+            if (!reason) {
+                showToast('Vui lòng nhập lý do đổi phòng', 'error');
+                return;
+            }
+
+            const payload = {
+                invoiceId: invoiceId,
+                newRoomId: newRoomId,
+                oldRoomStatus: oldRoomStatus,
+                reason: reason
+            };
+
+            postData('/Receptionist/ChangeRoom', payload)
+                .then(res => {
+                    if (res.success) {
+                        alert(res.message);
+                        window.location.href = `/Receptionist/Detail?roomId=${newRoomId}`;
+                    } else {
+                        showToast(res.message || 'Lỗi khi chuyển phòng', 'error');
+                    }
+                })
+                .catch(err => {
+                    showToast('Lỗi kết nối máy chủ', 'error');
+                    console.error(err);
+                });
+        }
+
+        // Chuyển đến trang thanh toán hóa đơn
+        function processPayment() {
+            if (invoiceId && invoiceId !== 0) {
+                window.location.href = `/Receptionist/Checkout?invoiceId=${invoiceId}`;
+            } else {
+                showToast('Không tìm thấy hóa đơn hoạt động cho phòng này.', 'error');
+            }
+        }
+
+        function openTransferModal() {
+            document.getElementById('transfer-modal').style.display = 'flex';
+        }
+        function closeTransferModal() {
+            document.getElementById('transfer-modal').style.display = 'none';
+        }
+
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('vi-VN').format(value);
+        }
+
+        function showToast(message, type = 'success') {
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) existingToast.remove();
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        function postData(url = '', data = {}) {
+            return fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            }).then(response => response.json());
+        }
+    </script>
 </body>
 </html>
 

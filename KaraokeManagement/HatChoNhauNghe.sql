@@ -370,7 +370,7 @@ INSERT INTO [PaymentTransaction] (InvoiceID, MethodID, Amount, TransactionDate, 
 
 
 
--- Import 3 bảng này vào (HolidayPrice)
+-- Import 4 bảng này vào 
 
 CREATE TABLE [RoomPrice] (
     PriceID INT IDENTITY(1,1) PRIMARY KEY,
@@ -397,6 +397,33 @@ CREATE TABLE [Holiday] (
     HolidayDate DATE NOT NULL UNIQUE,
     SurchargePercent DECIMAL(5,2) NOT NULL DEFAULT 0.00,
     IsActive BIT DEFAULT 1
+);
+GO
+
+CREATE TABLE [RoomTransferHistory] (
+    [TransferID]    INT IDENTITY(1,1) NOT NULL,
+    [BookingID]     INT NOT NULL,
+    [FromRoomID]    INT NOT NULL,
+    [ToRoomID]      INT NOT NULL,
+    [TransferredAt] DATETIME NOT NULL CONSTRAINT [DF_RoomTransferHistory_TransferredAt] DEFAULT (GETDATE()),
+    [Reason]        NVARCHAR(255) NOT NULL,
+    [ProcessedByID] INT NOT NULL,
+
+    -- Khóa chính
+    CONSTRAINT [PK_RoomTransferHistory] PRIMARY KEY CLUSTERED ([TransferID] ASC),
+
+    -- Các Khóa ngoại (Foreign Keys)
+    CONSTRAINT [FK_RoomTransferHistory_Booking] FOREIGN KEY ([BookingID]) 
+        REFERENCES [Booking] ([BookingId]),
+
+    CONSTRAINT [FK_RoomTransferHistory_FromRoom] FOREIGN KEY ([FromRoomID]) 
+        REFERENCES [Room] ([RoomId]),
+
+    CONSTRAINT [FK_RoomTransferHistory_ToRoom] FOREIGN KEY ([ToRoomID]) 
+        REFERENCES [Room] ([RoomId]),
+
+    CONSTRAINT [FK_RoomTransferHistory_Account] FOREIGN KEY ([ProcessedByID]) 
+        REFERENCES [Account] ([AccountId])
 );
 GO
 -- Dữ liệu import giá theo ngàyy
