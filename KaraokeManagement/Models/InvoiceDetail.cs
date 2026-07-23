@@ -21,6 +21,8 @@ public partial class InvoiceDetail
 
     public bool IsFulFilled { get; set; }
 
+    public string? Note { get; set; }
+
     public virtual Invoice Invoice { get; set; } = null!;
 
     public virtual ServiceItem Service { get; set; } = null!;

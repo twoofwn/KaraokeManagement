@@ -229,6 +229,105 @@ namespace KaraokeManagement.Controllers
         }
 
         [Authorize(Roles = "Customer")]
+        [HttpPost]
+        public async Task<IActionResult> OrderService([FromBody] OrderServiceViewModel request)
+        {
+            try
+            {
+                // 1. Lấy thông tin khách hàng đang đăng nhập
+                var customerIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(customerIdStr) || !int.TryParse(customerIdStr, out int customerId))
+                {
+                    return Json(new { success = false, message = "Vui lòng đăng nhập để sử dụng tính năng này." });
+                }
+
+                // 2. Tìm Booking hiện tại của khách hàng ở phòng đó (Đang CheckedIn)
+                var now = DateTime.Now;
+                var activeBooking = await _context.Bookings
+                    .FirstOrDefaultAsync(b => b.CustomerId == customerId
+                                           && b.RoomId == request.RoomId
+                                           && b.Status == "CheckedIn"
+                                           && b.StartTime <= now
+                                           && (b.EndTime == null || b.EndTime >= now));
+
+                if (activeBooking == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy phiên hát đang hoạt động của bạn tại phòng này." });
+                }
+
+                // 3. Lấy thông tin Dịch vụ (Món ăn/Đồ uống) để lấy Đơn giá
+                var serviceItem = await _context.ServiceItems.FindAsync(request.ServiceId);
+                if (serviceItem == null)
+                {
+                    return Json(new { success = false, message = "Dịch vụ không tồn tại." });
+                }
+
+                // Kiểm tra tồn kho (nếu có)
+                if (serviceItem.StockQuantity.HasValue && serviceItem.StockQuantity.Value < request.Quantity)
+                {
+                    return Json(new { success = false, message = $"Rất tiếc, kho chỉ còn {serviceItem.StockQuantity.Value} phần." });
+                }
+
+                // 4. Tìm Hóa Đơn (Invoice) của Booking này
+                var currentInvoice = await _context.Invoices
+                    .FirstOrDefaultAsync(i => i.BookingId == activeBooking.BookingId);
+
+                // Nếu chưa có Invoice -> Tạo mới
+                if (currentInvoice == null)
+                {
+                    currentInvoice = new Invoice
+                    {
+                        BookingId = activeBooking.BookingId,
+                        RoomId = activeBooking.RoomId,
+                        ReceptionistId = 4,
+                        CheckInTime = activeBooking.StartTime,
+                        Status = "Unpaid",
+                        RoomTotal = 0,
+                        ServiceTotal = 0,
+                        GrandTotal = 0,
+                        DiscountAmount = 0
+                    };
+                    _context.Invoices.Add(currentInvoice);
+                    await _context.SaveChangesAsync(); // Lưu để có ID của Invoice
+                }
+
+                // 5. Tạo Chi tiết Hóa đơn (Order Detail)
+                decimal unitPrice = serviceItem.SellingPrice;
+                decimal totalPrice = unitPrice * request.Quantity;
+
+                var invoiceDetail = new InvoiceDetail
+                {
+                    InvoiceId = currentInvoice.InvoiceId,
+                    ServiceId = request.ServiceId,
+                    Quantity = request.Quantity,
+                    UnitPrice = unitPrice,
+                    IsService = true,
+                    IsFulFilled = false,
+                    Note = request.Notes
+                };
+                _context.InvoiceDetails.Add(invoiceDetail);
+
+                // Trừ tồn kho (nếu cần thiết)
+                if (serviceItem.StockQuantity.HasValue)
+                {
+                    serviceItem.StockQuantity -= request.Quantity;
+                }
+
+                // 6. Cập nhật tổng tiền Service vào Invoice
+                currentInvoice.ServiceTotal = (currentInvoice.ServiceTotal ?? 0) + totalPrice;
+                currentInvoice.GrandTotal = (currentInvoice.RoomTotal ?? 0) + currentInvoice.ServiceTotal - (currentInvoice.DiscountAmount ?? 0);
+
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
+        }
+
+        [Authorize(Roles = "Customer")]
         [HttpGet]
         public IActionResult BookingConfirmation(int roomId, string roomName, string typeName, string bookingDate, string startTime, int duration, int guestCount = 2)
         {

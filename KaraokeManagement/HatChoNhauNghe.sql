@@ -213,7 +213,7 @@ CREATE TABLE [InvoiceDetail] (
     UnitPrice DECIMAL(18,2) NOT NULL,
     IsService BIT NOT NULL DEFAULT 1,
     IsFulFilled BIT NOT NULL DEFAULT 0,
-
+    Note NVARCHAR(255) NULL,
     FOREIGN KEY (InvoiceID) REFERENCES [Invoice](InvoiceID),
     FOREIGN KEY (ServiceID) REFERENCES [ServiceItem](ServiceID)
 );
