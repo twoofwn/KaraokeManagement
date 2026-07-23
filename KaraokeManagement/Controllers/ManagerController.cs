@@ -679,10 +679,7 @@ namespace KaraokeManagement.Controllers
             return Json(new { success = true, message = "Đã lưu chi phí thành công!" });
         }
 
-        public class CreateCategoryModel
-        {
-            public string CategoryName { get; set; } = null!;
-        }
+
 
         [HttpPost]
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryModel payload)
