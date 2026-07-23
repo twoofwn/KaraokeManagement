@@ -213,13 +213,13 @@
             <i class="fa-solid fa-calendar-days text-primary me-2"></i>Phân Ca Làm Việc
         </h4>
         <div class="btn-group shadow-sm" role="group">
-            <a href="/HRM/Schedules?date=@Model.StartDate.AddDays(-7).ToString("yyyy-MM-dd")" class="btn btn-outline-secondary btn-sm" title="Tuần trước">
+            <a href="/ScheduleManagement/Schedules?date=@Model.StartDate.AddDays(-7).ToString("yyyy-MM-dd")" class="btn btn-outline-secondary btn-sm" title="Tuần trước">
                 <i class="fa-solid fa-chevron-left"></i>
             </a>
             <input type="date" class="form-control form-control-sm fw-semibold text-center border-secondary" 
                    style="width: 140px;" value="@Model.FilterDate.ToString("yyyy-MM-dd")" 
-                   onchange="window.location.href='/HRM/Schedules?date='+this.value" title="Chọn ngày làm việc" />
-            <a href="/HRM/Schedules?date=@Model.StartDate.AddDays(7).ToString("yyyy-MM-dd")" class="btn btn-outline-secondary btn-sm" title="Tuần sau">
+                   onchange="window.location.href='/ScheduleManagement/Schedules?date='+this.value" title="Chọn ngày làm việc" />
+            <a href="/ScheduleManagement/Schedules?date=@Model.StartDate.AddDays(7).ToString("yyyy-MM-dd")" class="btn btn-outline-secondary btn-sm" title="Tuần sau">
                 <i class="fa-solid fa-chevron-right"></i>
             </a>
         </div>
@@ -656,7 +656,7 @@
                 deletedRecordIds: batchTracker.deletedRecordIds
             };
 
-            fetch('/HRM/BatchUpdateSchedules', {
+            fetch('/ScheduleManagement/BatchUpdateSchedules', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

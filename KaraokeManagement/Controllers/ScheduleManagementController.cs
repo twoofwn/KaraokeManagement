@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using KaraokeManagement.Models;
 using KaraokeManagement.Services;
+using KaraokeManagement.ViewModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System;
@@ -128,6 +129,26 @@ namespace KaraokeManagement.Controllers
             ViewData["ActiveNav"] = "leave_approvals";
 
             return View();
+        }
+
+        public async Task<IActionResult> Schedules(string? date)
+        {
+            var viewModel = await _scheduleService.GetSchedulesViewModelAsync(date);
+            ViewData["ActiveNav"] = "hrm_schedules";
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> BatchUpdateSchedules([FromBody] BatchSchedulePayload payload)
+        {
+            if (payload == null)
+            {
+                return BadRequest("Dữ liệu gửi lên không hợp lệ.");
+            }
+
+            var result = await _scheduleService.BatchUpdateSchedulesAsync(payload);
+            if (result.Success) return Ok(new { success = true, message = result.Message });
+            return BadRequest(result.Message);
         }
     }
 }

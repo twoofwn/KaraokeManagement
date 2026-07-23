@@ -298,7 +298,6 @@ CREATE TABLE [EmployeeProfile] (
     Address NVARCHAR(255) NULL,
     HireDate DATE NOT NULL,
     BaseHourlyRate DECIMAL(18,2) NULL DEFAULT 0,
-    EmploymentStatus NVARCHAR(50) NULL DEFAULT 'Active',
     FOREIGN KEY (AccountID) REFERENCES [Account](AccountID)
 );
 
@@ -553,32 +552,32 @@ SET IDENTITY_INSERT [CustomerAutomationRule] OFF;
 
 SET IDENTITY_INSERT [Account] ON;
 
-INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
-VALUES (1, 1, 'admin_tong', '123456', N'Nguyễn Quản Trị', '0900000001', 'admin@karaoke.com', '2026-06-27 21:58:47', NULL, NULL, NULL);
+INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry, IsActive) 
+VALUES (1, 1, 'admin_tong', '123456', N'Nguyễn Quản Trị', '0900000001', 'admin@karaoke.com', '2026-06-27 21:58:47', NULL, NULL, NULL, 1);
 
-INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
-VALUES (2, 2, 'quanly_hung', '123456', N'Trần Hùng (Quản Lý)', '0900000002', 'hung@karaoke.com', '2026-06-27 21:58:47', NULL, NULL, NULL);
+INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry, IsActive) 
+VALUES (2, 2, 'quanly_hung', '123456', N'Trần Hùng (Quản Lý)', '0900000002', 'hung@karaoke.com', '2026-06-27 21:58:47', NULL, NULL, NULL, 1);
 
-INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
-VALUES (3, 3, 'letan_lan', '123456', N'Lê Thị Lan', '0900000003', 'lan@karaoke.com', '2026-06-27 21:58:47', 1, NULL, NULL);
+INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry, IsActive) 
+VALUES (3, 3, 'letan_lan', '123456', N'Lê Thị Lan', '0900000003', 'lan@karaoke.com', '2026-06-27 21:58:47', 1, NULL, NULL, 1);
 
-INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
-VALUES (4, 3, 'letan_mai', '123456', N'Phạm Mai', '0900000004', 'mai@karaoke.com', '2026-06-27 21:58:47', 2, NULL, NULL);
+INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry, IsActive) 
+VALUES (4, 3, 'letan_mai', '123456', N'Phạm Mai', '0900000004', 'mai@karaoke.com', '2026-06-27 21:58:47', 2, NULL, NULL, 1);
 
-INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
-VALUES (9, 3, 'servicestaff_c', '123456', N'Hoàng Anh Em', '0922334455', 'hoanganhe@gmail.com', '2026-07-21 16:03:17', 3, NULL, NULL);
+INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry, IsActive) 
+VALUES (9, 3, 'servicestaff_c', '123456', N'Hoàng Anh Em', '0922334455', 'hoanganhe@gmail.com', '2026-07-21 16:03:17', 3, NULL, NULL, 0);
 
-INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
-VALUES (11, 4, 'service1', '123456', N'Nguyễn Phục Vụ 1', '0912345601', 'service1@karaoke.com', '2026-07-22 15:47:51', 1, NULL, NULL);
+INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry, IsActive) 
+VALUES (11, 4, 'service1', '123456', N'Nguyễn Phục Vụ 1', '0912345601', 'service1@karaoke.com', '2026-07-22 15:47:51', 1, NULL, NULL, 1);
 
-INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
-VALUES (12, 4, 'service2', '123456', N'Trần Phục Vụ 2', '0912345602', 'service2@karaoke.com', '2026-07-22 15:47:51', 2, NULL, NULL);
+INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry, IsActive) 
+VALUES (12, 4, 'service2', '123456', N'Trần Phục Vụ 2', '0912345602', 'service2@karaoke.com', '2026-07-22 15:47:51', 2, NULL, NULL, 1);
 
-INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
-VALUES (13, 4, 'service3', '123456', N'Lê Phục Vụ 3', '0912345603', 'service3@karaoke.com', '2026-07-22 15:47:51', 3, NULL, NULL);
+INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry, IsActive) 
+VALUES (13, 4, 'service3', '123456', N'Lê Phục Vụ 3', '0912345603', 'service3@karaoke.com', '2026-07-22 15:47:51', 3, NULL, NULL, 1);
 
-INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
-VALUES (14, 4, 'service4', '123456', N'Phạm Phục Vụ 4', '0912345604', 'service4@karaoke.com', '2026-07-22 15:47:51', 1, NULL, NULL);
+INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry, IsActive) 
+VALUES (14, 4, 'service4', '123456', N'Phạm Phục Vụ 4', '0912345604', 'service4@karaoke.com', '2026-07-22 15:47:51', 1, NULL, NULL, 1);
 
 SET IDENTITY_INSERT [Account] OFF;
 
@@ -898,9 +897,9 @@ SET IDENTITY_INSERT [RoomTransferHistory] ON;
 SET IDENTITY_INSERT [RoomTransferHistory] OFF;
 
 SET IDENTITY_INSERT [EmployeeProfile] ON;
-INSERT INTO [EmployeeProfile] (ProfileID, AccountID, IdentityCardNumber, DateOfBirth, Address, HireDate, BaseHourlyRate, EmploymentStatus) VALUES (1, 1, N'001090123456', '1990-05-15 00:00:00', N'123 Đường A, Quận 1, TP.HCM', '2022-01-10 00:00:00', 35000.00, N'Active');
-INSERT INTO [EmployeeProfile] (ProfileID, AccountID, IdentityCardNumber, DateOfBirth, Address, HireDate, BaseHourlyRate, EmploymentStatus) VALUES (2, 3, N'079095654321', '1995-10-20 00:00:00', N'456 Đường B, Quận 3, TP.HCM', '2023-03-01 00:00:00', 30000.00, N'Active');
-INSERT INTO [EmployeeProfile] (ProfileID, AccountID, IdentityCardNumber, DateOfBirth, Address, HireDate, BaseHourlyRate, EmploymentStatus) VALUES (7, 9, N'052094556677', '1997-01-30 00:00:00', N'12 Cần Thơ, Ninh Kiều', '2023-05-12 00:00:00', 35000.00, N'Resigned');
+INSERT INTO [EmployeeProfile] (ProfileID, AccountID, IdentityCardNumber, DateOfBirth, Address, HireDate, BaseHourlyRate) VALUES (1, 1, N'001090123456', '1990-05-15 00:00:00', N'123 Đường A, Quận 1, TP.HCM', '2022-01-10 00:00:00', 35000.00);
+INSERT INTO [EmployeeProfile] (ProfileID, AccountID, IdentityCardNumber, DateOfBirth, Address, HireDate, BaseHourlyRate) VALUES (2, 3, N'079095654321', '1995-10-20 00:00:00', N'456 Đường B, Quận 3, TP.HCM', '2023-03-01 00:00:00', 30000.00);
+INSERT INTO [EmployeeProfile] (ProfileID, AccountID, IdentityCardNumber, DateOfBirth, Address, HireDate, BaseHourlyRate) VALUES (7, 9, N'052094556677', '1997-01-30 00:00:00', N'12 Cần Thơ, Ninh Kiều', '2023-05-12 00:00:00', 35000.00);
 SET IDENTITY_INSERT [EmployeeProfile] OFF;
 
 SET IDENTITY_INSERT [TrainingRecord] ON;

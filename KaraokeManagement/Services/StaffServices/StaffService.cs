@@ -158,7 +158,8 @@ namespace KaraokeManagement.Services.StaffServices
                             && s.AccountId != currentAccountId 
                             && s.Account.RoleId == mySched.Account.RoleId
                             && s.IsActive
-                            && s.Status != "Off")
+                            && s.Status != "Off"
+                            && s.Account.IsActive == true)
                 .Select(s => new {
                     scheduleId = s.ScheduleId,
                     accountId = s.AccountId,

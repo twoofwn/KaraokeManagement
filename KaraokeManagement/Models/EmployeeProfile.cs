@@ -14,7 +14,6 @@ public partial class EmployeeProfile
     public string? Address { get; set; }
     public DateOnly HireDate { get; set; }
     public decimal? BaseHourlyRate { get; set; }
-    public string? EmploymentStatus { get; set; }
 
     public virtual Account Account { get; set; } = null!;
 }

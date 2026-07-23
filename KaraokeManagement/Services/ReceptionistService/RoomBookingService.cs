@@ -21,13 +21,13 @@ public class RoomBookingService
             .FirstOrDefaultAsync(s => (s.StartTime <= nowTime && s.EndTime >= nowTime) || (s.StartTime > s.EndTime && (nowTime >= s.StartTime || nowTime <= s.EndTime)));
 
         var availableStaff = await _context.EmployeeSchedules.Include(s => s.Account).ThenInclude(a => a.Role)
-            .Where(s => s.WorkDate == today && s.ShiftId == activeShift.ShiftId && s.IsActive && s.Status != "Off" && (s.Account.Role.RoleName.Contains("Service Staff") || s.Account.Role.RoleName.Contains("Phục vụ")))
+            .Where(s => s.WorkDate == today && s.ShiftId == activeShift.ShiftId && s.IsActive && s.Status != "Off" && (s.Account.Role.RoleName.Contains("Service Staff") || s.Account.Role.RoleName.Contains("Phục vụ")) && s.Account.IsActive == true)
             .Select(s => s.Account).ToListAsync();
 
         if (!availableStaff.Any())
         {
             availableStaff = await _context.Accounts.Include(a => a.Role)
-                .Where(a => a.Role.RoleName.Contains("Service Staff") || a.Role.RoleName.Contains("Phục vụ")).ToListAsync();
+                .Where(a => (a.Role.RoleName.Contains("Service Staff") || a.Role.RoleName.Contains("Phục vụ")) && a.IsActive == true).ToListAsync();
         }
 
         return new CheckInViewModel

@@ -262,8 +262,9 @@ namespace KaraokeManagement.Controllers
                 .ThenInclude(a => a.Role)
                 .Include(s => s.Shift)
                 .Where(s => s.WorkDate == bookingDate 
-                         && s.IsActive 
-                         && (s.Account.Role.RoleName == "Service Staff" || s.Account.Role.RoleName.Contains("Phục vụ")))
+                          && s.IsActive 
+                          && (s.Account.Role.RoleName == "Service Staff" || s.Account.Role.RoleName.Contains("Phục vụ"))
+                          && s.Account.IsActive == true)
                 .ToListAsync();
 
             var matchedStaff = scheduledStaffList.Where(s => {
@@ -289,7 +290,7 @@ namespace KaraokeManagement.Controllers
             {
                 var allStaff = await _context.Accounts
                     .Include(a => a.Role)
-                    .Where(a => a.Role.RoleName == "Service Staff" || a.Role.RoleName.Contains("Phục vụ"))
+                    .Where(a => (a.Role.RoleName == "Service Staff" || a.Role.RoleName.Contains("Phục vụ")) && a.IsActive == true)
                     .ToListAsync();
 
                 matchedStaff = allStaff.Select(a => new StaffItem

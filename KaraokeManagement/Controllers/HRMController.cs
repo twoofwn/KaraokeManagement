@@ -54,26 +54,7 @@ namespace KaraokeManagement.Controllers
             return BadRequest(result.Message);
         }
 
-        // --- SCHEDULES ---
-        public async Task<IActionResult> Schedules(string? date)
-        {
-            var viewModel = await _hrmService.GetSchedulesViewModelAsync(date);
-            ViewData["ActiveNav"] = "hrm_schedules";
-            return View(viewModel);
-        }
 
-        [HttpPost]
-        public async Task<IActionResult> BatchUpdateSchedules([FromBody] BatchSchedulePayload payload)
-        {
-            if (payload == null)
-            {
-                return BadRequest("Dữ liệu gửi lên không hợp lệ.");
-            }
-
-            var result = await _hrmService.BatchUpdateSchedulesAsync(payload);
-            if (result.Success) return Ok(new { success = true, message = result.Message });
-            return BadRequest(result.Message);
-        }
 
         // --- ATTENDANCE ---
         public async Task<IActionResult> Attendance(string? start, string? end)

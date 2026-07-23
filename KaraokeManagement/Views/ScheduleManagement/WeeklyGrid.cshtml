@@ -80,7 +80,7 @@
         <button class="btn btn-brand-secondary text-nowrap" onclick="runAutoSchedule('@startOfWeek.ToString("yyyy-MM-dd")')">
             <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Tự Động Xếp Lịch
         </button>
-        <a href="/HRM/Schedules?date=@startOfWeek.ToString("yyyy-MM-dd")" class="btn btn-brand-primary text-nowrap">
+        <a href="/ScheduleManagement/Schedules?date=@startOfWeek.ToString("yyyy-MM-dd")" class="btn btn-brand-primary text-nowrap">
             <i class="fa-solid fa-pen-to-square me-1"></i> Chỉnh sửa lịch làm
         </a>
     </div>
@@ -164,7 +164,7 @@
             </div>
             <div class="modal-footer" style="background-color: var(--bg-light-grey); border-top: 1px solid var(--border-color);">
                 <button type="button" class="btn btn-secondary px-4 btn-sm" style="border-radius: 6px;" data-bs-dismiss="modal">Đóng</button>
-                <a href="/HRM/Schedules" id="modalEditScheduleBtn" class="btn btn-brand-primary px-4 btn-sm" style="border-radius: 6px;"><i class="fa-solid fa-pen-to-square me-1"></i>Chỉnh sửa lịch</a>
+                <a href="/ScheduleManagement/Schedules" id="modalEditScheduleBtn" class="btn btn-brand-primary px-4 btn-sm" style="border-radius: 6px;"><i class="fa-solid fa-pen-to-square me-1"></i>Chỉnh sửa lịch</a>
             </div>
         </div>
     </div>
@@ -216,7 +216,7 @@
                         document.getElementById('modalShiftDate').innerText = response.date;
 
                         // Set the edit link to pass date parameter so they modify this specific day
-                        document.getElementById('modalEditScheduleBtn').href = `/HRM/Schedules?date=${dateStr}`;
+                        document.getElementById('modalEditScheduleBtn').href = `/ScheduleManagement/Schedules?date=${dateStr}`;
 
                         activeShiftStaffData = response.staff;
                         
@@ -353,7 +353,7 @@
                     innerHtml += `</div>`;
                     
                     if (!isPast) {
-                        innerHtml += `<button class="btn btn-sm btn-outline-secondary btn-add-cell" title="Thêm nhân sự" onclick="event.stopPropagation(); window.location.href='/HRM/Schedules?date=${dayStr}';"><i class="fa-solid fa-plus"></i></button>`;
+                        innerHtml += `<button class="btn btn-sm btn-outline-secondary btn-add-cell" title="Thêm nhân sự" onclick="event.stopPropagation(); window.location.href='/ScheduleManagement/Schedules?date=${dayStr}';"><i class="fa-solid fa-plus"></i></button>`;
                     }
 
                     td.innerHTML = innerHtml;
