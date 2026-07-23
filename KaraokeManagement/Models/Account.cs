@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System;
 using System.Collections.Generic;
 
@@ -26,6 +26,8 @@ public partial class Account
     public int? DefaultShiftId { get; set; }
 
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+
+    public virtual ICollection<Booking> StaffHasBookings { get; set; } = new List<Booking>();
 
     public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
 
