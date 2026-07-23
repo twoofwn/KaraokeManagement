@@ -1,4 +1,4 @@
-using KaraokeManagement.Models;
+﻿using KaraokeManagement.Models;
 using KaraokeManagement.ViewModel;
 using KaraokeManagement.Helpers;
 using Microsoft.AspNetCore.Authentication;
@@ -643,7 +643,7 @@ namespace KaraokeManagement.Controllers
             if (invoice != null)
             {
                 existingReview = await _context.CustomerReviews
-                    .FirstOrDefaultAsync(r => r.InvoiceId == invoice.InvoiceId && r.CustomerId == customerId);
+                    .FirstOrDefaultAsync(r => r.BookingId == booking.BookingId);
             }
 
             // Load reports sent by this customer for this booking
@@ -745,7 +745,7 @@ namespace KaraokeManagement.Controllers
 
             // Check duplicate review
             var existingReview = await _context.CustomerReviews
-                .AnyAsync(r => r.InvoiceId == invoiceId && r.CustomerId == customerId);
+                .AnyAsync(r => r.BookingId == booking.BookingId);
 
             if (existingReview)
             {
@@ -761,8 +761,6 @@ namespace KaraokeManagement.Controllers
 
             var review = new CustomerReview
             {
-                InvoiceId = invoiceId,
-                CustomerId = customerId,
                 Rating = rating,
                 Comment = comment?.Trim(),
                 CreatedAt = DateTime.Now

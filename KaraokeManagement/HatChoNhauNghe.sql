@@ -1,4 +1,4 @@
-USE master;
+﻿USE master;
 GO
 
 IF EXISTS (SELECT name FROM sys.databases WHERE name = N'KaraokeManagementDB')
@@ -366,15 +366,11 @@ CREATE TABLE [NotificationLog] (
 
 CREATE TABLE [CustomerReview] (
     ReviewID INT IDENTITY(1,1) PRIMARY KEY,
-    InvoiceID INT NOT NULL,
-    CustomerID INT NOT NULL,
-    StaffID INT NULL,
+    BookingID INT NOT NULL,
     Rating INT NOT NULL,
     Comment NVARCHAR(500) NULL,
     CreatedAt DATETIME NULL DEFAULT GETDATE(),
-    FOREIGN KEY (InvoiceID) REFERENCES [Invoice](InvoiceID),
-    FOREIGN KEY (CustomerID) REFERENCES [Customer](CustomerID),
-    FOREIGN KEY (StaffID) REFERENCES [Account](AccountID)
+    FOREIGN KEY (BookingID) REFERENCES Booking(BookingID)
 );
 
 CREATE TABLE [MarketingCampaign] (
@@ -956,11 +952,6 @@ SET IDENTITY_INSERT [NotificationLog] ON;
 INSERT INTO [NotificationLog] (NotificationID, BookingID, CustomerID, Channel, Recipient, MessageContent, SentStatus, SentAt) VALUES (1, 1, 1, N'SMS', N'0901234567', N'Cảm ơn quý khách đã đặt phòng tại Karaoke Management. Mã đặt phòng: #1', N'Sent', '2026-07-21 15:07:43');
 INSERT INTO [NotificationLog] (NotificationID, BookingID, CustomerID, Channel, Recipient, MessageContent, SentStatus, SentAt) VALUES (2, 2, 2, N'Email', N'khachhang2@gmail.com', N'Phòng VIP 2 của quý khách đã sẵn sàng lúc 19:00', N'Sent', '2026-07-21 15:07:43');
 SET IDENTITY_INSERT [NotificationLog] OFF;
-
-SET IDENTITY_INSERT [CustomerReview] ON;
-INSERT INTO [CustomerReview] (ReviewID, InvoiceID, CustomerID, StaffID, Rating, Comment, CreatedAt) VALUES (1, 1, 1, 3, 5, N'Phòng đẹp, âm thanh hay, phục vụ tốt', '2026-07-21 15:07:43');
-INSERT INTO [CustomerReview] (ReviewID, InvoiceID, CustomerID, StaffID, Rating, Comment, CreatedAt) VALUES (2, 2, 2, 4, 4, N'Mồi ngon, nhưng gọi bia hơi chậm', '2026-07-21 15:07:43');
-SET IDENTITY_INSERT [CustomerReview] OFF;
 
 SET IDENTITY_INSERT [MarketingCampaign] ON;
 INSERT INTO [MarketingCampaign] (CampaignID, PromotionID, CampaignName, Channel, TargetTierID, MessageTemplate, StartDate, Status) VALUES (1, NULL, N'Chúc mừng sinh nhật VIP', N'SMS', 3, N'Chúc mừng sinh nhật! Tặng bạn voucher giảm 20%', '2026-07-21 15:07:43', N'Active');

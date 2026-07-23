@@ -677,9 +677,28 @@ public partial class KaraokeManagementDbContext : DbContext
         modelBuilder.Entity<CustomerReview>(entity =>
         {
             entity.HasKey(e => e.ReviewId);
-            entity.ToTable("CustomerReview");
-        });
 
+            entity.ToTable("CustomerReview");
+
+            entity.Property(e => e.ReviewId)
+                .HasColumnName("ReviewID");
+
+            entity.Property(e => e.BookingId)
+                .HasColumnName("BookingID");
+
+            entity.Property(e => e.Comment)
+                .HasMaxLength(500);
+
+            entity.Property(e => e.CreatedAt)
+                .HasColumnType("datetime")
+                .HasDefaultValueSql("(getdate())");
+
+            entity.HasOne(d => d.Booking)
+                .WithMany()
+                .HasForeignKey(d => d.BookingId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CustomerReview_Booking");
+        });
         modelBuilder.Entity<MarketingCampaign>(entity =>
         {
             entity.HasKey(e => e.CampaignId);
