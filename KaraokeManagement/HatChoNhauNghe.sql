@@ -88,6 +88,13 @@ CREATE TABLE [Room] (
     FOREIGN KEY (RoomTypeID) REFERENCES [RoomType](RoomTypeID)
 );
 
+CREATE TABLE [RoomImage] (
+        [RoomImageId] INT IDENTITY(1,1) NOT NULL,
+        [RoomTypeId] INT NOT NULL,
+        [ImageUrl] NVARCHAR(500) NOT NULL,
+        FOREIGN KEY (RoomTypeID) REFERENCES [RoomType](RoomTypeID)
+);
+
 CREATE TABLE [Equipment] (
     EquipmentID INT IDENTITY(1,1) PRIMARY KEY,
     RoomID INT NOT NULL,
@@ -121,6 +128,7 @@ CREATE TABLE [Category] (
 CREATE TABLE [ServiceItem] (
     ServiceID INT IDENTITY(1,1) PRIMARY KEY,
     CategoryID INT NOT NULL,
+    ImageUrl VARCHAR(255) NULL,
     ServiceName NVARCHAR(100) NOT NULL,
     SellingPrice DECIMAL(18,2) NOT NULL,
     Unit NVARCHAR(20) NULL,
@@ -948,6 +956,35 @@ SET IDENTITY_INSERT [CustomerCareLog] ON;
 INSERT INTO [CustomerCareLog] (LogID, CustomerID, AccountID, InteractionType, Notes, LoggedDate) VALUES (1, 1, 1, N'Gọi điện thoại', N'Hỏi thăm sự hài lòng về dịch vụ sinh nhật tối qua', '2026-07-21 15:07:43');
 INSERT INTO [CustomerCareLog] (LogID, CustomerID, AccountID, InteractionType, Notes, LoggedDate) VALUES (2, 2, 3, N'Nhắn tin', N'Gửi thông báo chương trình khuyến mãi', '2026-07-21 15:07:43');
 SET IDENTITY_INSERT [CustomerCareLog] OFF;
+
+SET IDENTITY_INSERT [RoomImage] ON;
+INSERT INTO [RoomImage] (RoomImageId, RoomTypeId, ImageUrl) 
+VALUES (1, 1, N'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=1200');
+INSERT INTO [RoomImage] (RoomImageId, RoomTypeId, ImageUrl) 
+VALUES (2, 1, N'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?auto=format&fit=crop&q=80&w=1200');
+INSERT INTO [RoomImage] (RoomImageId, RoomTypeId, ImageUrl) 
+VALUES (3, 2, N'https://images.unsplash.com/photo-1566737236500-c8ac43014a67?auto=format&fit=crop&q=80&w=1200');
+INSERT INTO [RoomImage] (RoomImageId, RoomTypeId, ImageUrl) 
+VALUES (4, 2, N'https://images.unsplash.com/photo-1497911270199-1c552ee64aa4?auto=format&fit=crop&q=80&w=1200');
+INSERT INTO [RoomImage] (RoomImageId, RoomTypeId, ImageUrl) 
+VALUES (5, 2, N'https://images.unsplash.com/photo-1574096079513-d8259312b78a?auto=format&fit=crop&q=80&w=1200');
+INSERT INTO [RoomImage] (RoomImageId, RoomTypeId, ImageUrl) 
+VALUES (6, 3, N'https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?auto=format&fit=crop&q=80&w=1200');
+INSERT INTO [RoomImage] (RoomImageId, RoomTypeId, ImageUrl) 
+VALUES (7, 3, N'https://images.unsplash.com/photo-1470229722913-7c092db65f8c?auto=format&fit=crop&q=80&w=1200');
+INSERT INTO [RoomImage] (RoomImageId, RoomTypeId, ImageUrl) 
+VALUES (8, 3, N'https://images.unsplash.com/photo-1545128485-c400e7702796?auto=format&fit=crop&q=80&w=1200');
+INSERT INTO [RoomImage] (RoomImageId, RoomTypeId, ImageUrl) 
+VALUES (9, 4, N'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&q=80&w=1200');
+INSERT INTO [RoomImage] (RoomImageId, RoomTypeId, ImageUrl) 
+VALUES (10, 4, N'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=1200');
+INSERT INTO [RoomImage] (RoomImageId, RoomTypeId, ImageUrl) 
+VALUES (11, 5, N'https://images.unsplash.com/photo-1571115764595-644a1f56a55c?auto=format&fit=crop&q=80&w=1200');
+INSERT INTO [RoomImage] (RoomImageId, RoomTypeId, ImageUrl) 
+VALUES (12, 5, N'https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?auto=format&fit=crop&q=80&w=1200');
+INSERT INTO [RoomImage] (RoomImageId, RoomTypeId, ImageUrl) 
+VALUES (13, 5, N'https://images.unsplash.com/photo-1563514755106-96db86a7f7da?auto=format&fit=crop&q=80&w=1200');
+SET IDENTITY_INSERT [RoomImage] OFF;
 
 -- Re-enable all constraints
 EXEC sp_MSforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT all';

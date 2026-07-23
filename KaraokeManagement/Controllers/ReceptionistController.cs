@@ -1,4 +1,4 @@
-﻿using KaraokeManagement.Models;
+using KaraokeManagement.Models;
 using KaraokeManagement.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -540,17 +540,17 @@ namespace KaraokeManagement.Controllers
             var today = DateOnly.FromDateTime(DateTime.Today);
             var nowTime = DateTime.Now.TimeOfDay;
             var activeShift = await _context.WorkShifts
-                .FirstOrDefaultAsync(s => (s.StartTime <= nowTime && s.EndTime >= nowTime)
+                .FirstOrDefaultAsync(s => (s.StartTime <= nowTime && s.EndTime >= nowTime) 
                                           || (s.StartTime > s.EndTime && (nowTime >= s.StartTime || nowTime <= s.EndTime)));
 
             var activeShiftId = activeShift?.ShiftId;
 
             var availableStaff = await _context.EmployeeSchedules
                 .Include(s => s.Account).ThenInclude(a => a.Role)
-                .Where(s => s.WorkDate == today
-                            && s.ShiftId == activeShiftId
-                            && s.IsActive
-                            && s.Status != "Off"
+                .Where(s => s.WorkDate == today 
+                            && s.ShiftId == activeShiftId 
+                            && s.IsActive 
+                            && s.Status != "Off" 
                             && (s.Account.Role.RoleName.Contains("Service Staff") || s.Account.Role.RoleName.Contains("Phục vụ")))
                 .Select(s => s.Account)
                 .ToListAsync();
@@ -559,9 +559,9 @@ namespace KaraokeManagement.Controllers
             {
                 availableStaff = await _context.EmployeeSchedules
                     .Include(s => s.Account).ThenInclude(a => a.Role)
-                    .Where(s => s.WorkDate == today
-                                && s.IsActive
-                                && s.Status != "Off"
+                    .Where(s => s.WorkDate == today 
+                                && s.IsActive 
+                                && s.Status != "Off" 
                                 && (s.Account.Role.RoleName.Contains("Service Staff") || s.Account.Role.RoleName.Contains("Phục vụ")))
                     .Select(s => s.Account)
                     .ToListAsync();
@@ -682,22 +682,22 @@ namespace KaraokeManagement.Controllers
                         PricePerHour = r.RoomType.PricePerHour
                     })
                     .ToListAsync();
-
+                
                 // Reload service staff
                 var today = DateOnly.FromDateTime(DateTime.Today);
                 var nowTime = DateTime.Now.TimeOfDay;
                 var activeShift = await _context.WorkShifts
-                    .FirstOrDefaultAsync(s => (s.StartTime <= nowTime && s.EndTime >= nowTime)
+                    .FirstOrDefaultAsync(s => (s.StartTime <= nowTime && s.EndTime >= nowTime) 
                                               || (s.StartTime > s.EndTime && (nowTime >= s.StartTime || nowTime <= s.EndTime)));
 
                 var activeShiftId = activeShift?.ShiftId;
 
                 var availableStaff = await _context.EmployeeSchedules
                     .Include(s => s.Account).ThenInclude(a => a.Role)
-                    .Where(s => s.WorkDate == today
-                                && s.ShiftId == activeShiftId
-                                && s.IsActive
-                                && s.Status != "Off"
+                    .Where(s => s.WorkDate == today 
+                                && s.ShiftId == activeShiftId 
+                                && s.IsActive 
+                                && s.Status != "Off" 
                                 && (s.Account.Role.RoleName.Contains("Service Staff") || s.Account.Role.RoleName.Contains("Phục vụ")))
                     .Select(s => s.Account)
                     .ToListAsync();
@@ -706,9 +706,9 @@ namespace KaraokeManagement.Controllers
                 {
                     availableStaff = await _context.EmployeeSchedules
                         .Include(s => s.Account).ThenInclude(a => a.Role)
-                        .Where(s => s.WorkDate == today
-                                    && s.IsActive
-                                    && s.Status != "Off"
+                        .Where(s => s.WorkDate == today 
+                                    && s.IsActive 
+                                    && s.Status != "Off" 
                                     && (s.Account.Role.RoleName.Contains("Service Staff") || s.Account.Role.RoleName.Contains("Phục vụ")))
                         .Select(s => s.Account)
                         .ToListAsync();
@@ -793,9 +793,9 @@ namespace KaraokeManagement.Controllers
                 var todayDate = DateOnly.FromDateTime(DateTime.Today);
                 var curTime = DateTime.Now.TimeOfDay;
                 var activeShift = await _context.WorkShifts
-                    .FirstOrDefaultAsync(s => (s.StartTime <= curTime && s.EndTime >= curTime)
+                    .FirstOrDefaultAsync(s => (s.StartTime <= curTime && s.EndTime >= curTime) 
                                               || (s.StartTime > s.EndTime && (curTime >= s.StartTime || curTime <= s.EndTime)));
-
+                
                 int activeShiftId = activeShift?.ShiftId ?? 1;
 
                 foreach (var staffId in model.AssignedStaffIds)
@@ -823,13 +823,13 @@ namespace KaraokeManagement.Controllers
                         await _context.SaveChangesAsync();
                     }
 
-                    //var roomAssignment = new RoomAssignment
-                    //{
-                    //    RoomId = booking.RoomId,
-                    //    ScheduleId = sched.ScheduleId,
-                    //    AssignedAt = DateTime.Now
-                    //};
-                    //_context.RoomAssignments.Add(roomAssignment);
+                    var roomAssignment = new RoomAssignment
+                    {
+                        RoomId = booking.RoomId,
+                        ScheduleId = sched.ScheduleId,
+                        AssignedAt = DateTime.Now
+                    };
+                    _context.RoomAssignments.Add(roomAssignment);
                 }
                 await _context.SaveChangesAsync();
             }

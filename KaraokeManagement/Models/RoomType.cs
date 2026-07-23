@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System;
 using System.Collections.Generic;
 
@@ -22,4 +22,6 @@ public partial class RoomType
     public virtual ICollection<Room> Rooms { get; set; } = new List<Room>();
 
     public virtual ICollection<RoomPrice> RoomPrices { get; set; } = new List<RoomPrice>();
+
+    public virtual ICollection<RoomImage> RoomImages { get; set; } = new List<RoomImage>();
 }

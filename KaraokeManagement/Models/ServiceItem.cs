@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System;
 using System.Collections.Generic;
 
@@ -12,6 +12,8 @@ public partial class ServiceItem
     public int CategoryId { get; set; }
 
     public string ServiceName { get; set; } = null!;
+
+    public string? ImageUrl { get; set; } 
 
     public decimal SellingPrice { get; set; }
 
