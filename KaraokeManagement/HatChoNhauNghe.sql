@@ -211,6 +211,9 @@ CREATE TABLE [InvoiceDetail] (
     ServiceID INT NOT NULL,
     Quantity INT NOT NULL,
     UnitPrice DECIMAL(18,2) NOT NULL,
+    IsService BIT NOT NULL DEFAULT 1,
+    IsFulFilled BIT NOT NULL DEFAULT 0,
+
     FOREIGN KEY (InvoiceID) REFERENCES [Invoice](InvoiceID),
     FOREIGN KEY (ServiceID) REFERENCES [ServiceItem](ServiceID)
 );
@@ -270,21 +273,6 @@ CREATE TABLE [Attendance] (
     Note NVARCHAR(255) NULL,
     FOREIGN KEY (AccountID) REFERENCES [Account](AccountID),
     FOREIGN KEY (ScheduleID) REFERENCES [EmployeeSchedule](ScheduleID)
-);
-
-CREATE TABLE [Payroll] (
-    PayrollID INT IDENTITY(1,1) PRIMARY KEY,
-    AccountID INT NOT NULL,
-    PayPeriodMonth INT NOT NULL,
-    PayPeriodYear INT NOT NULL,
-    BaseSalary DECIMAL(18,2) NOT NULL,
-    BonusAmount DECIMAL(18,2) NULL DEFAULT 0,
-    DeductionAmount DECIMAL(18,2) NULL DEFAULT 0,
-    NetSalary DECIMAL(18,2) NOT NULL,
-    PaymentStatus NVARCHAR(30) NULL DEFAULT 'Unpaid',
-    PaymentDate DATETIME NULL,
-    Note NVARCHAR(255) NULL,
-    FOREIGN KEY (AccountID) REFERENCES [Account](AccountID)
 );
 
 CREATE TABLE [EmployeeProfile] (
@@ -719,8 +707,8 @@ INSERT INTO [PurchaseOrderDetail] (PODetailID, PO_ID, ServiceID, ImportPrice, Qu
 INSERT INTO [PurchaseOrderDetail] (PODetailID, PO_ID, ServiceID, ImportPrice, Quantity) VALUES (2, 1, 2, 18000.00, 500);
 INSERT INTO [PurchaseOrderDetail] (PODetailID, PO_ID, ServiceID, ImportPrice, Quantity) VALUES (3, 2, 3, 1000000.00, 10);
 INSERT INTO [PurchaseOrderDetail] (PODetailID, PO_ID, ServiceID, ImportPrice, Quantity) VALUES (4, 3, 8, 1500000.00, 5);
-INSERT INTO [PurchaseOrderDetail] (PODetailID, PO_ID, ServiceID, ImportPrice, Quantity) VALUES (5, 4, 9, 12.00, 20);
-INSERT INTO [PurchaseOrderDetail] (PODetailID, PO_ID, ServiceID, ImportPrice, Quantity) VALUES (6, 5, 10, 1000000.00, 15);
+INSERT INTO [PurchaseOrderDetail] (PODetailID, PO_ID, ServiceID, ImportPrice, Quantity) VALUES (5, 4, 11, 12.00, 20);
+INSERT INTO [PurchaseOrderDetail] (PODetailID, PO_ID, ServiceID, ImportPrice, Quantity) VALUES (6, 5, 12, 1000000.00, 15);
 INSERT INTO [PurchaseOrderDetail] (PODetailID, PO_ID, ServiceID, ImportPrice, Quantity) VALUES (7, 1, 1, 25000.00, 300);
 INSERT INTO [PurchaseOrderDetail] (PODetailID, PO_ID, ServiceID, ImportPrice, Quantity) VALUES (8, 1, 2, 18000.00, 500);
 INSERT INTO [PurchaseOrderDetail] (PODetailID, PO_ID, ServiceID, ImportPrice, Quantity) VALUES (9, 2, 3, 1000000.00, 10);
@@ -805,64 +793,64 @@ INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID
 SET IDENTITY_INSERT [Invoice] OFF;
 
 SET IDENTITY_INSERT [InvoiceDetail] ON;
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (1, 1, 3, 1, 1500000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (2, 1, 6, 2, 350000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (3, 1, 5, 2, 150000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (4, 2, 7, 1, 1500000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (5, 2, 2, 24, 30000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (6, 4, 1, 3, 40000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (7, 4, 4, 1, 20000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (8, 5, 2, 2, 30000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (9, 5, 4, 1, 20000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (10, 6, 5, 1, 150000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (11, 6, 1, 1, 40000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (12, 7, 6, 1, 350000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (13, 7, 1, 3, 40000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (14, 7, 4, 1, 20000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (15, 8, 6, 2, 350000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (16, 9, 5, 2, 150000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (17, 10, 7, 1, 1500000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (18, 11, 3, 1, 1500000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (19, 12, 1, 2, 40000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (20, 12, 4, 1, 20000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (21, 13, 5, 1, 150000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (22, 13, 2, 3, 30000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (23, 13, 4, 1, 20000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (24, 14, 1, 3, 40000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (25, 14, 4, 1, 20000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (26, 15, 6, 1, 350000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (27, 15, 5, 1, 150000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (28, 15, 1, 2, 40000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (29, 15, 4, 1, 20000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (30, 1, 3, 1, 1500000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (31, 1, 6, 2, 350000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (32, 1, 5, 2, 150000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (33, 2, 7, 1, 1500000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (34, 2, 2, 24, 30000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (35, 4, 1, 3, 40000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (36, 4, 4, 1, 20000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (37, 5, 2, 2, 30000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (38, 5, 4, 1, 20000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (39, 6, 5, 1, 150000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (40, 6, 1, 1, 40000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (41, 7, 6, 1, 350000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (42, 7, 1, 3, 40000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (43, 7, 4, 1, 20000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (44, 8, 6, 2, 350000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (45, 9, 5, 2, 150000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (46, 10, 7, 1, 1500000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (47, 11, 3, 1, 1500000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (48, 12, 1, 2, 40000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (49, 12, 4, 1, 20000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (50, 13, 5, 1, 150000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (51, 13, 2, 3, 30000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (52, 13, 4, 1, 20000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (53, 14, 1, 3, 40000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (54, 14, 4, 1, 20000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (55, 15, 6, 1, 350000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (56, 15, 5, 1, 150000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (57, 15, 1, 2, 40000.00);
-INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice) VALUES (58, 15, 4, 1, 20000.00);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (1, 1, 3, 1, 1500000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (2, 1, 6, 2, 350000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (3, 1, 5, 2, 150000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (4, 2, 7, 1, 1500000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (5, 2, 2, 24, 30000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (6, 4, 1, 3, 40000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (7, 4, 4, 1, 20000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (8, 5, 2, 2, 30000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (9, 5, 4, 1, 20000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (10, 6, 5, 1, 150000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (11, 6, 1, 1, 40000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (12, 7, 6, 1, 350000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (13, 7, 1, 3, 40000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (14, 7, 4, 1, 20000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (15, 8, 6, 2, 350000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (16, 9, 5, 2, 150000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (17, 10, 7, 1, 1500000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (18, 11, 3, 1, 1500000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (19, 12, 1, 2, 40000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (20, 12, 4, 1, 20000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (21, 13, 5, 1, 150000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (22, 13, 2, 3, 30000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (23, 13, 4, 1, 20000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (24, 14, 1, 3, 40000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (25, 14, 4, 1, 20000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (26, 15, 6, 1, 350000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (27, 15, 5, 1, 150000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (28, 15, 1, 2, 40000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (29, 15, 4, 1, 20000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (30, 1, 3, 1, 1500000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (31, 1, 6, 2, 350000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (32, 1, 5, 2, 150000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (33, 2, 7, 1, 1500000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (34, 2, 2, 24, 30000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (35, 4, 1, 3, 40000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (36, 4, 4, 1, 20000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (37, 5, 2, 2, 30000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (38, 5, 4, 1, 20000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (39, 6, 5, 1, 150000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (40, 6, 1, 1, 40000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (41, 7, 6, 1, 350000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (42, 7, 1, 3, 40000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (43, 7, 4, 1, 20000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (44, 8, 6, 2, 350000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (45, 9, 5, 2, 150000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (46, 10, 7, 1, 1500000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (47, 11, 3, 1, 1500000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (48, 12, 1, 2, 40000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (49, 12, 4, 1, 20000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (50, 13, 5, 1, 150000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (51, 13, 2, 3, 30000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (52, 13, 4, 1, 20000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (53, 14, 1, 3, 40000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (54, 14, 4, 1, 20000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (55, 15, 6, 1, 350000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (56, 15, 5, 1, 150000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (57, 15, 1, 2, 40000.00, 1, 0);
+INSERT INTO [InvoiceDetail] (InvoiceDetailID, InvoiceID, ServiceID, Quantity, UnitPrice, IsService, IsFulFilled) VALUES (58, 15, 4, 1, 20000.00, 1, 0);
 SET IDENTITY_INSERT [InvoiceDetail] OFF;
 
 SET IDENTITY_INSERT [PaymentTransaction] ON;
@@ -913,16 +901,6 @@ SET IDENTITY_INSERT [Expense] OFF;
 SET IDENTITY_INSERT [RoomTransferHistory] ON;
 SET IDENTITY_INSERT [RoomTransferHistory] OFF;
 
-SET IDENTITY_INSERT [Attendance] ON;
-INSERT INTO [Attendance] (AttendanceID, AccountID, ScheduleID, CheckInTime, CheckOutTime, TotalHours, Status, Note) VALUES (1, 1, 1, '2026-07-21 08:00:00', '2026-07-21 16:00:00', 8.00, N'OnTime', N'Đi đúng giờ');
-INSERT INTO [Attendance] (AttendanceID, AccountID, ScheduleID, CheckInTime, CheckOutTime, TotalHours, Status, Note) VALUES (2, 3, 2, '2026-07-21 16:00:00', NULL, NULL, N'OnTime', NULL);
-SET IDENTITY_INSERT [Attendance] OFF;
-
-SET IDENTITY_INSERT [Payroll] ON;
-INSERT INTO [Payroll] (PayrollID, AccountID, PayPeriodMonth, PayPeriodYear, BaseSalary, BonusAmount, DeductionAmount, NetSalary, PaymentStatus, PaymentDate, Note) VALUES (1, 1, 7, 2026, 8000000.00, 500000.00, 0.00, 8500000.00, N'Paid', '2026-07-21 15:07:43', N'Lương tháng này');
-INSERT INTO [Payroll] (PayrollID, AccountID, PayPeriodMonth, PayPeriodYear, BaseSalary, BonusAmount, DeductionAmount, NetSalary, PaymentStatus, PaymentDate, Note) VALUES (2, 3, 7, 2026, 6000000.00, 0.00, 200000.00, 5800000.00, N'Unpaid', NULL, N'Phạt đi muộn');
-SET IDENTITY_INSERT [Payroll] OFF;
-
 SET IDENTITY_INSERT [EmployeeProfile] ON;
 INSERT INTO [EmployeeProfile] (ProfileID, AccountID, IdentityCardNumber, DateOfBirth, Address, HireDate, BaseHourlyRate, EmploymentStatus) VALUES (1, 1, N'001090123456', '1990-05-15 00:00:00', N'123 Đường A, Quận 1, TP.HCM', '2022-01-10 00:00:00', 35000.00, N'Active');
 INSERT INTO [EmployeeProfile] (ProfileID, AccountID, IdentityCardNumber, DateOfBirth, Address, HireDate, BaseHourlyRate, EmploymentStatus) VALUES (2, 3, N'079095654321', '1995-10-20 00:00:00', N'456 Đường B, Quận 3, TP.HCM', '2023-03-01 00:00:00', 30000.00, N'Active');
@@ -941,16 +919,6 @@ SET IDENTITY_INSERT [EmployeeTask] OFF;
 
 SET IDENTITY_INSERT [RoomAssignment] ON;
 SET IDENTITY_INSERT [RoomAssignment] OFF;
-
-SET IDENTITY_INSERT [LeaveRequest] ON;
-INSERT INTO [LeaveRequest] (LeaveRequestId, AccountId, ScheduleId, Reason, Status, CreatedAt, ApprovedById) VALUES (1, 4, 22, N'Nghỉ phép', N'Approved', '2026-07-21 15:54:07', 2);
-INSERT INTO [LeaveRequest] (LeaveRequestId, AccountId, ScheduleId, Reason, Status, CreatedAt, ApprovedById) VALUES (2, 12, 376, N'Việc riêng', N'Approved', '2026-07-22 16:43:38', 2);
-SET IDENTITY_INSERT [LeaveRequest] OFF;
-
-SET IDENTITY_INSERT [ShiftSwapRequest] ON;
-INSERT INTO [ShiftSwapRequest] (SwapRequestId, RequesterId, RequesterScheduleId, TargetId, TargetScheduleId, Status, CreatedAt, ApprovedById) VALUES (1, 1, 7, 1, 7, N'Consented', '2026-07-21 15:53:06', NULL);
-INSERT INTO [ShiftSwapRequest] (SwapRequestId, RequesterId, RequesterScheduleId, TargetId, TargetScheduleId, Status, CreatedAt, ApprovedById) VALUES (2, 12, 383, 13, 385, N'Pending', '2026-07-22 16:55:21', NULL);
-SET IDENTITY_INSERT [ShiftSwapRequest] OFF;
 
 SET IDENTITY_INSERT [NotificationLog] ON;
 INSERT INTO [NotificationLog] (NotificationID, BookingID, CustomerID, Channel, Recipient, MessageContent, SentStatus, SentAt) VALUES (1, 1, 1, N'SMS', N'0901234567', N'Cảm ơn quý khách đã đặt phòng tại Karaoke Management. Mã đặt phòng: #1', N'Sent', '2026-07-21 15:07:43');

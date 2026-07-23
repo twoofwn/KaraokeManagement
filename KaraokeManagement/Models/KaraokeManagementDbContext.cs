@@ -66,7 +66,6 @@ public partial class KaraokeManagementDbContext : DbContext
     public virtual DbSet<WorkShift> WorkShifts { get; set; }
     public virtual DbSet<EmployeeSchedule> EmployeeSchedules { get; set; }
     public virtual DbSet<Attendance> Attendances { get; set; }
-    public virtual DbSet<Payroll> Payrolls { get; set; }
     public virtual DbSet<EmployeeProfile> EmployeeProfiles { get; set; }
     public virtual DbSet<TrainingRecord> TrainingRecords { get; set; }
     public virtual DbSet<EmployeeTask> EmployeeTasks { get; set; }
@@ -632,12 +631,6 @@ public partial class KaraokeManagementDbContext : DbContext
         {
             entity.HasKey(e => e.AttendanceId);
             entity.ToTable("Attendance");
-        });
-
-        modelBuilder.Entity<Payroll>(entity =>
-        {
-            entity.HasKey(e => e.PayrollId);
-            entity.ToTable("Payroll");
         });
 
         modelBuilder.Entity<EmployeeProfile>(entity =>
