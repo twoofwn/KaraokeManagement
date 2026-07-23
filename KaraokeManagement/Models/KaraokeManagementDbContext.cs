@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,6 +26,7 @@ public partial class KaraokeManagementDbContext : DbContext
     public virtual DbSet<Equipment> Equipment { get; set; }
 
     public virtual DbSet<Expense> Expenses { get; set; }
+    public virtual DbSet<ExpenseCategory> ExpenseCategories { get; set; }
 
 
     public virtual DbSet<Invoice> Invoices { get; set; }
@@ -88,6 +89,13 @@ public partial class KaraokeManagementDbContext : DbContext
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<ExpenseCategory>(entity =>
+        {
+            entity.HasKey(e => e.CategoryId);
+            entity.ToTable("ExpenseCategory");
+            entity.Property(e => e.CategoryName).HasMaxLength(200);
+        });
+
         modelBuilder.Entity<Account>(entity =>
         {
             entity.HasKey(e => e.AccountId).HasName("PK__Account__349DA5862F09315B");
@@ -518,13 +526,18 @@ public partial class KaraokeManagementDbContext : DbContext
             entity.HasKey(e => e.ExpenseId);
             entity.ToTable("Expense");
             entity.Property(e => e.ExpenseId).HasColumnName("ExpenseID");
-            entity.Property(e => e.Category).HasMaxLength(50);
             entity.Property(e => e.ExpenseDate).HasColumnType("date");
             entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Note).HasMaxLength(255);
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+
+            entity.HasOne(d => d.ExpenseCategory)
+                .WithMany(p => p.Expenses)
+                .HasForeignKey(d => d.CategoryId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Expense_ExpenseCategory");
         });
 
         modelBuilder.Entity<RoomPrice>(entity =>

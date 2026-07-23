@@ -1,4 +1,4 @@
-﻿USE master;
+USE master;
 GO
 
 IF EXISTS (SELECT name FROM sys.databases WHERE name = N'KaraokeManagementDB')
@@ -247,16 +247,20 @@ CREATE TABLE [PaymentTransaction] (
     FOREIGN KEY (InvoiceID) REFERENCES [Invoice](InvoiceID),
     FOREIGN KEY (MethodID) REFERENCES [PaymentMethod](MethodID)
 );
+CREATE TABLE [ExpenseCategory] (
+    CategoryID INT IDENTITY(1,1) PRIMARY KEY,
+    CategoryName NVARCHAR(200) NOT NULL
+);
 
 CREATE TABLE [Expense] (
     ExpenseID INT IDENTITY(1,1) PRIMARY KEY,
-    Category NVARCHAR(50) NOT NULL,
+    CategoryID INT NOT NULL,
     ExpenseDate DATE NOT NULL,
     Amount DECIMAL(18,2) NOT NULL,
     Note NVARCHAR(255) NULL,
-    CreatedAt DATETIME DEFAULT GETDATE()
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (CategoryID) REFERENCES [ExpenseCategory](CategoryID)
 );
-
 -- ==========================================
 -- 6. TẠO BẢNG PHÂN HỆ QUẢN LÝ NHÂN SỰ (HRM)
 -- ==========================================
@@ -906,16 +910,22 @@ INSERT INTO [PaymentTransaction] (TransactionID, InvoiceID, MethodID, Amount, Tr
 INSERT INTO [PaymentTransaction] (TransactionID, InvoiceID, MethodID, Amount, TransactionDate, ReferenceCode) VALUES (30, 15, 3, 1620000.00, '2026-07-19 23:45:15', N'VISA-666');
 SET IDENTITY_INSERT [PaymentTransaction] OFF;
 
+SET IDENTITY_INSERT [ExpenseCategory] ON;
+INSERT INTO [ExpenseCategory] (CategoryID, CategoryName) VALUES (1, N'Điện');
+INSERT INTO [ExpenseCategory] (CategoryID, CategoryName) VALUES (2, N'Nước');
+INSERT INTO [ExpenseCategory] (CategoryID, CategoryName) VALUES (3, N'Mặt bằng');
+INSERT INTO [ExpenseCategory] (CategoryID, CategoryName) VALUES (4, N'Bảo trì');
+SET IDENTITY_INSERT [ExpenseCategory] OFF;
+
 SET IDENTITY_INSERT [Expense] ON;
-INSERT INTO [Expense] (ExpenseID, Category, ExpenseDate, Amount, Note, CreatedAt) VALUES (1, N'dien', '2023-10-15 00:00:00', 5400000.00, N'Tiền điện tháng 9/2023', '2026-06-27 21:58:47');
-INSERT INTO [Expense] (ExpenseID, Category, ExpenseDate, Amount, Note, CreatedAt) VALUES (2, N'baotri', '2023-10-14 00:00:00', 2100000.00, N'Sửa mic phòng VIP 1 & 2', '2026-06-27 21:58:47');
-INSERT INTO [Expense] (ExpenseID, Category, ExpenseDate, Amount, Note, CreatedAt) VALUES (3, N'matbang', '2023-10-01 00:00:00', 25000000.00, N'Thuê mặt bằng tháng 10', '2026-06-27 21:58:47');
-INSERT INTO [Expense] (ExpenseID, Category, ExpenseDate, Amount, Note, CreatedAt) VALUES (4, N'nuoc', '2023-09-28 00:00:00', 850000.00, N'Tiền nước T9', '2026-06-27 21:58:47');
-INSERT INTO [Expense] (ExpenseID, Category, ExpenseDate, Amount, Note, CreatedAt) VALUES (5, N'khac', '2026-07-01 00:00:00', 1000.00, N'Tiền nợ', '2026-07-12 22:34:27');
-INSERT INTO [Expense] (ExpenseID, Category, ExpenseDate, Amount, Note, CreatedAt) VALUES (6, N'dien', '2023-10-15 00:00:00', 5400000.00, N'Tiền điện tháng 9/2023', '2026-07-22 19:45:15');
-INSERT INTO [Expense] (ExpenseID, Category, ExpenseDate, Amount, Note, CreatedAt) VALUES (7, N'baotri', '2023-10-14 00:00:00', 2100000.00, N'Sửa mic phòng VIP 1 & 2', '2026-07-22 19:45:15');
-INSERT INTO [Expense] (ExpenseID, Category, ExpenseDate, Amount, Note, CreatedAt) VALUES (8, N'matbang', '2023-10-01 00:00:00', 25000000.00, N'Thuê mặt bằng tháng 10', '2026-07-22 19:45:15');
-INSERT INTO [Expense] (ExpenseID, Category, ExpenseDate, Amount, Note, CreatedAt) VALUES (9, N'nuoc', '2023-09-28 00:00:00', 850000.00, N'Tiền nước T9', '2026-07-22 19:45:15');
+INSERT INTO [Expense] (ExpenseID, CategoryID, ExpenseDate, Amount, Note, CreatedAt) VALUES (1, 1, '2023-10-15 00:00:00', 5400000.00, N'Tiền điện tháng 9/2023', '2026-06-27 21:58:47');
+INSERT INTO [Expense] (ExpenseID, CategoryID, ExpenseDate, Amount, Note, CreatedAt) VALUES (2, 4, '2023-10-14 00:00:00', 2100000.00, N'Sửa mic phòng VIP 1 & 2', '2026-06-27 21:58:47');
+INSERT INTO [Expense] (ExpenseID, CategoryID, ExpenseDate, Amount, Note, CreatedAt) VALUES (3, 3, '2023-10-01 00:00:00', 25000000.00, N'Thuê mặt bằng tháng 10', '2026-06-27 21:58:47');
+INSERT INTO [Expense] (ExpenseID, CategoryID, ExpenseDate, Amount, Note, CreatedAt) VALUES (4, 2, '2023-09-28 00:00:00', 850000.00, N'Tiền nước T9', '2026-06-27 21:58:47');
+INSERT INTO [Expense] (ExpenseID, CategoryID, ExpenseDate, Amount, Note, CreatedAt) VALUES (6, 1, '2023-10-15 00:00:00', 5400000.00, N'Tiền điện tháng 9/2023', '2026-07-22 19:45:15');
+INSERT INTO [Expense] (ExpenseID, CategoryID, ExpenseDate, Amount, Note, CreatedAt) VALUES (7, 4, '2023-10-14 00:00:00', 2100000.00, N'Sửa mic phòng VIP 1 & 2', '2026-07-22 19:45:15');
+INSERT INTO [Expense] (ExpenseID, CategoryID, ExpenseDate, Amount, Note, CreatedAt) VALUES (8, 3, '2023-10-01 00:00:00', 25000000.00, N'Thuê mặt bằng tháng 10', '2026-07-22 19:45:15');
+INSERT INTO [Expense] (ExpenseID, CategoryID, ExpenseDate, Amount, Note, CreatedAt) VALUES (9, 2, '2023-09-28 00:00:00', 850000.00, N'Tiền nước T9', '2026-07-22 19:45:15');
 SET IDENTITY_INSERT [Expense] OFF;
 
 SET IDENTITY_INSERT [RoomTransferHistory] ON;

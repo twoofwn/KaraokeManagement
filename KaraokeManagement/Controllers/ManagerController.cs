@@ -514,6 +514,7 @@ namespace KaraokeManagement.Controllers
             var endOfLastMonth = startOfCurrentMonth.AddDays(-1);
 
             var currentMonthExpenses = await _context.Expenses
+                .Include(e => e.ExpenseCategory)
                 .Where(e => e.ExpenseDate >= startOfCurrentMonth && e.ExpenseDate <= endOfCurrentMonth)
                 .ToListAsync();
 
@@ -532,8 +533,8 @@ namespace KaraokeManagement.Controllers
 
             // Find highest category in current month
             var categoryGroup = currentMonthExpenses
-                .GroupBy(e => e.Category)
-                .Select(g => new { Category = g.Key, Amount = g.Sum(e => e.Amount) })
+                .GroupBy(e => e.ExpenseCategory.CategoryName)
+                .Select(g => new { CategoryName = g.Key, Amount = g.Sum(e => e.Amount) })
                 .OrderByDescending(g => g.Amount)
                 .FirstOrDefault();
 
@@ -543,7 +544,7 @@ namespace KaraokeManagement.Controllers
 
             if (categoryGroup != null)
             {
-                highestCatName = ExpensesViewModel.GetCategoryDisplayName(categoryGroup.Category);
+                highestCatName = categoryGroup.CategoryName;
                 highestCatAmount = categoryGroup.Amount;
                 if (totalCurrentMonth > 0)
                 {
@@ -552,8 +553,13 @@ namespace KaraokeManagement.Controllers
             }
 
             var allExpenses = await _context.Expenses
+                .Include(e => e.ExpenseCategory)
                 .OrderByDescending(e => e.ExpenseDate)
                 .ThenByDescending(e => e.CreatedAt)
+                .ToListAsync();
+
+            var categories = await _context.ExpenseCategories
+                .OrderBy(c => c.CategoryName)
                 .ToListAsync();
 
             var viewModel = new ExpensesViewModel
@@ -563,16 +569,17 @@ namespace KaraokeManagement.Controllers
                 HighestCategoryName = highestCatName,
                 HighestCategoryAmount = highestCatAmount,
                 HighestCategoryPercent = highestCatPercent,
-                RecentExpenses = allExpenses
+                RecentExpenses = allExpenses,
+                Categories = categories
             };
 
             return View(viewModel);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddExpense(string category, string dateStr, decimal amount, string? note)
+        public async Task<IActionResult> AddExpense(int categoryId, string dateStr, decimal amount, string? note)
         {
-            if (string.IsNullOrEmpty(category) || amount <= 0)
+            if (categoryId <= 0 || amount <= 0)
             {
                 return Json(new { success = false, message = "Vui lòng nhập đầy đủ thông tin loại chi phí và số tiền lớn hơn 0." });
             }
@@ -593,7 +600,7 @@ namespace KaraokeManagement.Controllers
 
             var newExpense = new Expense
             {
-                Category = category,
+                CategoryId = categoryId,
                 ExpenseDate = expenseDate,
                 Amount = amount,
                 Note = note,
@@ -604,6 +611,37 @@ namespace KaraokeManagement.Controllers
             await _context.SaveChangesAsync();
 
             return Json(new { success = true, message = "Đã lưu chi phí thành công!" });
+        }
+
+        public class CreateCategoryModel
+        {
+            public string CategoryName { get; set; } = null!;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryModel payload)
+        {
+            if (payload == null || string.IsNullOrWhiteSpace(payload.CategoryName))
+            {
+                return Json(new { success = false, message = "Tên danh mục không hợp lệ." });
+            }
+
+            var nameTrimmed = payload.CategoryName.Trim();
+            var exists = await _context.ExpenseCategories.AnyAsync(c => c.CategoryName.ToLower() == nameTrimmed.ToLower());
+            if (exists)
+            {
+                return Json(new { success = false, message = "Danh mục này đã tồn tại." });
+            }
+
+            var newCategory = new ExpenseCategory
+            {
+                CategoryName = nameTrimmed
+            };
+
+            _context.ExpenseCategories.Add(newCategory);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, categoryId = newCategory.CategoryId, categoryName = newCategory.CategoryName });
         }
 
         [HttpGet]

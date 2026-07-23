@@ -2,7 +2,7 @@
 
 @{
     Layout = "~/Views/Manager/_ManagerLayout.cshtml";
-    ViewData["Title"] = "Quản lý chi phí";
+    ViewData["Title"] = "Chi phí cố định";
     ViewData["ActiveNav"] = "expenses";
 }
 
@@ -222,8 +222,8 @@
 </style>
 
 <div class="mb-4">
-    <h2 class="page-title">Quản lý chi phí</h2>
-    <p class="text-muted mb-0">Theo dõi và ghi nhận chi phí hoạt động của quán.</p>
+    <h2 class="page-title">Chi phí cố định</h2>
+    <p class="text-muted mb-0">Theo dõi và ghi nhận chi phí hoạt động cố định của quán.</p>
 </div>
 
 <div class="row g-4">
@@ -249,7 +249,7 @@
                         <span>Danh mục cao nhất</span>
                         <div class="stat-icon gray"><i class="fa-solid fa-shop"></i></div>
                     </div>
-                    <div class="stat-value">@Model.HighestCategoryName</div>
+                    <div class="stat-value text-truncate" style="max-width: 100%;" title="@Model.HighestCategoryName">@Model.HighestCategoryName</div>
                     <div class="text-muted" style="font-weight: 500;">
                         @Model.HighestCategoryAmount.ToString("N0") ₫ 
                         <span class="badge-percent">@Model.HighestCategoryPercent.ToString("F0")% tổng</span>
@@ -291,9 +291,9 @@
                                 <tr>
                                     <td>@exp.ExpenseDate.ToString("dd/MM/yyyy")</td>
                                     <td>
-                                        <span class="badge-cat @ExpensesViewModel.GetCategoryBadgeClass(exp.Category)">
-                                            <i class="@ExpensesViewModel.GetCategoryIconClass(exp.Category)"></i> 
-                                            @ExpensesViewModel.GetCategoryDisplayName(exp.Category)
+                                        <span class="badge-cat @ExpensesViewModel.GetCategoryBadgeClass(exp.ExpenseCategory.CategoryName)">
+                                            <i class="@ExpensesViewModel.GetCategoryIconClass(exp.ExpenseCategory.CategoryName)"></i> 
+                                            @exp.ExpenseCategory.CategoryName
                                         </span>
                                     </td>
                                     <td class="text-muted">@exp.Note</td>
@@ -325,14 +325,25 @@
 
             <div class="mb-3">
                 <label class="form-label-soft">Loại chi phí</label>
-                <select class="form-select form-control-soft w-100" id="categorySelect" required>
-                    <option value="" selected disabled>Chọn danh mục...</option>
-                    <option value="dien">Điện</option>
-                    <option value="nuoc">Nước</option>
-                    <option value="matbang">Mặt bằng</option>
-                    <option value="baotri">Bảo trì</option>
-                    <option value="khac">Khác</option>
-                </select>
+                <div class="d-flex gap-2">
+                    <select class="form-select form-control-soft flex-fill" id="categorySelect" required style="max-width: calc(100% - 48px);">
+                        <option value="" selected disabled>Chọn danh mục...</option>
+                        @foreach (var cat in Model.Categories)
+                        {
+                            <option value="@cat.CategoryId">@cat.CategoryName</option>
+                        }
+                    </select>
+                    <button type="button" class="btn btn-outline-secondary" style="border-radius: var(--border-radius-md); padding: 0.5rem 0.8rem;" 
+                            data-bs-toggle="modal" data-bs-target="#newCategoryModal" title="Thêm chi phí cố định mới">
+                        <i class="fa-solid fa-plus text-brand-pink"></i>
+                    </button>
+                </div>
+                <div class="mt-1 small">
+                    <a href="javascript:void(0)" class="text-decoration-none fw-semibold" style="color: var(--brand-pink); font-size: 0.8rem;"
+                       data-bs-toggle="modal" data-bs-target="#newCategoryModal">
+                        + Thêm chi phí cố định mới
+                    </a>
+                </div>
             </div>
 
             <div class="mb-3">
@@ -360,6 +371,34 @@
                 </button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Modal: Add New Category -->
+<div class="modal fade" id="newCategoryModal" tabindex="-1" aria-labelledby="newCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: var(--border-radius-lg);">
+            <div class="modal-header border-0 pb-0" style="padding: 1.5rem 1.5rem 0.5rem 1.5rem;">
+                <h5 class="modal-title fw-bold text-dark" id="newCategoryModalLabel">
+                    <i class="fa-solid fa-folder-plus text-brand-pink me-2"></i>Thêm chi phí cố định mới
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="createCategoryForm">
+                <div class="modal-body" style="padding: 1rem 1.5rem 1.5rem 1.5rem;">
+                    <div class="mb-3">
+                        <label for="newCategoryName" class="form-label-soft">Tên loại chi phí cố định</label>
+                        <input type="text" class="form-control form-control-soft w-100 border border-secondary-subtle" id="newCategoryName" placeholder="Ví dụ: Internet, Dọn dẹp vệ sinh..." required />
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light-subtle d-flex gap-2" style="padding: 1rem 1.5rem;">
+                    <button type="button" class="btn btn-light-gray flex-fill" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-pink flex-fill">
+                        <i class="fa-solid fa-floppy-disk me-1"></i>Lưu danh mục
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -396,16 +435,58 @@
                 document.getElementById('noteInput').value = '';
             });
 
+            // Submit new category via AJAX
+            document.getElementById('createCategoryForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const newCatName = document.getElementById('newCategoryName').value.trim();
+                if (!newCatName) {
+                    alert('Vui lòng nhập tên danh mục.');
+                    return;
+                }
+
+                fetch('/Manager/CreateCategory', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ CategoryName: newCatName })
+                })
+                .then(response => response.json())
+                .then(res => {
+                    if (res.success) {
+                        // Append to select
+                        const categorySelect = document.getElementById('categorySelect');
+                        const option = document.createElement('option');
+                        option.value = res.categoryId;
+                        option.textContent = res.categoryName;
+                        categorySelect.appendChild(option);
+                        categorySelect.value = res.categoryId;
+
+                        // Reset input and close modal
+                        document.getElementById('newCategoryName').value = '';
+                        const modalEl = document.getElementById('newCategoryModal');
+                        const modalObj = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                        modalObj.hide();
+                    } else {
+                        alert(res.message || 'Lỗi thêm danh mục.');
+                    }
+                })
+                .catch(err => {
+                    alert('Đã có lỗi xảy ra.');
+                    console.error(err);
+                });
+            });
+
             // Submit form via AJAX
             document.getElementById('addExpenseForm').addEventListener('submit', function(e) {
                 e.preventDefault();
 
-                const category = document.getElementById('categorySelect').value;
+                const categoryId = parseInt(document.getElementById('categorySelect').value, 10);
                 const dateStr = document.getElementById('periodInput').value;
                 const rawAmount = amountInput.value.replace(/,/g, '');
                 const note = document.getElementById('noteInput').value;
 
-                if (!category) {
+                if (!categoryId || isNaN(categoryId)) {
                     alert('Vui lòng chọn loại chi phí.');
                     return;
                 }
@@ -420,7 +501,7 @@
                     url: '/Manager/AddExpense',
                     type: 'POST',
                     data: {
-                        category: category,
+                        categoryId: categoryId,
                         dateStr: dateStr,
                         amount: amount,
                         note: note
