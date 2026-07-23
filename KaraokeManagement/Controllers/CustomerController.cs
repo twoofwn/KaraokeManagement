@@ -1,6 +1,9 @@
 ﻿using KaraokeManagement.Models;
+using KaraokeManagement.ViewModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace KaraokeManagement.Controllers
 {
@@ -86,6 +89,38 @@ namespace KaraokeManagement.Controllers
                 .ToList();
 
             return View(roomType);
+        }
+
+        [HttpGet]
+        public IActionResult CheckRoomAvailability(int roomId, string date, string time, int duration)
+        {
+            try
+            {
+                // Gộp ngày và giờ gửi từ View lại
+                if (!DateTime.TryParse($"{date} {time}", out DateTime startDateTime))
+                {
+                    return Json(new { available = false, message = "Thời gian không hợp lệ." });
+                }
+
+                // Tính thời gian kết thúc dự kiến (cộng thêm số phút hát)
+                DateTime endDateTime = startDateTime.AddMinutes(duration);
+
+                // Logic check trùng: 
+                // Lịch bị trùng khi: Giờ bắt đầu của người cũ < Giờ kết thúc của người mới
+                // VÀ Giờ kết thúc của người cũ > Giờ bắt đầu của người mới
+                bool isConflict = _context.Bookings.Any(b =>
+                    b.RoomId == roomId &&
+                    b.Status != "Cancelled" && b.Status != "Đã hủy" && // Bỏ qua các phòng đã bị hủy (Sửa theo text Status trong DB của bạn)
+                    b.StartTime < endDateTime &&
+                    (b.EndTime == null || b.EndTime > startDateTime)
+                );
+
+                return Json(new { available = !isConflict });
+            }
+            catch (System.Exception)
+            {
+                return Json(new { available = false, message = "Lỗi hệ thống khi kiểm tra phòng." });
+            }
         }
 
         [HttpGet]
@@ -176,17 +211,128 @@ namespace KaraokeManagement.Controllers
             return View(service);
         }
 
+        [Authorize(Roles = "Customer")]
         [HttpGet]
-        public IActionResult BookingConfirmation(string roomName, string typeName, string bookingDate, string startTime, int duration)
+        public IActionResult BookingConfirmation(int roomId, string roomName, string typeName, string bookingDate, string startTime, int duration, int guestCount = 2)
         {
-            // Truyền dữ liệu sang View thông qua ViewBag
-            ViewBag.RoomName = roomName;
-            ViewBag.TypeName = typeName;
-            ViewBag.BookingDate = bookingDate;
-            ViewBag.StartTime = startTime;
-            ViewBag.Duration = duration;
+            var customerIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(customerIdStr) || !int.TryParse(customerIdStr, out int customerId))
+            {
+                return RedirectToAction("CustomerLogin", "Auth");
+            }
 
-            return View();
+            var customer = _context.Customers.FirstOrDefault(c => c.CustomerId == customerId);
+            if (customer == null) return RedirectToAction("CustomerLogin", "Auth");
+
+            // QUAN TRỌNG: Truyền qua ViewBag để View render vào script JS
+            ViewBag.RoomId = roomId;
+            ViewBag.GuestCount = guestCount;
+
+            // --- (Phần thuật toán tính giá tiền giữ nguyên như cũ của bạn) ---
+            DateTime startDateTime;
+            if (!DateTime.TryParse($"{bookingDate} {startTime}", out startDateTime)) startDateTime = DateTime.Now;
+            DateTime endDateTime = startDateTime.AddMinutes(duration);
+
+            ViewBag.StartDateTimeISO = startDateTime.ToString("yyyy-MM-ddTHH:mm:ss");
+            ViewBag.EndDateTimeISO = endDateTime.ToString("yyyy-MM-ddTHH:mm:ss");
+
+            var roomTypeObj = _context.RoomTypes.Include(rt => rt.RoomPrices).FirstOrDefault(rt => rt.TypeName == typeName);
+            decimal basePrice = 0;
+            decimal fallbackPrice = roomTypeObj?.PricePerHour ?? 0;
+
+            if (roomTypeObj != null && roomTypeObj.RoomPrices.Any())
+            {
+                DateTime currentCalcTime = startDateTime;
+                while (currentCalcTime < endDateTime)
+                {
+                    var timeOfDay = currentCalcTime.TimeOfDay;
+                    var activePrice = roomTypeObj.RoomPrices.FirstOrDefault(p => p.StartTime <= timeOfDay && p.EndTime > timeOfDay);
+                    decimal currentRate = activePrice?.PricePerHour ?? fallbackPrice;
+                    DateTime nextBlockEnd = activePrice != null ? currentCalcTime.Date.Add(activePrice.EndTime) : currentCalcTime.Date.AddDays(1);
+                    if (nextBlockEnd > endDateTime) nextBlockEnd = endDateTime;
+                    var minutesInBlock = (decimal)(nextBlockEnd - currentCalcTime).TotalMinutes;
+                    basePrice += (minutesInBlock / 60m) * currentRate;
+                    currentCalcTime = nextBlockEnd;
+                }
+            }
+            else { basePrice = (duration / 60m) * fallbackPrice; }
+
+            decimal surchargeAmount = 0;
+            string surchargeNote = "";
+            if (startDateTime.DayOfWeek == DayOfWeek.Saturday || startDateTime.DayOfWeek == DayOfWeek.Sunday)
+            {
+                var weekendPolicy = _context.PricingPolicies.FirstOrDefault(p => p.IsActive && p.PolicyType == "Weekend");
+                if (weekendPolicy != null)
+                {
+                    surchargeAmount = basePrice * (weekendPolicy.Value / 100m);
+                    surchargeNote = $"{weekendPolicy.PolicyName} ({weekendPolicy.Value.ToString("0.##")}%)";
+                }
+            }
+
+            var model = new BookingConfirmationViewModel
+            {
+                CustomerName = customer.FullName,
+                Phone = customer.Phone,
+                Email = customer.Email,
+                RoomName = roomName,
+                TypeName = typeName,
+                BookingDate = bookingDate,
+                StartTime = startTime,
+                Duration = duration,
+                BasePrice = basePrice,
+                SurchargeAmount = surchargeAmount,
+                SurchargeNote = surchargeNote,
+                EstimatedTotalPrice = basePrice + surchargeAmount
+            };
+
+            return View(model);
+        }
+
+        [Authorize(Roles = "Customer")]
+        [HttpPost]
+        public async Task<IActionResult> ConfirmAndSaveBooking([FromBody] Booking booking)
+        {
+            try
+            {
+                // Lấy CustomerId từ phiên đăng nhập
+                var customerIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(customerIdStr) || !int.TryParse(customerIdStr, out int customerId))
+                {
+                    return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn." });
+                }
+
+                // Gán các thuộc tính còn thiếu
+                booking.CustomerId = customerId;
+                booking.BookingTime = DateTime.Now;
+                booking.Status = "Confirmed"; // Trạng thái ban đầu
+                if (booking.GuestCount <= 0) booking.GuestCount = 2;
+
+                // Lấy tạm 1 Admin gắn vào CreatedById do Database yêu cầu NOT NULL
+                var adminAccount = await _context.Accounts.FirstOrDefaultAsync();
+                booking.CreatedById = adminAccount != null ? adminAccount.AccountId : 1;
+
+                // Validate lại lần cuối xem phòng có bị ai giành mất không
+                bool isConflict = await _context.Bookings.AnyAsync(b =>
+                    b.RoomId == booking.RoomId &&
+                    b.Status != "Cancelled" && b.Status != "Đã hủy" &&
+                    b.StartTime < booking.EndTime &&
+                    (b.EndTime == null || b.EndTime > booking.StartTime)
+                );
+
+                if (isConflict)
+                {
+                    return Json(new { success = false, message = "Rất tiếc! Phòng này vừa được khách khác đặt. Vui lòng chọn giờ hoặc phòng khác!" });
+                }
+
+                _context.Bookings.Add(booking);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
+            }
         }
     }
 }
