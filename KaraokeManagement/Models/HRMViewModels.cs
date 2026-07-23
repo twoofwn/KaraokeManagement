@@ -33,6 +33,39 @@ namespace KaraokeManagement.Models
         public List<WorkShift> Shifts { get; set; } = new List<WorkShift>();
         public List<Account> StaffList { get; set; } = new List<Account>();
         public DateOnly FilterDate { get; set; }
+        public DateOnly StartDate { get; set; }
+        public DateOnly EndDate { get; set; }
+        public List<DateOnly> WeekDays { get; set; } = new List<DateOnly>();
+    }
+
+    public class BatchSchedulePayload
+    {
+        public List<ScheduleAddDto> AddedRecords { get; set; } = new List<ScheduleAddDto>();
+        public List<ScheduleUpdateDto> UpdatedRecords { get; set; } = new List<ScheduleUpdateDto>();
+        public List<int> DeletedRecordIds { get; set; } = new List<int>();
+    }
+
+    public class ScheduleAddDto
+    {
+        public int AccountId { get; set; }
+        public int ShiftId { get; set; }
+        public DateOnly WorkDate { get; set; }
+        public string? Status { get; set; } = "Scheduled";
+    }
+
+    public class ScheduleUpdateDto
+    {
+        public int ScheduleId { get; set; }
+        public int AccountId { get; set; }
+        public int ShiftId { get; set; }
+        public DateOnly WorkDate { get; set; }
+    }
+
+    public class ShiftGridViewModel
+    {
+        public WorkShift Shift { get; set; } = null!;
+        public ScheduleListViewModel Model { get; set; } = null!;
+        public string[] DayNames { get; set; } = Array.Empty<string>();
     }
 
     public class AttendanceListViewModel
