@@ -35,6 +35,11 @@ builder.Services.AddScoped<KaraokeManagement.Services.ManagerServices.ExpenseSer
 builder.Services.AddScoped<KaraokeManagement.Services.ManagerServices.InvoiceService>();
 builder.Services.AddScoped<KaraokeManagement.Services.ManagerServices.PricingService>();
 
+//HRM
+builder.Services.AddScoped<KaraokeManagement.Services.HRMServices.HRMService>();
+
+//Staff Services
+builder.Services.AddScoped<KaraokeManagement.Services.StaffServices.StaffService>();
 
 builder.Services.AddAuthentication("CookieAuth")
     .AddCookie("CookieAuth", options =>

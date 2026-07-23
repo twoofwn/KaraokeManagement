@@ -11,12 +11,10 @@ namespace KaraokeManagement.Controllers
 {
     public class ScheduleManagementController : Controller
     {
-        private readonly KaraokeManagementDbContext _context;
         private readonly IScheduleService _scheduleService;
 
-        public ScheduleManagementController(KaraokeManagementDbContext context, IScheduleService scheduleService)
+        public ScheduleManagementController(IScheduleService scheduleService)
         {
-            _context = context;
             _scheduleService = scheduleService;
         }
 
@@ -102,26 +100,13 @@ namespace KaraokeManagement.Controllers
 
         public async Task<IActionResult> WeeklyGrid(string? startDate)
         {
-            DateTime start = string.IsNullOrEmpty(startDate) ? new DateTime(2026, 7, 20) : DateTime.Parse(startDate);
-            int diff = (7 + (start.DayOfWeek - DayOfWeek.Monday)) % 7;
-            DateTime monday = start.AddDays(-1 * diff).Date;
-            DateTime sunday = monday.AddDays(6).Date;
-
-            DateOnly monDate = DateOnly.FromDateTime(monday);
-            DateOnly sunDate = DateOnly.FromDateTime(sunday);
-
-            var shifts = await _context.WorkShifts.ToListAsync();
-            var rawSchedules = await _context.EmployeeSchedules
-                .Include(s => s.Account).ThenInclude(a => a.Role)
-                .Include(s => s.Shift)
-                .Where(s => s.WorkDate >= monDate && s.WorkDate <= sunDate)
-                .ToListAsync();
+            var data = await _scheduleService.GetWeeklyGridDataAsync(startDate);
 
             ViewData["ActiveNav"] = "weekly_grid";
-            ViewData["StartOfWeek"] = monday;
-            ViewData["EndOfWeek"] = sunday;
-            ViewData["Shifts"] = shifts;
-            ViewData["RawSchedules"] = rawSchedules;
+            ViewData["StartOfWeek"] = data.StartOfWeek;
+            ViewData["EndOfWeek"] = data.EndOfWeek;
+            ViewData["Shifts"] = data.Shifts;
+            ViewData["RawSchedules"] = data.RawSchedules;
 
             return View();
         }
@@ -129,70 +114,17 @@ namespace KaraokeManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> ShiftDetails(int? shiftId, string? date)
         {
-            int sId = shiftId ?? 1;
-            DateOnly workDate = string.IsNullOrEmpty(date) ? new DateOnly(2026, 7, 21) : DateOnly.Parse(date);
-
-            var shift = await _context.WorkShifts.FindAsync(sId);
-            if (shift == null)
-            {
-                return Json(new { success = false, message = "Ca làm việc không tồn tại." });
-            }
-
-            var schedules = await _context.EmployeeSchedules
-                .Include(s => s.Account).ThenInclude(a => a.Role)
-                .Include(s => s.Shift)
-                .Where(s => s.ShiftId == sId && s.WorkDate == workDate)
-                .ToListAsync();
-
-            var accountIds = schedules.Select(s => s.AccountId).ToList();
-            var profiles = await _context.EmployeeProfiles
-                .Where(p => accountIds.Contains(p.AccountId))
-                .ToListAsync();
-
-            var staffList = schedules.Select(s => {
-                var prof = profiles.FirstOrDefault(p => p.AccountId == s.AccountId);
-                return new {
-                    name = s.Account.FullName,
-                    email = s.Account.Email ?? $"{s.Account.Username}@gmail.com",
-                    citizenId = prof?.IdentityCardNumber ?? "N/A",
-                    phone = s.Account.Phone ?? "N/A",
-                    role = s.Account.Role.RoleName,
-                    status = s.Status ?? "Scheduled"
-                };
-            }).ToList();
-
-            var result = new
-            {
-                success = true,
-                shiftName = shift.ShiftName,
-                startTime = shift.StartTime.ToString(@"hh\:mm"),
-                endTime = shift.EndTime.ToString(@"hh\:mm"),
-                date = workDate.ToString("dd/MM/yyyy"),
-                staff = staffList
-            };
-
+            var result = await _scheduleService.GetShiftDetailsAsync(shiftId, date);
             return Json(result);
         }
 
         [HttpGet]
         public async Task<IActionResult> LeaveApprovals()
         {
-            var pending = await _context.LeaveRequests
-                .Include(r => r.Account).ThenInclude(a => a.Role)
-                .Include(r => r.Schedule).ThenInclude(s => s.Shift)
-                .Where(r => r.Status == "Pending")
-                .ToListAsync();
+            var data = await _scheduleService.GetLeaveApprovalsDataAsync();
 
-            var history = await _context.LeaveRequests
-                .Include(r => r.Account).ThenInclude(a => a.Role)
-                .Include(r => r.Schedule).ThenInclude(s => s.Shift)
-                .Include(r => r.ApprovedBy)
-                .Where(r => r.Status != "Pending")
-                .OrderByDescending(r => r.CreatedAt)
-                .ToListAsync();
-
-            ViewBag.PendingRequests = pending;
-            ViewBag.HistoryRequests = history;
+            ViewBag.PendingRequests = data.PendingRequests;
+            ViewBag.HistoryRequests = data.HistoryRequests;
             ViewData["ActiveNav"] = "leave_approvals";
 
             return View();
