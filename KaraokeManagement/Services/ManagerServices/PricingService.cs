@@ -26,7 +26,6 @@ namespace KaraokeManagement.Services.ManagerServices
             };
         }
 
-        // ================= ROOM PRICE =================
         public async Task CreateRoomPriceAsync(int roomTypeId, TimeSpan startTime, TimeSpan endTime, decimal pricePerHour, DateTime? effectiveFrom, DateTime? effectiveTo)
         {
             _context.RoomPrices.Add(new RoomPrice
