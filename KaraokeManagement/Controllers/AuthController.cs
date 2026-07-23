@@ -88,10 +88,12 @@ namespace KaraokeManagement.Controllers
             {
                 string username = account?.FullName ?? "Admin";
                 string role = account?.Role?.RoleName ?? "Admin";
+                string accountIdStr = account?.AccountId.ToString() ?? "0";
 
                 var claims = new List<Claim>
                     {
                         new Claim(ClaimTypes.NameIdentifier, account?.AccountId.ToString() ?? "0"),
+                        new Claim("AccountId", accountIdStr),
                         new Claim(ClaimTypes.Name, username),
                         new Claim(ClaimTypes.Role, role)
                     };

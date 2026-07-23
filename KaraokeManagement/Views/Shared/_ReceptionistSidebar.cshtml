@@ -2,6 +2,7 @@
     var currentPath = Context.Request.Path.Value ?? "";
     var isRoomMapActive = currentPath.Contains("/Receptionist/Index") || currentPath.EndsWith("/Receptionist") || currentPath.EndsWith("/Receptionist/") || currentPath.Contains("/Receptionist/Checkout") || currentPath.Contains("/Receptionist/Detail");
     var isCheckInActive = currentPath.Contains("/Receptionist/CheckIn");
+    var isListBookingActive = currentPath.Contains("/ReceptionistBooking/ListBooking") || currentPath.Contains("/ReceptionistBooking");
     var isInvoiceHistoryActive = currentPath.Contains("/Receptionist/InvoiceHistory");
 }
 <aside class="reception-sidebar">
@@ -28,6 +29,12 @@
                 <span>Check-in</span>
             </a>
         </li>
+        <li class="menu-item @(isListBookingActive ? "active" : "")">
+            <a href="/ReceptionistBooking/ListBooking">
+                <i class="fa-solid fa-calendar-check"></i>
+                <span>Danh sách đặt phòng</span>
+            </a>
+        </li>
         <li class="menu-item @(isInvoiceHistoryActive ? "active" : "")">
             <a href="/Receptionist/InvoiceHistory">
                 <i class="fa-solid fa-clock-rotate-left"></i>
@@ -43,4 +50,3 @@
         </a>
     </div>
 </aside>
-
