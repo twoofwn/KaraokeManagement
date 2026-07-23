@@ -20,6 +20,7 @@
                     <h3 class="member-name">@Model.FullName</h3>
                     <p class="member-phone"><i class="fa-solid fa-phone"></i> @Model.Phone</p>
                 </div>
+                @*
                 <div class="member-card-footer">
                     <div class="tier-info">
                         <span class="label">Hạng thành viên</span>
@@ -30,8 +31,10 @@
                         <span class="value">@(Model.Tier?.DiscountPercent ?? 0)%</span>
                     </div>
                 </div>
+                *@
             </div>
 
+            @*
             <div class="points-stats-card">
                 <div class="points-icon-box">
                     <i class="fa-solid fa-gem"></i>
@@ -41,6 +44,7 @@
                     <h2 class="points-value">@(Model.LoyaltyPoints ?? 0) <span class="points-unit">Điểm</span></h2>
                 </div>
             </div>
+            *@
 
             <div class="joined-info-card">
                 <p><i class="fa-regular fa-calendar-check"></i> Ngày tham gia: @(Model.CreatedAt?.ToString("dd/MM/yyyy") ?? "—")</p>

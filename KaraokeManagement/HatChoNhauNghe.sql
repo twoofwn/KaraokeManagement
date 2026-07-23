@@ -1,4 +1,4 @@
-﻿USE master;
+USE master;
 GO
 
 IF EXISTS (SELECT name FROM sys.databases WHERE name = N'KaraokeManagementDB')
@@ -40,7 +40,7 @@ CREATE TABLE [Account] (
     CreatedAt DATETIME DEFAULT GETDATE(),
     DefaultShiftID INT NULL,
     OtpCode VARCHAR(10) NULL,
-    OtpExpiry DATETIME NULL
+    OtpExpiry DATETIME NULL,
     FOREIGN KEY (RoleID) REFERENCES [Role](RoleID),
     FOREIGN KEY (DefaultShiftID) REFERENCES [WorkShift](ShiftID)
 );
@@ -577,7 +577,7 @@ INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phon
 VALUES (13, 4, 'service3', '123456', N'Lê Phục Vụ 3', '0912345603', 'service3@karaoke.com', '2026-07-22 15:47:51', 3, NULL, NULL);
 
 INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
-VALUES (14, 7, 'service4', '123456', N'Phạm Phục Vụ 4', '0912345604', 'service4@karaoke.com', '2026-07-22 15:47:51', 1, NULL, NULL);
+VALUES (14, 4, 'service4', '123456', N'Phạm Phục Vụ 4', '0912345604', 'service4@karaoke.com', '2026-07-22 15:47:51', 1, NULL, NULL);
 
 SET IDENTITY_INSERT [Account] OFF;
 
