@@ -77,7 +77,6 @@ public partial class KaraokeManagementDbContext : DbContext
     public virtual DbSet<CustomerAutomationRule> CustomerAutomationRules { get; set; }
     public virtual DbSet<ShiftSwapRequest> ShiftSwapRequests { get; set; }
     public virtual DbSet<LeaveRequest> LeaveRequests { get; set; }
-    public virtual DbSet<RoomAssignment> RoomAssignments { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -751,20 +750,6 @@ public partial class KaraokeManagementDbContext : DbContext
 
             entity.HasOne(d => d.ApprovedBy).WithMany()
                 .HasForeignKey(d => d.ApprovedById);
-        });
-
-        modelBuilder.Entity<RoomAssignment>(entity =>
-        {
-            entity.HasKey(e => e.RoomAssignmentId);
-            entity.ToTable("RoomAssignment");
-
-            entity.HasOne(d => d.Room).WithMany()
-                .HasForeignKey(d => d.RoomId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasOne(d => d.Schedule).WithMany()
-                .HasForeignKey(d => d.ScheduleId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         OnModelCreatingPartial(modelBuilder);

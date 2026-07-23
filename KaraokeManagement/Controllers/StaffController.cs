@@ -61,11 +61,16 @@ namespace KaraokeManagement.Controllers
 
             foreach (var sched in schedules)
             {
-                var rooms = await _context.RoomAssignments
-                    .Include(ra => ra.Room)
+                var workDate = sched.WorkDate;
+                var rooms = await _context.Bookings
+                    .Include(b => b.Room)
                     .ThenInclude(r => r.RoomType)
-                    .Where(ra => ra.ScheduleId == sched.ScheduleId)
-                    .Select(ra => ra.Room)
+                    .Where(b => b.StaffId == sched.AccountId 
+                             && b.StartTime.Year == workDate.Year 
+                             && b.StartTime.Month == workDate.Month 
+                             && b.StartTime.Day == workDate.Day)
+                    .Select(b => b.Room)
+                    .Distinct()
                     .ToListAsync();
 
                 todaySchedulesList.Add(new StaffScheduleItemViewModel

@@ -787,50 +787,10 @@ namespace KaraokeManagement.Controllers
             room.Status = "InUse";
             await _context.SaveChangesAsync();
 
-            // Save room assignments if selected
+            // Save room assignment directly to Booking if selected
             if (model.AssignedStaffIds != null && model.AssignedStaffIds.Any())
             {
-                var todayDate = DateOnly.FromDateTime(DateTime.Today);
-                var curTime = DateTime.Now.TimeOfDay;
-                var activeShift = await _context.WorkShifts
-                    .FirstOrDefaultAsync(s => (s.StartTime <= curTime && s.EndTime >= curTime) 
-                                              || (s.StartTime > s.EndTime && (curTime >= s.StartTime || curTime <= s.EndTime)));
-                
-                int activeShiftId = activeShift?.ShiftId ?? 1;
-
-                foreach (var staffId in model.AssignedStaffIds)
-                {
-                    var sched = await _context.EmployeeSchedules
-                        .FirstOrDefaultAsync(s => s.AccountId == staffId && s.WorkDate == todayDate && s.ShiftId == activeShiftId);
-
-                    if (sched == null)
-                    {
-                        sched = await _context.EmployeeSchedules
-                            .FirstOrDefaultAsync(s => s.AccountId == staffId && s.WorkDate == todayDate);
-                    }
-
-                    if (sched == null)
-                    {
-                        sched = new EmployeeSchedule
-                        {
-                            AccountId = staffId,
-                            ShiftId = activeShiftId,
-                            WorkDate = todayDate,
-                            Status = "Scheduled",
-                            IsActive = true
-                        };
-                        _context.EmployeeSchedules.Add(sched);
-                        await _context.SaveChangesAsync();
-                    }
-
-                    var roomAssignment = new RoomAssignment
-                    {
-                        RoomId = booking.RoomId,
-                        ScheduleId = sched.ScheduleId,
-                        AssignedAt = DateTime.Now
-                    };
-                    _context.RoomAssignments.Add(roomAssignment);
-                }
+                booking.StaffId = model.AssignedStaffIds.First();
                 await _context.SaveChangesAsync();
             }
 

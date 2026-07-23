@@ -126,12 +126,18 @@ namespace KaraokeManagement.Controllers
             return View();
         }
 
+        [HttpGet]
         public async Task<IActionResult> ShiftDetails(int? shiftId, string? date)
         {
             int sId = shiftId ?? 1;
             DateOnly workDate = string.IsNullOrEmpty(date) ? new DateOnly(2026, 7, 21) : DateOnly.Parse(date);
 
             var shift = await _context.WorkShifts.FindAsync(sId);
+            if (shift == null)
+            {
+                return Json(new { success = false, message = "Ca làm việc không tồn tại." });
+            }
+
             var schedules = await _context.EmployeeSchedules
                 .Include(s => s.Account).ThenInclude(a => a.Role)
                 .Include(s => s.Shift)
@@ -143,13 +149,29 @@ namespace KaraokeManagement.Controllers
                 .Where(p => accountIds.Contains(p.AccountId))
                 .ToListAsync();
 
-            ViewData["ActiveNav"] = "weekly_grid";
-            ViewData["Shift"] = shift;
-            ViewData["WorkDate"] = workDate;
-            ViewData["Schedules"] = schedules;
-            ViewData["Profiles"] = profiles;
+            var staffList = schedules.Select(s => {
+                var prof = profiles.FirstOrDefault(p => p.AccountId == s.AccountId);
+                return new {
+                    name = s.Account.FullName,
+                    email = s.Account.Email ?? $"{s.Account.Username}@gmail.com",
+                    citizenId = prof?.IdentityCardNumber ?? "N/A",
+                    phone = s.Account.Phone ?? "N/A",
+                    role = s.Account.Role.RoleName,
+                    status = s.Status ?? "Scheduled"
+                };
+            }).ToList();
 
-            return View();
+            var result = new
+            {
+                success = true,
+                shiftName = shift.ShiftName,
+                startTime = shift.StartTime.ToString(@"hh\:mm"),
+                endTime = shift.EndTime.ToString(@"hh\:mm"),
+                date = workDate.ToString("dd/MM/yyyy"),
+                staff = staffList
+            };
+
+            return Json(result);
         }
 
         [HttpGet]

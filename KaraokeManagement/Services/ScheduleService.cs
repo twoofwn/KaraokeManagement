@@ -35,6 +35,13 @@ namespace KaraokeManagement.Services
             // Normalize start date to Monday of the week if needed
             int diff = (7 + (startDate.DayOfWeek - DayOfWeek.Monday)) % 7;
             DateTime monday = startDate.AddDays(-1 * diff).Date;
+            DateTime sunday = monday.AddDays(6).Date;
+
+            // Check if the entire week is in the past
+            if (sunday < DateTime.Today)
+            {
+                throw new InvalidOperationException("Không thể xếp lịch cho tuần đã qua trong quá khứ.");
+            }
 
             var shifts = await _context.WorkShifts.ToListAsync();
             if (!shifts.Any()) return false;
@@ -47,9 +54,16 @@ namespace KaraokeManagement.Services
 
             if (!activeStaff.Any()) return false;
 
+            bool addedAny = false;
             for (int dayIndex = 0; dayIndex < 7; dayIndex++)
             {
                 DateOnly workDate = DateOnly.FromDateTime(monday.AddDays(dayIndex));
+
+                // Skip past dates
+                if (workDate < DateOnly.FromDateTime(DateTime.Today))
+                {
+                    continue;
+                }
 
                 foreach (var emp in activeStaff)
                 {
@@ -69,11 +83,15 @@ namespace KaraokeManagement.Services
                             Status = "Scheduled",
                             IsActive = true
                         });
+                        addedAny = true;
                     }
                 }
             }
 
-            await _context.SaveChangesAsync();
+            if (addedAny)
+            {
+                await _context.SaveChangesAsync();
+            }
             return true;
         }
 

@@ -1,4 +1,4 @@
-﻿@model KaraokeManagement.ViewModel.FinancialDashboardViewModel
+@model KaraokeManagement.ViewModel.FinancialDashboardViewModel
 
 @{
     Layout = "~/Views/Manager/_ManagerLayout.cshtml";
@@ -93,19 +93,39 @@
         background-color: white;
         border: 1px solid #eaeaea;
         border-radius: var(--border-radius-lg);
-        padding: 2rem;
+        padding: 1.5rem;
         box-shadow: 0 4px 20px rgba(0,0,0,0.01);
+        height: 100%;
+    }
+
+    /* Tab Buttons Styling */
+    .btn-tab-pill {
+        border-radius: 30px;
+        font-weight: 600;
+        padding: 0.6rem 1.5rem;
+        background-color: #f4f5f7;
+        color: var(--text-main) !important;
+        border: 1px solid #eaeaea;
+        transition: all 0.2s ease;
+    }
+    .btn-tab-pill:hover {
+        background-color: #eaeaea;
+    }
+    .btn-tab-pill.active {
+        background-color: var(--brand-pink) !important;
+        color: white !important;
+        border-color: var(--brand-pink) !important;
     }
 </style>
 
 <div class="mb-4">
     <h2 class="page-title">Báo cáo tổng hợp</h2>
-    <p class="text-muted mb-0">Tổng quan báo cáo doanh thu, chi phí và lợi nhuận hoạt động.</p>
+    <p class="text-muted mb-0">Quản lý báo cáo doanh thu, chi phí và lợi nhuận hoạt động kinh doanh Karaoke.</p>
 </div>
 
-<!-- Thống kê tổng quan -->
+<!-- Thống kê tổng quan hàng ngày/hàng tháng -->
 <div class="row g-4 mb-4">
-    <div class="col-md-3">
+    <div class="col-md-3 col-sm-6">
         <div class="soft-card">
             <div class="stat-header">
                 <span>Số khách hôm nay</span>
@@ -115,7 +135,7 @@
             <div class="stat-sub text-muted">Từ booking trong ngày</div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 col-sm-6">
         <div class="soft-card">
             <div class="stat-header">
                 <span>Doanh thu hôm nay</span>
@@ -125,7 +145,7 @@
             <div class="stat-sub text-muted">Hoá đơn đã thanh toán</div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 col-sm-6">
         <div class="soft-card">
             <div class="stat-header">
                 <span>Số khách tháng này</span>
@@ -135,7 +155,7 @@
             <div class="stat-sub text-muted">Từ booking trong tháng</div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 col-sm-6">
         <div class="soft-card">
             <div class="stat-header">
                 <span>Doanh thu tháng này</span>
@@ -146,72 +166,238 @@
         </div>
     </div>
 </div>
-<div class="row g-4 mb-4">
-    <div class="col-md-3">
-        <div class="soft-card">
-            <div class="stat-header">
-                <span>Tổng doanh thu</span>
-                <div class="stat-icon green"><i class="fa-solid fa-sack-dollar"></i></div>
-            </div>
-            <div class="stat-value text-green">@Model.TotalRevenue.ToString("N0") ₫</div>
-            <div class="stat-sub text-muted">
-                Từ hóa đơn đã thanh toán
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="soft-card">
-            <div class="stat-header">
-                <span>Tổng chi phí</span>
-                <div class="stat-icon orange"><i class="fa-solid fa-wallet"></i></div>
-            </div>
-            <div class="stat-value text-red">@Model.TotalExpenses.ToString("N0") ₫</div>
-            <div class="stat-sub text-muted">
-                Chi phí & Đơn nhập hàng
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="soft-card">
-            <div class="stat-header">
-                <span>Lợi nhuận ròng</span>
-                <div class="stat-icon blue"><i class="fa-solid fa-coins"></i></div>
-            </div>
-            <div class="stat-value @(Model.NetProfit >= 0 ? "text-green" : "text-red")">
-                @Model.NetProfit.ToString("N0") ₫
-            </div>
-            <div class="stat-sub text-muted">
-                Doanh thu trừ Chi phí
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="soft-card">
-            <div class="stat-header">
-                <span>Tỷ suất lợi nhuận</span>
-                <div class="stat-icon"><i class="fa-solid fa-chart-pie"></i></div>
-            </div>
-            <div class="stat-value text-pink">@Model.ProfitMargin.ToString("F1")%</div>
-            <div class="stat-sub text-muted">
-                Hiệu quả kinh doanh
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Biểu đồ -->
-<div class="row g-4">
-    <div class="col-12">
-        <div class="chart-card">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="fw-bold mb-0">Xu hướng Doanh thu vs Chi phí (6 tháng qua)</h5>
-                <div class="d-flex gap-2">
-                    <span class="badge" style="background-color: rgba(46, 125, 50, 0.1); color: #2e7d32; font-weight: 600; padding: 0.5rem 0.8rem; border-radius: 8px;">Doanh thu</span>
-                    <span class="badge" style="background-color: rgba(198, 40, 40, 0.1); color: #c62828; font-weight: 600; padding: 0.5rem 0.8rem; border-radius: 8px;">Chi phí</span>
+<!-- Tab Navigation Bar -->
+<ul class="nav nav-pills mb-4 gap-2" id="dashboardTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active btn-tab-pill" id="revenue-tab" data-bs-toggle="tab" data-bs-target="#revenue-content" type="button" role="tab" aria-controls="revenue-content" aria-selected="true">
+            <i class="fa-solid fa-sack-dollar me-2"></i>Báo cáo Doanh thu
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link btn-tab-pill" id="profit-tab" data-bs-toggle="tab" data-bs-target="#profit-content" type="button" role="tab" aria-controls="profit-content" aria-selected="false">
+            <i class="fa-solid fa-coins me-2"></i>Báo cáo Lợi nhuận & Chi phí
+        </button>
+    </li>
+</ul>
+
+<!-- Tab Content Panes -->
+<div class="tab-content" id="dashboardTabContent">
+    
+    <!-- ================== TAB 1: REVENUE REPORT ================== -->
+    <div class="tab-pane fade show active" id="revenue-content" role="tabpanel" aria-labelledby="revenue-tab">
+        <!-- Thống kê doanh thu -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="soft-card">
+                    <div class="stat-header">
+                        <span>Tổng doanh thu</span>
+                        <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+                    </div>
+                    <div class="stat-value" style="color: var(--brand-pink);">@Model.TotalRevenue.ToString("N0") ₫</div>
+                    <div class="text-muted" style="font-size: 0.8rem; font-weight: 500;">Tổng doanh thu phòng hát & dịch vụ</div>
                 </div>
             </div>
-            <div style="height: 400px; position: relative;">
-                <canvas id="financialTrendChart"></canvas>
+            <div class="col-md-4">
+                <div class="soft-card">
+                    <div class="stat-header">
+                        <span>Doanh thu Tiền hát (Phòng)</span>
+                        <div class="stat-icon" style="background-color: #e3f2fd; color: #1565c0;"><i class="fa-solid fa-microphone-lines"></i></div>
+                    </div>
+                    <div class="stat-value" style="color: #1565c0;">@Model.TotalRoomRevenue.ToString("N0") ₫</div>
+                    <div class="text-muted" style="font-size: 0.8rem; font-weight: 500;">
+                        Tỷ lệ: @(Model.TotalRevenue > 0 ? ((Model.TotalRoomRevenue / Model.TotalRevenue) * 100).ToString("F1") : "0")% tổng doanh thu
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="soft-card">
+                    <div class="stat-header">
+                        <span>Doanh thu Dịch vụ</span>
+                        <div class="stat-icon" style="background-color: #e8f5e9; color: #2e7d32;"><i class="fa-solid fa-utensils"></i></div>
+                    </div>
+                    <div class="stat-value" style="color: #2e7d32;">@Model.TotalServiceRevenue.ToString("N0") ₫</div>
+                    <div class="text-muted" style="font-size: 0.8rem; font-weight: 500;">
+                        Tỷ lệ: @(Model.TotalRevenue > 0 ? ((Model.TotalServiceRevenue / Model.TotalRevenue) * 100).ToString("F1") : "0")% tổng doanh thu
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Biểu đồ phân tích doanh thu -->
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="chart-card">
+                    <h5 class="fw-bold mb-4">Doanh thu theo Loại phòng</h5>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="roomTypeRevenueChart"></canvas>
+                    </div>
+                    <div class="table-responsive mt-3">
+                        <table class="table table-sm table-borderless align-middle" style="font-size: 0.85rem;">
+                            <thead>
+                                <tr class="text-muted">
+                                    <th>Loại phòng</th>
+                                    <th class="text-end">Doanh thu (VND)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.RoomTypeLabels.Count; i++)
+                                {
+                                    <tr>
+                                        <td><strong>@Model.RoomTypeLabels[i]</strong></td>
+                                        <td class="text-end fw-bold">@Model.RoomTypeRevenues[i].ToString("N0") ₫</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="chart-card">
+                    <h5 class="fw-bold mb-4">Doanh thu theo Danh mục dịch vụ</h5>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="categoryRevenueChart"></canvas>
+                    </div>
+                    <div class="table-responsive mt-3">
+                        <table class="table table-sm table-borderless align-middle" style="font-size: 0.85rem;">
+                            <thead>
+                                <tr class="text-muted">
+                                    <th>Danh mục</th>
+                                    <th class="text-end">Doanh thu (VND)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.CategoryLabels.Count; i++)
+                                {
+                                    <tr>
+                                        <td><strong>@Model.CategoryLabels[i]</strong></td>
+                                        <td class="text-end fw-bold">@Model.CategoryRevenues[i].ToString("N0") ₫</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================== TAB 2: PROFIT REPORT ================== -->
+    @{
+        var totalRev12 = Model.ProfitItems.Sum(x => x.Revenue);
+        var totalExp12 = Model.ProfitItems.Sum(x => x.Expenses);
+        var netProf12 = totalRev12 - totalExp12;
+        var avgMarg12 = totalRev12 > 0 ? (double)(netProf12 / totalRev12) * 100 : 0;
+    }
+    <div class="tab-pane fade" id="profit-content" role="tabpanel" aria-labelledby="profit-tab">
+        <!-- Thống kê lợi nhuận 12 tháng qua -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="soft-card">
+                    <div class="stat-header">
+                        <span>Doanh thu (12 tháng qua)</span>
+                        <div class="stat-icon" style="background-color: #e8f5e9; color: #2e7d32;"><i class="fa-solid fa-sack-dollar"></i></div>
+                    </div>
+                    <div class="stat-value text-green">@totalRev12.ToString("N0") ₫</div>
+                    <div class="stat-sub text-muted">Doanh thu tích lũy</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="soft-card">
+                    <div class="stat-header">
+                        <span>Chi phí (12 tháng qua)</span>
+                        <div class="stat-icon" style="background-color: #ffebee; color: #c62828;"><i class="fa-solid fa-wallet"></i></div>
+                    </div>
+                    <div class="stat-value text-red">@totalExp12.ToString("N0") ₫</div>
+                    <div class="stat-sub text-muted">Chi phí & Đơn nhập hàng</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="soft-card">
+                    <div class="stat-header">
+                        <span>Lợi nhuận ròng (12T)</span>
+                        <div class="stat-icon" style="background-color: #e3f2fd; color: #1565c0;"><i class="fa-solid fa-coins"></i></div>
+                    </div>
+                    <div class="stat-value @(netProf12 >= 0 ? "text-green" : "text-red")">@netProf12.ToString("N0") ₫</div>
+                    <div class="stat-sub text-muted">Tổng chênh lệch lời/lỗ</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="soft-card">
+                    <div class="stat-header">
+                        <span>Biên lợi nhuận trung bình</span>
+                        <div class="stat-icon"><i class="fa-solid fa-percent"></i></div>
+                    </div>
+                    <div class="stat-value text-pink">@avgMarg12.ToString("F1")%</div>
+                    <div class="stat-sub text-muted">Tỷ suất lợi nhuận ròng</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Biểu đồ lợi nhuận và doanh thu vs chi phí -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0">Xu hướng Doanh thu vs Chi phí (6 tháng qua)</h5>
+                        <div class="d-flex gap-2">
+                            <span class="badge" style="background-color: rgba(46, 125, 50, 0.1); color: #2e7d32; font-weight: 600; padding: 0.5rem 0.8rem; border-radius: 8px;">Doanh thu</span>
+                            <span class="badge" style="background-color: rgba(198, 40, 40, 0.1); color: #c62828; font-weight: 600; padding: 0.5rem 0.8rem; border-radius: 8px;">Chi phí</span>
+                        </div>
+                    </div>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="financialTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <h5 class="fw-bold mb-4">Lợi nhuận ròng hàng tháng (12 tháng qua)</h5>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="monthlyProfitChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bảng chi tiết Lời/Lỗ -->
+        <div class="row">
+            <div class="col-12">
+                <div class="chart-card">
+                    <h5 class="fw-bold mb-4">Bảng phân tích Lời/Lỗ theo tháng</h5>
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-hover align-middle" style="font-size: 0.9rem;">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>Tháng</th>
+                                    <th class="text-end">Doanh thu</th>
+                                    <th class="text-end">Chi phí</th>
+                                    <th class="text-end">Lợi nhuận</th>
+                                    <th class="text-end">Biên LN</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.ProfitItems)
+                                {
+                                    <tr>
+                                        <td><strong>@item.MonthLabel</strong></td>
+                                        <td class="text-end">@item.Revenue.ToString("N0") ₫</td>
+                                        <td class="text-end text-red">@item.Expenses.ToString("N0") ₫</td>
+                                        <td class="text-end fw-bold @(item.NetProfit >= 0 ? "text-green" : "text-red")">
+                                            @item.NetProfit.ToString("N0") ₫
+                                        </td>
+                                        <td class="text-end fw-semibold @(item.NetProfit >= 0 ? "text-green" : "text-red")">
+                                            @item.Margin.ToString("F1")%
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -222,21 +408,21 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Nhận dữ liệu từ Backend
-            const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyLabels));
-            const revenues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyRevenues));
-            const expenses = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyExpenses));
+            
+            // ================== LINE CHART (Doanh thu vs Chi phí 6T) ==================
+            const labels6 = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyLabels));
+            const revenues6 = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyRevenues));
+            const expenses6 = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyExpenses));
 
-            // Khởi tạo biểu đồ đường so sánh Doanh thu vs Chi phí
-            const ctx = document.getElementById('financialTrendChart').getContext('2d');
-            new Chart(ctx, {
+            const ctxTrend = document.getElementById('financialTrendChart').getContext('2d');
+            new Chart(ctxTrend, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: labels6,
                     datasets: [
                         {
                             label: 'Doanh thu',
-                            data: revenues,
+                            data: revenues6,
                             borderColor: '#2e7d32',
                             backgroundColor: 'rgba(46, 125, 50, 0.05)',
                             fill: true,
@@ -247,7 +433,7 @@
                         },
                         {
                             label: 'Chi phí',
-                            data: expenses,
+                            data: expenses6,
                             borderColor: '#c62828',
                             backgroundColor: 'rgba(198, 40, 40, 0.05)',
                             fill: true,
@@ -263,15 +449,13 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            display: false // Ẩn legend mặc định vì đã tạo legend tùy chỉnh ở trên
+                            display: false
                         },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
                                     let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
+                                    if (label) label += ': ';
                                     if (context.parsed.y !== null) {
                                         label += new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(context.parsed.y);
                                     }
@@ -283,17 +467,118 @@
                     scales: {
                         y: {
                             ticks: {
-                                callback: function(value, index, values) {
+                                callback: function(value) {
                                     return (value / 1000000).toLocaleString() + 'M ₫';
                                 }
                             },
-                            grid: {
-                                color: '#f3f3f3'
-                            }
+                            grid: { color: '#f3f3f3' }
                         },
-                        x: {
-                            grid: {
-                                display: false
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // ================== BAR CHART (Room Type Revenue) ==================
+            const roomLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RoomTypeLabels));
+            const roomData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RoomTypeRevenues));
+            
+            const ctxRoom = document.getElementById('roomTypeRevenueChart').getContext('2d');
+            new Chart(ctxRoom, {
+                type: 'bar',
+                data: {
+                    labels: roomLabels,
+                    datasets: [{
+                        label: 'Doanh thu phòng',
+                        data: roomData,
+                        backgroundColor: '#1565c0',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return (value / 1000000).toLocaleString() + 'M ₫';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // ================== DOUGHNUT CHART (Category Service Revenue) ==================
+            const catLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CategoryLabels));
+            const catData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CategoryRevenues));
+
+            const ctxCat = document.getElementById('categoryRevenueChart').getContext('2d');
+            new Chart(ctxCat, {
+                type: 'doughnut',
+                data: {
+                    labels: catLabels,
+                    datasets: [{
+                        data: catData,
+                        backgroundColor: [
+                            '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#009688', '#4caf50', '#ffeb3b', '#ff9800'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // ================== BAR CHART (Monthly Net Profit 12T) ==================
+            const rawItems = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ProfitItems));
+            const profitLabels = rawItems.map(x => x.MonthLabel.replace("Tháng ", "T"));
+            const profits = rawItems.map(x => x.NetProfit);
+            
+            const backgroundColors = profits.map(val => val >= 0 ? 'rgba(46, 125, 50, 0.7)' : 'rgba(198, 40, 40, 0.7)');
+            const borderColors = profits.map(val => val >= 0 ? '#2e7d32' : '#c62828');
+
+            const ctxProfit = document.getElementById('monthlyProfitChart').getContext('2d');
+            new Chart(ctxProfit, {
+                type: 'bar',
+                data: {
+                    labels: profitLabels,
+                    datasets: [{
+                        label: 'Lợi nhuận ròng',
+                        data: profits,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return (value / 1000000).toLocaleString() + 'M ₫';
+                                }
                             }
                         }
                     }
