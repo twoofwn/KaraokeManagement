@@ -1,4 +1,4 @@
-@using System.Security.Claims
+﻿@using System.Security.Claims
 @{
 	var fullName = User.FindFirstValue(ClaimTypes.Name) ?? "User";
 	var avatar = fullName.Substring(0, 1).ToUpper();
@@ -33,18 +33,6 @@
 
 			<div class="guest-nav-bar-action" style="align-items: center; gap: 15px;">
 				<a href="/Customer/Rooms" class="btn-register">Đặt phòng ngay</a>
-				@if (User.Identity?.IsAuthenticated == true)
-				{
-					<div class="user-profile-widget" style="display: flex; align-items: center; gap: 8px; text-align: left;">
-						<div class="user-avatar" style="width: 36px; height: 36px; border-radius: 50%; background-color: var(--pink-bold); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; box-shadow: 0 2px 8px rgba(232, 60, 145, 0.3); flex-shrink: 0;">@avatar</div>
-						<div class="user-info" style="display: flex; flex-direction: column; justify-content: center;">
-							<span class="user-name" style="font-size: 13px; font-weight: 600; color: var(--dark-purple); max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2;">@fullName</span>
-							<a href="/Auth/Logout" style="font-size: 11px; color: #8c7f99; text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; line-height: 1.2; margin-top: 2px;" onmouseover="this.style.color='var(--pink-bold)'" onmouseout="this.style.color='#8c7f99'">
-								<i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
-							</a>
-						</div>
-					</div>
-				}
 			</div>
 		</header>
 
