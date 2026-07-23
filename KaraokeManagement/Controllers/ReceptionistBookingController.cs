@@ -27,13 +27,14 @@ namespace KaraokeManagement.Controllers
         public async Task<IActionResult> ListBooking(
         string searchString,
         string customerFilter,
-        string dateRange = "all", // "all", "3days", "7days", "30days"
+        string dateRange = "all",
         string status = "Pending",
         int page = 1)
         {
             var query = _context.Bookings
                 .Include(b => b.Room)
                 .Include(b => b.Customer)
+                .Where(b => b.Status == "Pending")
                 .AsQueryable();
 
             // Lọc theo tên hoặc SĐT
