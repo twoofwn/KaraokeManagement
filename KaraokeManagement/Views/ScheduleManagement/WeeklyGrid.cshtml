@@ -162,9 +162,19 @@
                 tr.appendChild(tdShift);
 
                 // Day Columns
+                const localToday = new Date();
+                const year = localToday.getFullYear();
+                const month = String(localToday.getMonth() + 1).padStart(2, '0');
+                const dateVal = String(localToday.getDate()).padStart(2, '0');
+                const todayStr = `${year}-${month}-${dateVal}`;
+
                 days.forEach(dayStr => {
                     const td = document.createElement("td");
+                    const isPast = dayStr < todayStr;
                     td.className = "grid-cell schedule-cell-white p-2 align-top";
+                    if (isPast) {
+                        td.style.opacity = "0.7";
+                    }
                     td.onclick = function() {
                         window.location.href = `/ScheduleManagement/ShiftDetails?shiftId=${shift.id}&date=${dayStr}`;
                     };
@@ -193,7 +203,10 @@
                         `;
                     });
                     innerHtml += `</div>`;
-                    innerHtml += `<button class="btn btn-sm btn-outline-secondary btn-add-cell" title="Add Staff" onclick="event.stopPropagation(); window.location.href='/ScheduleManagement/ShiftDetails?shiftId=${shift.id}&date=${dayStr}';"><i class="fa-solid fa-plus"></i></button>`;
+                    
+                    if (!isPast) {
+                        innerHtml += `<button class="btn btn-sm btn-outline-secondary btn-add-cell" title="Add Staff" onclick="event.stopPropagation(); window.location.href='/ScheduleManagement/ShiftDetails?shiftId=${shift.id}&date=${dayStr}';"><i class="fa-solid fa-plus"></i></button>`;
+                    }
 
                     td.innerHTML = innerHtml;
                     tr.appendChild(td);

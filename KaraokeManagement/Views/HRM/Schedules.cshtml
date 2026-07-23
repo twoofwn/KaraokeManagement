@@ -270,18 +270,19 @@
                                 .Where(s => s.ShiftId == shift.ShiftId && s.WorkDate == dayDate)
                                 .ToList();
                             var isToday = dayDate == DateOnly.FromDateTime(DateTime.Now);
+                            var isPast = dayDate < DateOnly.FromDateTime(DateTime.Today);
 
                             <td class="schedule-cell-white align-top @(isToday ? "today-column" : "")" 
                                 data-cell-shift="@shift.ShiftId" 
                                 data-cell-date="@dateStr"
-                                style="@(isToday ? "background-color: #fff0f5 !important;" : "")">
+                                style="@(isToday ? "background-color: #fff0f5 !important;" : "") @(isPast ? "opacity: 0.7; pointer-events: none;" : "")">
 
                                 <!-- Badge Container for Staff -->
                                 <div class="badge-container">
                                     @foreach (var s in cellSchedules)
                                     {
                                         <div class="staff-badge" id="badge-db-@s.ScheduleId" 
-                                             onclick="openEditStaffModal(@s.ScheduleId, 0, @shift.ShiftId, '@dateStr', @s.AccountId, '@shift.ShiftName')">
+                                             @(isPast ? "" : Html.Raw($"onclick=\"openEditStaffModal({s.ScheduleId}, 0, {shift.ShiftId}, '{dateStr}', {s.AccountId}, '{shift.ShiftName}')\""))>
                                             <div class="text-truncate me-1">
                                                 <i class="fa-solid fa-user-check text-brand-vibrant-pink me-1" style="font-size: 0.75rem;"></i>
                                                 <span class="fw-semibold">@s.Account.FullName</span>
@@ -290,19 +291,25 @@
                                                     <span class="text-muted small ms-1" style="font-size: 0.7rem;">(@s.Account.Role.RoleName)</span>
                                                 }
                                             </div>
-                                            <button type="button" class="btn-remove-badge" title="Đánh dấu xóa" 
-                                                    onclick="event.stopPropagation(); deleteStaffBadge(@s.ScheduleId, 0)">
-                                                <i class="fa-solid fa-xmark"></i>
-                                            </button>
+                                            @if (!isPast)
+                                            {
+                                                <button type="button" class="btn-remove-badge" title="Đánh dấu xóa" 
+                                                        onclick="event.stopPropagation(); deleteStaffBadge(@s.ScheduleId, 0)">
+                                                    <i class="fa-solid fa-xmark"></i>
+                                                </button>
+                                            }
                                         </div>
                                     }
                                 </div>
 
                                 <!-- [+] Add Staff Button inside Cell -->
-                                <button type="button" class="btn-add-staff-cell mt-1" 
-                                        onclick="openAddStaffModal(@shift.ShiftId, '@dateStr', '@shift.ShiftName')">
-                                    <i class="fa-solid fa-plus me-1"></i>Thêm NV
-                                </button>
+                                @if (!isPast)
+                                {
+                                    <button type="button" class="btn-add-staff-cell mt-1" 
+                                            onclick="openAddStaffModal(@shift.ShiftId, '@dateStr', '@shift.ShiftName')">
+                                        <i class="fa-solid fa-plus me-1"></i>Thêm NV
+                                    </button>
+                                }
                             </td>
                         }
                     </tr>
@@ -508,6 +515,92 @@
 
         // Delete/Remove Badge Action
         function deleteStaffBadge(scheduleId, tempId) {
+            let cell = null;
+            let badgeEl = null;
+
+            if (tempId > 0) {
+                badgeEl = document.querySelector(`#badge-temp-${tempId}`);
+            } else if (scheduleId > 0) {
+                badgeEl = document.querySelector(`#badge-db-${scheduleId}`);
+            }
+
+            if (badgeEl) {
+                cell = badgeEl.closest('td');
+            }
+
+            if (cell) {
+                let receptionistCount = 0;
+                let serviceStaffCount = 0;
+
+                const allBadges = cell.querySelectorAll('.staff-badge');
+                allBadges.forEach(badge => {
+                    if (tempId > 0 && badge.id === `badge-temp-${tempId}`) return;
+                    if (scheduleId > 0 && badge.id === `badge-db-${scheduleId}`) return;
+
+                    if (badge.classList.contains('badge-deleted')) return;
+
+                    let roleName = "";
+                    if (badge.id.startsWith('badge-db-')) {
+                        const text = badge.textContent || "";
+                        if (text.includes('Lễ tân') || text.includes('Receptionist')) {
+                            roleName = "Receptionist";
+                        } else if (text.includes('Phục vụ') || text.includes('Service Staff')) {
+                            roleName = "Service Staff";
+                        }
+                    } else if (badge.id.startsWith('badge-temp-')) {
+                        const badgeTempId = parseInt(badge.id.replace('badge-temp-', ''));
+                        const addedRec = batchTracker.addedRecords.find(r => r.tempId === badgeTempId);
+                        if (addedRec) {
+                            const staffInfo = staffMap.get(addedRec.accountId);
+                            if (staffInfo) {
+                                const rName = staffInfo.RoleName || "";
+                                if (rName.includes('Receptionist') || rName.includes('Lễ tân')) {
+                                    roleName = "Receptionist";
+                                } else if (rName.includes('Service Staff') || rName.includes('Phục vụ')) {
+                                    roleName = "Service Staff";
+                                }
+                            }
+                        }
+                    }
+
+                    if (roleName === "Receptionist") receptionistCount++;
+                    if (roleName === "Service Staff") serviceStaffCount++;
+                });
+
+                let deletingRole = "";
+                if (tempId > 0) {
+                    const addedRec = batchTracker.addedRecords.find(r => r.tempId === tempId);
+                    if (addedRec) {
+                        const staffInfo = staffMap.get(addedRec.accountId);
+                        if (staffInfo) {
+                            const rName = staffInfo.RoleName || "";
+                            if (rName.includes('Receptionist') || rName.includes('Lễ tân')) deletingRole = "Receptionist";
+                            else if (rName.includes('Service Staff') || rName.includes('Phục vụ')) deletingRole = "Service Staff";
+                        }
+                    }
+                } else if (scheduleId > 0) {
+                    const text = badgeEl.textContent || "";
+                    if (text.includes('Lễ tân') || text.includes('Receptionist')) deletingRole = "Receptionist";
+                    else if (text.includes('Phục vụ') || text.includes('Service Staff')) deletingRole = "Service Staff";
+                }
+
+                let isPerformingDeletion = true;
+                if (scheduleId > 0) {
+                    const index = batchTracker.deletedRecordIds.indexOf(scheduleId);
+                    if (index > -1) {
+                        isPerformingDeletion = false; 
+                    }
+                }
+
+                if (isPerformingDeletion) {
+                    if ((deletingRole === "Receptionist" && receptionistCount === 0) || (deletingRole === "Service Staff" && serviceStaffCount === 0)) {
+                        if (!confirm("Cảnh báo: Ca làm việc này sắp dưới mức tối thiểu (1 Lễ tân + 1 Phục vụ). Bạn có chắc chắn muốn xóa nhân viên này không?")) {
+                            return; 
+                        }
+                    }
+                }
+            }
+
             if (tempId > 0) {
                 // Remove from addedRecords
                 batchTracker.addedRecords = batchTracker.addedRecords.filter(r => r.tempId !== tempId);

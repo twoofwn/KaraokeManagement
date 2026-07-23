@@ -208,6 +208,31 @@ namespace KaraokeManagement.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
+                var today = DateOnly.FromDateTime(DateTime.Today);
+
+                // Validation check for AddedRecords
+                if (payload.AddedRecords != null && payload.AddedRecords.Any(r => r.WorkDate < today))
+                {
+                    return BadRequest("Không thể chỉnh sửa hoặc đổi ca cho các ngày trong quá khứ.");
+                }
+
+                // Validation check for UpdatedRecords
+                if (payload.UpdatedRecords != null && payload.UpdatedRecords.Any(r => r.WorkDate < today))
+                {
+                    return BadRequest("Không thể chỉnh sửa hoặc đổi ca cho các ngày trong quá khứ.");
+                }
+
+                // Validation check for DeletedRecordIds
+                if (payload.DeletedRecordIds != null && payload.DeletedRecordIds.Any())
+                {
+                    bool hasPastDelete = await _context.EmployeeSchedules
+                        .AnyAsync(s => payload.DeletedRecordIds.Contains(s.ScheduleId) && s.WorkDate < today);
+                    if (hasPastDelete)
+                    {
+                        return BadRequest("Không thể chỉnh sửa hoặc đổi ca cho các ngày trong quá khứ.");
+                    }
+                }
+
                 // 1. Execute all Insert operations for payload.AddedRecords
                 if (payload.AddedRecords != null && payload.AddedRecords.Any())
                 {

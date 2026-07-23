@@ -34,6 +34,18 @@
                 <span>Lịch sử hóa đơn</span>
             </a>
         </li>
+        <li class="menu-item @(currentPath.Contains("/Staff/Schedule") ? "active" : "")">
+            <a href="/Staff/Schedule">
+                <i class="fa-solid fa-calendar-week"></i>
+                <span>Lịch làm việc</span>
+            </a>
+        </li>
+        <li class="menu-item @(currentPath.Contains("/Staff/SwapRequests") ? "active" : "")">
+            <a href="/Staff/SwapRequests">
+                <i class="fa-solid fa-right-left"></i>
+                <span>Yêu cầu đổi ca</span>
+            </a>
+        </li>
     </ul>
 
     <div class="sidebar-footer">

@@ -181,6 +181,17 @@
             $('#modalDate').text(dateStr);
             $('#modalTime').text(shiftName + ' (' + timeRange + ')');
             
+            const parts = dateStr.split('/');
+            const schedDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            
+            if (schedDate < today) {
+                $('#btnRequestSwap').prop('disabled', true).addClass('disabled').attr('title', 'Không thể đổi ca cho ngày trong quá khứ');
+            } else {
+                $('#btnRequestSwap').prop('disabled', false).removeClass('disabled').removeAttr('title');
+            }
+            
             // Query coworkers
             $('#coworkersList').html('<div class="text-center py-3 text-muted small"><i class="fa-solid fa-spinner fa-spin me-1"></i> Đang tải danh sách đồng nghiệp...</div>');
             

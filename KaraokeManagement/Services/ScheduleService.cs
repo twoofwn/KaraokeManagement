@@ -91,6 +91,9 @@ namespace KaraokeManagement.Services
             if (reqSched == null || tarSched == null)
                 return (false, "Lịch làm việc không tồn tại.");
 
+            if (reqSched.WorkDate < DateOnly.FromDateTime(DateTime.Today))
+                return (false, "Không thể chỉnh sửa hoặc đổi ca cho các ngày trong quá khứ.");
+
             if (reqSched.AccountId != requesterId || tarSched.AccountId != targetId)
                 return (false, "Thông tin phân ca không trùng khớp với nhân viên.");
 
