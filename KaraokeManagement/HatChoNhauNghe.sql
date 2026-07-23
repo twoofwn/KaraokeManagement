@@ -1,4 +1,4 @@
-USE master;
+﻿USE master;
 GO
 
 IF EXISTS (SELECT name FROM sys.databases WHERE name = N'KaraokeManagementDB')
@@ -665,21 +665,36 @@ INSERT INTO [MaintenanceLog] (LogID, EquipmentID, ReportedByID, IssueDescription
 SET IDENTITY_INSERT [MaintenanceLog] OFF;
 
 SET IDENTITY_INSERT [ServiceItem] ON;
-INSERT INTO [ServiceItem] (ServiceID, CategoryID, ServiceName, SellingPrice, Unit, StockQuantity) VALUES (1, 1, N'Heineken', 40000.00, N'Lon', 500);
-INSERT INTO [ServiceItem] (ServiceID, CategoryID, ServiceName, SellingPrice, Unit, StockQuantity) VALUES (2, 1, N'Tiger', 30000.00, N'Lon', 800);
-INSERT INTO [ServiceItem] (ServiceID, CategoryID, ServiceName, SellingPrice, Unit, StockQuantity) VALUES (3, 2, N'Chivas 12', 1500000.00, N'Chai', 20);
-INSERT INTO [ServiceItem] (ServiceID, CategoryID, ServiceName, SellingPrice, Unit, StockQuantity) VALUES (4, 3, N'Aquafina', 20000.00, N'Chai', 400);
-INSERT INTO [ServiceItem] (ServiceID, CategoryID, ServiceName, SellingPrice, Unit, StockQuantity) VALUES (5, 4, N'Khô bò', 150000.00, N'Đĩa', 50);
-INSERT INTO [ServiceItem] (ServiceID, CategoryID, ServiceName, SellingPrice, Unit, StockQuantity) VALUES (6, 5, N'Trái cây VIP loại 2', 450000.00, N'Đĩa', 20);
-INSERT INTO [ServiceItem] (ServiceID, CategoryID, ServiceName, SellingPrice, Unit, StockQuantity) VALUES (7, 6, N'Combo Sinh Nhật VIP', 4000000.00, N'Combo', 5);
-INSERT INTO [ServiceItem] (ServiceID, CategoryID, ServiceName, SellingPrice, Unit, StockQuantity) VALUES (8, 4, N'Đào Tiên ', 3000000.00, N'EM', 5);
-INSERT INTO [ServiceItem] (ServiceID, CategoryID, ServiceName, SellingPrice, Unit, StockQuantity) VALUES (11, 1, N'Saigon Bia', 40000.00, N'Lon', 500);
-INSERT INTO [ServiceItem] (ServiceID, CategoryID, ServiceName, SellingPrice, Unit, StockQuantity) VALUES (12, 1, N'333 Bia', 30000.00, N'Lon', 800);
-INSERT INTO [ServiceItem] (ServiceID, CategoryID, ServiceName, SellingPrice, Unit, StockQuantity) VALUES (13, 2, N'Chivas 32', 1500000.00, N'Chai', 20);
-INSERT INTO [ServiceItem] (ServiceID, CategoryID, ServiceName, SellingPrice, Unit, StockQuantity) VALUES (14, 3, N'Lavie', 20000.00, N'Chai', 400);
-INSERT INTO [ServiceItem] (ServiceID, CategoryID, ServiceName, SellingPrice, Unit, StockQuantity) VALUES (15, 4, N'Khô gà Mixi', 150000.00, N'Đĩa', 50);
-INSERT INTO [ServiceItem] (ServiceID, CategoryID, ServiceName, SellingPrice, Unit, StockQuantity) VALUES (16, 5, N'Trái cây VIP', 350000.00, N'Đĩa', 20);
-INSERT INTO [ServiceItem] (ServiceID, CategoryID, ServiceName, SellingPrice, Unit, StockQuantity) VALUES (17, 6, N'Combo Sinh Nhật', 1500000.00, N'Combo', 5);
+INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
+VALUES (1, 1, 'https://images.unsplash.com/photo-1605810731454-e0c45164bc14?auto=format&fit=crop&q=80&w=600', N'Heineken', 40000.00, N'Lon', 500);
+INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
+VALUES (2, 1, 'https://images.unsplash.com/photo-1575037614876-c385db44f33d?auto=format&fit=crop&q=80&w=600', N'Tiger', 30000.00, N'Lon', 800);
+INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
+VALUES (11, 1, 'https://images.unsplash.com/photo-1614316051515-512ebcefcba6?auto=format&fit=crop&q=80&w=600', N'Saigon Bia', 40000.00, N'Lon', 500);
+INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
+VALUES (12, 1, 'https://images.unsplash.com/photo-1558500213-90d54a20b720?auto=format&fit=crop&q=80&w=600', N'333 Bia', 30000.00, N'Lon', 800);
+INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
+VALUES (3, 2, 'https://images.unsplash.com/photo-1527281400683-1aae777175f8?auto=format&fit=crop&q=80&w=600', N'Chivas 12', 1500000.00, N'Chai', 20);
+INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
+VALUES (13, 2, 'https://images.unsplash.com/photo-1563223771-5fe4038fbfc9?auto=format&fit=crop&q=80&w=600', N'Chivas 32', 1500000.00, N'Chai', 20);
+INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
+VALUES (4, 3, 'https://images.unsplash.com/photo-1523362628745-0c100150b504?auto=format&fit=crop&q=80&w=600', N'Aquafina', 20000.00, N'Chai', 400);
+INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
+VALUES (14, 3, 'https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&q=80&w=600', N'Lavie', 20000.00, N'Chai', 400);
+INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
+VALUES (5, 4, 'https://images.unsplash.com/photo-1621939514649-280e2ee25f60?auto=format&fit=crop&q=80&w=600', N'Khô bò', 150000.00, N'Đĩa', 50);
+INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
+VALUES (15, 4, 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?auto=format&fit=crop&q=80&w=600', N'Khô gà Mixi', 150000.00, N'Đĩa', 50);
+INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
+VALUES (6, 5, 'https://images.unsplash.com/photo-1519996529931-28324d5a630e?auto=format&fit=crop&q=80&w=600', N'Trái cây VIP loại 2', 450000.00, N'Đĩa', 20);
+INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
+VALUES (8, 4, 'https://images.unsplash.com/photo-1528821128474-27f963b062bf?auto=format&fit=crop&q=80&w=600', N'Đào Tiên', 3000000.00, N'EM', 5);
+INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
+VALUES (16, 5, 'https://images.unsplash.com/photo-1582294440173-9a00cebd350a?auto=format&fit=crop&q=80&w=600', N'Trái cây VIP', 350000.00, N'Đĩa', 20);
+INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
+VALUES (7, 6, 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&q=80&w=600', N'Combo Sinh Nhật VIP', 4000000.00, N'Combo', 5);
+INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
+VALUES (17, 6, 'https://images.unsplash.com/photo-1558636508-e0db3814bd1d?auto=format&fit=crop&q=80&w=600', N'Combo Sinh Nhật', 1500000.00, N'Combo', 5);
 SET IDENTITY_INSERT [ServiceItem] OFF;
 
 SET IDENTITY_INSERT [PurchaseOrder] ON;
