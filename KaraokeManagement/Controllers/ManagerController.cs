@@ -1,11 +1,12 @@
-using KaraokeManagement.Models;
+﻿using KaraokeManagement.Models;
+using KaraokeManagement.Services.ManagerServices;
 using KaraokeManagement.ViewModel;
-using KaraokeManagement.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace KaraokeManagement.Controllers
@@ -13,207 +14,66 @@ namespace KaraokeManagement.Controllers
     [Authorize(Roles = "Manager")]
     public class ManagerController : Controller
     {
-        private readonly KaraokeManagementDbContext _context;
+        private readonly DashboardService _dashboardService;
+        private readonly InventoryService _inventoryService;
+        private readonly ExpenseService _expenseService;
+        private readonly InvoiceService _invoiceManagerService;
+        private readonly PricingService _pricingService;
 
-        public ManagerController(KaraokeManagementDbContext context)
+        public ManagerController(
+            DashboardService dashboardService,
+            InventoryService inventoryService,
+            ExpenseService expenseService,
+            InvoiceService invoiceManagerService,
+            PricingService pricingService)
         {
-            _context = context;
+            _dashboardService = dashboardService;
+            _inventoryService = inventoryService;
+            _expenseService = expenseService;
+            _invoiceManagerService = invoiceManagerService;
+            _pricingService = pricingService;
         }
 
+        private int GetCurrentManagerId()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(userIdStr, out int userId) ? userId : 1;
+        }
+
+        #region Dashboard & Reporting
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var today = DateTime.Today;
-            var startOfDay = today;
-            var endOfDay = today.AddDays(1).AddTicks(-1);
-
-            var startOfMonth = new DateTime(today.Year, today.Month, 1);
-            var endOfMonth = startOfMonth.AddMonths(1).AddTicks(-1);
-
-            // 1. Số khách hôm nay (Distinct CustomerId từ các hoá đơn có Booking phát sinh hôm nay)
-            int customersToday = await _context.Invoices
-                .Where(i => i.CheckInTime >= startOfDay && i.CheckInTime <= endOfDay && i.BookingId != null)
-                .Select(i => i.Booking!.CustomerId)
-                .Distinct()
-                .CountAsync();
-
-            // 2. Doanh thu hôm nay (Từ các hoá đơn đã thanh toán hôm nay)
-            decimal revenueToday = await _context.Invoices
-                .Where(i => i.Status == "Paid" && i.CheckOutTime >= startOfDay && i.CheckOutTime <= endOfDay)
-                .SumAsync(i => i.GrandTotal ?? 0);
-
-            // 3. Số khách tháng này
-            int customersThisMonth = await _context.Invoices
-                .Where(i => i.CheckInTime >= startOfMonth && i.CheckInTime <= endOfMonth && i.BookingId != null)
-                .Select(i => i.Booking!.CustomerId)
-                .Distinct()
-                .CountAsync();
-
-            // 4. Doanh thu tháng này
-            decimal revenueThisMonth = await _context.Invoices
-                .Where(i => i.Status == "Paid" && i.CheckOutTime >= startOfMonth && i.CheckOutTime <= endOfMonth)
-                .SumAsync(i => i.GrandTotal ?? 0);
-
-            // Calculate Total Revenue from all Paid Invoices
-            decimal totalRevenue = await _context.Invoices
-                .Where(i => i.Status == "Paid")
-                .SumAsync(i => i.GrandTotal ?? 0);
-
-            // Calculate Total Expenses from Expense table + PurchaseOrder table
-            decimal totalExpenses = await _context.Expenses
-                .SumAsync(e => e.Amount);
-
-            decimal totalPOAmount = await _context.PurchaseOrders
-                .SumAsync(po => po.TotalAmount ?? 0);
-
-            totalExpenses += totalPOAmount;
-
-            decimal netProfit = totalRevenue - totalExpenses;
-            double profitMargin = totalRevenue > 0 ? (double)(netProfit / totalRevenue) * 100 : 0;
-
-            // Generate monthly trend for past 6 months
-            var labels = new List<string>();
-            var revenues = new List<decimal>();
-            var expensesList = new List<decimal>();
-
-            var now = DateTime.Now;
-            for (int i = 5; i >= 0; i--)
-            {
-                var targetMonth = now.AddMonths(-i);
-                var monthStart = new DateTime(targetMonth.Year, targetMonth.Month, 1);
-                var monthEnd = monthStart.AddMonths(1).AddTicks(-1);
-
-                labels.Add($"Tháng {targetMonth.Month}/{targetMonth.Year.ToString().Substring(2)}");
-
-                decimal rev = await _context.Invoices
-                    .Where(i => i.Status == "Paid" && i.CheckOutTime >= monthStart && i.CheckOutTime <= monthEnd)
-                    .SumAsync(i => i.GrandTotal ?? 0);
-                revenues.Add(rev);
-
-                decimal exp = await _context.Expenses
-                    .Where(e => e.ExpenseDate >= monthStart && e.ExpenseDate <= monthEnd)
-                    .SumAsync(e => e.Amount);
-
-                decimal poAmt = await _context.PurchaseOrders
-                    .Where(po => po.OrderDate >= monthStart && po.OrderDate <= monthEnd)
-                    .SumAsync(po => po.TotalAmount ?? 0);
-
-                expensesList.Add(exp + poAmt);
-            }
-
-            // --- REVENUE REPORT CONSOLIDATION ---
-            decimal totalRoom = await _context.Invoices
-                .Where(i => i.Status == "Paid")
-                .SumAsync(i => i.RoomTotal ?? 0);
-
-            decimal totalService = await _context.Invoices
-                .Where(i => i.Status == "Paid")
-                .SumAsync(i => i.ServiceTotal ?? 0);
-
-            var roomTypeRevenue = await _context.Invoices
-                .Where(i => i.Status == "Paid")
-                .Include(i => i.Room).ThenInclude(r => r.RoomType)
-                .GroupBy(i => i.Room.RoomType.TypeName)
-                .Select(g => new { TypeName = g.Key, Amount = g.Sum(i => i.RoomTotal ?? 0) })
-                .ToListAsync();
-
-            var categoryRevenue = await _context.InvoiceDetails
-                .Include(id => id.Invoice)
-                .Include(id => id.Service).ThenInclude(s => s.Category)
-                .Where(id => id.Invoice.Status == "Paid")
-                .GroupBy(id => id.Service.Category.CategoryName)
-                .Select(g => new { CategoryName = g.Key, Amount = g.Sum(id => id.Quantity * id.UnitPrice) })
-                .ToListAsync();
-
-            // --- PROFIT REPORT CONSOLIDATION ---
-            var profitItems = new List<MonthlyProfitReportItem>();
-            for (int i = 11; i >= 0; i--)
-            {
-                var targetMonth = now.AddMonths(-i);
-                var monthStart = new DateTime(targetMonth.Year, targetMonth.Month, 1);
-                var monthEnd = monthStart.AddMonths(1).AddTicks(-1);
-
-                decimal rev = await _context.Invoices
-                    .Where(i => i.Status == "Paid" && i.CheckOutTime >= monthStart && i.CheckOutTime <= monthEnd)
-                    .SumAsync(i => i.GrandTotal ?? 0);
-
-                decimal exp = await _context.Expenses
-                    .Where(e => e.ExpenseDate >= monthStart && e.ExpenseDate <= monthEnd)
-                    .SumAsync(e => e.Amount);
-
-                decimal poAmt = await _context.PurchaseOrders
-                    .Where(po => po.OrderDate >= monthStart && po.OrderDate <= monthEnd)
-                    .SumAsync(po => po.TotalAmount ?? 0);
-
-                decimal totalExp = exp + poAmt;
-                decimal net = rev - totalExp;
-                double margin = rev > 0 ? (double)(net / rev) * 100 : 0;
-
-                profitItems.Add(new MonthlyProfitReportItem
-                {
-                    MonthLabel = $"Tháng {targetMonth.Month}/{targetMonth.Year}",
-                    Revenue = rev,
-                    Expenses = totalExp,
-                    NetProfit = net,
-                    Margin = margin
-                });
-            }
-
-            var viewModel = new FinancialDashboardViewModel
-            {
-                CustomersToday = customersToday,
-                RevenueToday = revenueToday,
-                CustomersThisMonth = customersThisMonth,
-                RevenueThisMonth = revenueThisMonth,
-
-                TotalRevenue = totalRevenue,
-                TotalExpenses = totalExpenses,
-                NetProfit = netProfit,
-                ProfitMargin = profitMargin,
-                MonthlyLabels = labels,
-                MonthlyRevenues = revenues,
-                MonthlyExpenses = expensesList,
-
-                TotalRoomRevenue = totalRoom,
-                TotalServiceRevenue = totalService,
-                RoomTypeLabels = roomTypeRevenue.Select(r => r.TypeName).ToList(),
-                RoomTypeRevenues = roomTypeRevenue.Select(r => r.Amount).ToList(),
-                CategoryLabels = categoryRevenue.Select(c => c.CategoryName).ToList(),
-                CategoryRevenues = categoryRevenue.Select(c => c.Amount).ToList(),
-                ProfitItems = profitItems
-            };
-
+            var viewModel = await _dashboardService.GetDashboardDataAsync();
             return View(viewModel);
         }
 
-
-        public IActionResult StockIn()
+        [HttpGet]
+        public async Task<IActionResult> RevenueReport()
         {
-            ViewBag.Suppliers = _context.Suppliers.ToList();
+            var viewModel = await _dashboardService.GetRevenueReportAsync();
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ProfitReport()
+        {
+            var viewModel = await _dashboardService.GetProfitReportAsync();
+            return View(viewModel);
+        }
+        #endregion
+
+        #region Inventory & Stock
+        public async Task<IActionResult> StockIn()
+        {
+            ViewBag.Suppliers = await _inventoryService.GetAllSuppliersAsync();
             return View();
         }
 
         [HttpGet]
         public async Task<IActionResult> SearchServices(string term)
-
         {
-            var query = _context.ServiceItems.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(term))
-            {
-                query = query.Where(s => s.ServiceName.Contains(term));
-            }
-
-            var services = await query
-                .Select(s => new
-                {
-                    serviceId = s.ServiceId,
-                    serviceName = s.ServiceName,
-                    unit = s.Unit
-                })
-                .Take(15)
-                .ToListAsync();
-
+            var services = await _inventoryService.SearchServicesAsync(term);
             return Json(services);
         }
 
@@ -221,799 +81,106 @@ namespace KaraokeManagement.Controllers
         public async Task<IActionResult> SaveStockIn([FromBody] StockInRequestModel model)
         {
             if (model == null || !model.Items.Any())
-            {
                 return Json(new { success = false, message = "Vui lòng thêm ít nhất 1 sản phẩm." });
-            }
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
-            {
-                // 1. Tạo Purchase Order mới
-                var po = new PurchaseOrder
-                {
-                    SupplierId = model.SupplierId,
-                    OrderDate = model.OrderDate,
-                    CreatedById = 1, // FIX CỨNG TẠM: Thay bằng ID User đăng nhập thực tế của bạn
-                    TotalAmount = model.Items.Sum(i => i.Quantity * i.ImportPrice)
-                };
+            var result = await _inventoryService.SaveStockInAsync(model, GetCurrentManagerId());
+            return Json(new { success = result.Success, message = result.Message });
+        }
 
-                _context.PurchaseOrders.Add(po);
-                await _context.SaveChangesAsync(); // Lưu để lấy PoId
+        [HttpPost]
+        public async Task<IActionResult> UpdateStockIn([FromBody] UpdateStockInRequestModel model)
+        {
+            if (model == null || !model.Items.Any())
+                return Json(new { success = false, message = "Vui lòng thêm ít nhất 1 sản phẩm." });
 
-                // 2. Thêm Chi tiết và Cập nhật Tồn kho
-                foreach (var item in model.Items)
-                {
-                    var detail = new PurchaseOrderDetail
-                    {
-                        PoId = po.PoId,
-                        ServiceId = item.ServiceId,
-                        Quantity = item.Quantity,
-                        ImportPrice = item.ImportPrice
-                    };
-                    _context.PurchaseOrderDetails.Add(detail);
-
-                    // Cập nhật số lượng tồn trong ServiceItem
-                    var service = await _context.ServiceItems.FindAsync(item.ServiceId);
-                    if (service != null)
-                    {
-                        service.StockQuantity = (service.StockQuantity ?? 0) + item.Quantity;
-                    }
-                }
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                return Json(new { success = true, message = "Lưu phiếu nhập thành công!" });
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
-            }
+            var result = await _inventoryService.UpdateStockInAsync(model);
+            return Json(new { success = result.Success, message = result.Message });
         }
 
         public async Task<IActionResult> Inventory()
         {
-            var items = await _context.ServiceItems
-                .Include(s => s.Category)
-                .ToListAsync();
-
-            var latestImportPrices = await _context.PurchaseOrderDetails
-                .Include(pod => pod.Po)
-                .GroupBy(pod => pod.ServiceId)
-                .Select(g => new
-                {
-                    ServiceId = g.Key,
-                    LatestPrice = g.OrderByDescending(pod => pod.Po.OrderDate).Select(pod => pod.ImportPrice).FirstOrDefault()
-                })
-                .ToDictionaryAsync(x => x.ServiceId, x => x.LatestPrice);
-
-            var vmItems = items.Select(item =>
-            {
-                decimal importPrice = latestImportPrices.TryGetValue(item.ServiceId, out var price) ? price : 0;
-                string status = "In Stock";
-                if ((item.StockQuantity ?? 0) <= 0) status = "Out of Stock";
-                else if ((item.StockQuantity ?? 0) <= 10) status = "Low Stock";
-
-                return new InventoryItemViewModel
-                {
-                    ServiceId = item.ServiceId,
-                    ServiceName = item.ServiceName,
-                    CategoryName = item.Category.CategoryName,
-                    SellingPrice = item.SellingPrice,
-                    Unit = item.Unit,
-                    StockQuantity = item.StockQuantity ?? 0,
-                    ImportPrice = importPrice,
-                    Status = status
-                };
-            }).ToList();
-
-            decimal totalValue = vmItems.Sum(x => x.StockQuantity * x.ImportPrice);
-            int lowStockCount = vmItems.Count(x => x.Status == "Low Stock");
-            int activeCategoriesCount = await _context.Categories.CountAsync();
-            var categories = await _context.Categories.ToListAsync();
-
-            var viewModel = new InventoryViewModel
-            {
-                Items = vmItems,
-                TotalValue = totalValue,
-                LowStockCount = lowStockCount,
-                ActiveCategoriesCount = activeCategoriesCount,
-                Categories = categories
-            };
-
+            var viewModel = await _inventoryService.GetInventoryAsync();
             return View(viewModel);
         }
 
         [HttpPost]
         public async Task<IActionResult> AddInventoryItem(string serviceName, int categoryId, decimal sellingPrice, string unit, int stockQuantity, decimal importPrice)
         {
-            if (string.IsNullOrWhiteSpace(serviceName))
-            {
-                return Json(new { success = false, message = "Tên sản phẩm không được để trống." });
-            }
-            if (sellingPrice < 0)
-            {
-                return Json(new { success = false, message = "Giá bán không được nhỏ hơn 0." });
-            }
-            if (stockQuantity < 0)
-            {
-                return Json(new { success = false, message = "Số lượng tồn kho không được nhỏ hơn 0." });
-            }
-            if (importPrice < 0)
-            {
-                return Json(new { success = false, message = "Giá nhập không được nhỏ hơn 0." });
-            }
-
-            bool exists = await _context.ServiceItems.AnyAsync(s => s.ServiceName.ToLower() == serviceName.ToLower() && s.CategoryId == categoryId);
-            if (exists)
-            {
-                return Json(new { success = false, message = "Sản phẩm này đã tồn tại trong danh mục này." });
-            }
-
-            var newItem = new ServiceItem
-            {
-                ServiceName = serviceName,
-                CategoryId = categoryId,
-                SellingPrice = sellingPrice,
-                Unit = unit,
-                StockQuantity = stockQuantity
-            };
-
-            _context.ServiceItems.Add(newItem);
-            await _context.SaveChangesAsync();
-
-            // If initial stock and import price are provided, create a PurchaseOrder record
-            if (stockQuantity > 0 && importPrice > 0)
-            {
-                var defaultSupplier = await _context.Suppliers.FirstOrDefaultAsync();
-                int supplierId = defaultSupplier?.SupplierId ?? 1;
-
-                var po = new PurchaseOrder
-                {
-                    SupplierId = supplierId,
-                    CreatedById = 2, // Hung Manager
-                    OrderDate = DateTime.Now,
-                    TotalAmount = stockQuantity * importPrice
-                };
-                _context.PurchaseOrders.Add(po);
-                await _context.SaveChangesAsync();
-
-                var pod = new PurchaseOrderDetail
-                {
-                    PoId = po.PoId,
-                    ServiceId = newItem.ServiceId,
-                    ImportPrice = importPrice,
-                    Quantity = stockQuantity
-                };
-                _context.PurchaseOrderDetails.Add(pod);
-                await _context.SaveChangesAsync();
-            }
-
-            return Json(new { success = true, message = "Thêm hàng mới thành công!" });
+            var result = await _inventoryService.AddInventoryItemAsync(serviceName, categoryId, sellingPrice, unit, stockQuantity, importPrice, GetCurrentManagerId());
+            return Json(new { success = result.Success, message = result.Message });
         }
 
         [HttpGet]
         public async Task<IActionResult> ImportHistory(int? supplierId, string? timeFilter, int page = 1)
         {
-            var now = DateTime.Now;
-            var startOfCurrentMonth = new DateTime(now.Year, now.Month, 1);
-            var endOfCurrentMonth = startOfCurrentMonth.AddMonths(1).AddTicks(-1);
-
-            var startOfLastMonth = startOfCurrentMonth.AddMonths(-1);
-            var endOfLastMonth = startOfCurrentMonth.AddTicks(-1);
-
-            // 1. Tính toán thống kê chung
-            var currentMonthTotal = await _context.PurchaseOrders
-                .Where(po => po.OrderDate >= startOfCurrentMonth && po.OrderDate <= endOfCurrentMonth)
-                .SumAsync(po => po.TotalAmount ?? 0);
-
-            var lastMonthTotal = await _context.PurchaseOrders
-                .Where(po => po.OrderDate >= startOfLastMonth && po.OrderDate <= endOfLastMonth)
-                .SumAsync(po => po.TotalAmount ?? 0);
-
-            double percentChange = 0;
-            if (lastMonthTotal > 0)
-            {
-                percentChange = (double)((currentMonthTotal - lastMonthTotal) / lastMonthTotal) * 100;
-            }
-            else if (currentMonthTotal > 0)
-            {
-                percentChange = 100; // Tăng 100% nếu tháng trước bằng 0 mà tháng này có
-            }
-
-            var totalOrdersCount = await _context.PurchaseOrders.CountAsync();
-
-            // 2. Xây dựng Query danh sách
-            var query = _context.PurchaseOrders
-                .Include(po => po.Supplier)
-                .AsQueryable();
-
-            // Áp dụng bộ lọc Nhà cung cấp
-            if (supplierId.HasValue && supplierId.Value > 0)
-            {
-                query = query.Where(po => po.SupplierId == supplierId.Value);
-            }
-
-            // Áp dụng bộ lọc Thời gian
-            if (!string.IsNullOrEmpty(timeFilter))
-            {
-                if (timeFilter == "month")
-                    query = query.Where(po => po.OrderDate >= startOfCurrentMonth && po.OrderDate <= endOfCurrentMonth);
-                else if (timeFilter == "lastmonth")
-                    query = query.Where(po => po.OrderDate >= startOfLastMonth && po.OrderDate <= endOfLastMonth);
-            }
-
-            // 3. Phân trang (Server-side)
-            int pageSize = 10;
-            int totalCount = await query.CountAsync();
-            int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-            if (totalPages == 0) totalPages = 1;
-            if (page < 1) page = 1;
-            if (page > totalPages) page = totalPages;
-
-            var purchaseOrders = await query
-                .OrderByDescending(po => po.OrderDate)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            // 4. Lấy danh sách nhà cung cấp cho Dropdown
-            var suppliers = await _context.Suppliers.ToListAsync();
-
-            var viewModel = new KaraokeManagement.ViewModel.ImportHistoryViewModel
-            {
-                TotalSpentThisMonth = currentMonthTotal,
-                PercentChange = percentChange,
-                TotalOrders = totalOrdersCount,
-                PurchaseOrders = purchaseOrders,
-                Suppliers = suppliers,
-                CurrentPage = page,
-                TotalPages = totalPages,
-                TotalCount = totalCount,
-                SelectedSupplierId = supplierId,
-                TimeFilter = timeFilter
-            };
-
+            var viewModel = await _inventoryService.GetImportHistoryAsync(supplierId, timeFilter, page);
             return View(viewModel);
         }
 
         [HttpGet]
         public async Task<IActionResult> ImportHistoryDetail(int id)
         {
-            var po = await _context.PurchaseOrders
-                .Include(p => p.PurchaseOrderDetails)
-                    .ThenInclude(d => d.Service)
-                .Include(p => p.Supplier)
-                .FirstOrDefaultAsync(p => p.PoId == id);
-
-            if (po == null)
-            {
-                return RedirectToAction("ImportHistory");
-            }
-
-            var viewModel = new KaraokeManagement.ViewModel.ImportHistoryDetailViewModel
-            {
-                PurchaseOrder = po,
-                Suppliers = await _context.Suppliers.ToListAsync()
-            };
-
+            var viewModel = await _inventoryService.GetImportHistoryDetailAsync(id);
+            if (viewModel == null) return RedirectToAction("ImportHistory");
             return View(viewModel);
         }
+        #endregion
 
-        [HttpPost]
-        public async Task<IActionResult> UpdateStockIn([FromBody] KaraokeManagement.ViewModel.UpdateStockInRequestModel model)
-        {
-            if (model == null || !model.Items.Any())
-            {
-                return Json(new { success = false, message = "Vui lòng thêm ít nhất 1 sản phẩm." });
-            }
-
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
-            {
-                var existingPo = await _context.PurchaseOrders
-                    .Include(p => p.PurchaseOrderDetails)
-                    .FirstOrDefaultAsync(p => p.PoId == model.PoId);
-
-                if (existingPo == null)
-                    return Json(new { success = false, message = "Không tìm thấy phiếu nhập." });
-
-                // 1. Hoàn trả Tồn kho cũ (Trừ đi số lượng đã nhập lúc trước)
-                foreach (var oldItem in existingPo.PurchaseOrderDetails)
-                {
-                    var service = await _context.ServiceItems.FindAsync(oldItem.ServiceId);
-                    if (service != null)
-                    {
-                        service.StockQuantity = (service.StockQuantity ?? 0) - oldItem.Quantity;
-                    }
-                }
-
-                // 2. Xóa chi tiết phiếu cũ
-                _context.PurchaseOrderDetails.RemoveRange(existingPo.PurchaseOrderDetails);
-
-                // 3. Cập nhật thông tin phiếu nhập
-                existingPo.SupplierId = model.SupplierId;
-                existingPo.OrderDate = model.OrderDate;
-                existingPo.TotalAmount = model.Items.Sum(i => i.Quantity * i.ImportPrice);
-
-                // 4. Thêm chi tiết mới và Cập nhật Tồn kho mới
-                foreach (var item in model.Items)
-                {
-                    var detail = new PurchaseOrderDetail
-                    {
-                        PoId = existingPo.PoId,
-                        ServiceId = item.ServiceId,
-                        Quantity = item.Quantity,
-                        ImportPrice = item.ImportPrice
-                    };
-                    _context.PurchaseOrderDetails.Add(detail);
-
-                    // Cộng thêm số lượng mới
-                    var service = await _context.ServiceItems.FindAsync(item.ServiceId);
-                    if (service != null)
-                    {
-                        service.StockQuantity = (service.StockQuantity ?? 0) + item.Quantity;
-                    }
-                }
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                return Json(new { success = true, message = "Cập nhật phiếu nhập thành công!" });
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
-            }
-        }
-
+        #region Expenses
         [HttpGet]
         public async Task<IActionResult> Expenses()
         {
-            var now = DateTime.Now;
-            var startOfCurrentMonth = new DateTime(now.Year, now.Month, 1);
-            var endOfCurrentMonth = startOfCurrentMonth.AddMonths(1).AddDays(-1);
-
-            var startOfLastMonth = startOfCurrentMonth.AddMonths(-1);
-            var endOfLastMonth = startOfCurrentMonth.AddDays(-1);
-
-            var currentMonthExpenses = await _context.Expenses
-                .Include(e => e.ExpenseCategory)
-                .Where(e => e.ExpenseDate >= startOfCurrentMonth && e.ExpenseDate <= endOfCurrentMonth)
-                .ToListAsync();
-
-            var lastMonthExpenses = await _context.Expenses
-                .Where(e => e.ExpenseDate >= startOfLastMonth && e.ExpenseDate <= endOfLastMonth)
-                .ToListAsync();
-
-            decimal totalCurrentMonth = currentMonthExpenses.Sum(e => e.Amount);
-            decimal totalLastMonth = lastMonthExpenses.Sum(e => e.Amount);
-
-            decimal percentChange = 0;
-            if (totalLastMonth > 0)
-            {
-                percentChange = ((totalCurrentMonth - totalLastMonth) / totalLastMonth) * 100;
-            }
-
-            // Find highest category in current month
-            var categoryGroup = currentMonthExpenses
-                .GroupBy(e => e.ExpenseCategory.CategoryName)
-                .Select(g => new { CategoryName = g.Key, Amount = g.Sum(e => e.Amount) })
-                .OrderByDescending(g => g.Amount)
-                .FirstOrDefault();
-
-            string highestCatName = "Chưa có";
-            decimal highestCatAmount = 0;
-            decimal highestCatPercent = 0;
-
-            if (categoryGroup != null)
-            {
-                highestCatName = categoryGroup.CategoryName;
-                highestCatAmount = categoryGroup.Amount;
-                if (totalCurrentMonth > 0)
-                {
-                    highestCatPercent = (highestCatAmount / totalCurrentMonth) * 100;
-                }
-            }
-
-            var allExpenses = await _context.Expenses
-                .Include(e => e.ExpenseCategory)
-                .OrderByDescending(e => e.ExpenseDate)
-                .ThenByDescending(e => e.CreatedAt)
-                .ToListAsync();
-
-            var categories = await _context.ExpenseCategories
-                .OrderBy(c => c.CategoryName)
-                .ToListAsync();
-
-            var viewModel = new ExpensesViewModel
-            {
-                TotalMonthExpense = totalCurrentMonth,
-                PercentChange = percentChange,
-                HighestCategoryName = highestCatName,
-                HighestCategoryAmount = highestCatAmount,
-                HighestCategoryPercent = highestCatPercent,
-                RecentExpenses = allExpenses,
-                Categories = categories
-            };
-
+            var viewModel = await _expenseService.GetExpensesViewModelAsync();
             return View(viewModel);
         }
 
         [HttpPost]
         public async Task<IActionResult> AddExpense(int categoryId, string dateStr, decimal amount, string? note)
         {
-            if (categoryId <= 0 || amount <= 0)
-            {
-                return Json(new { success = false, message = "Vui lòng nhập đầy đủ thông tin loại chi phí và số tiền lớn hơn 0." });
-            }
-
-            DateTime expenseDate = DateTime.Now;
-            if (!string.IsNullOrEmpty(dateStr))
-            {
-                // UI inputs type="month" which gives "yyyy-MM", we can append "-01" to parse it as date
-                if (DateTime.TryParse(dateStr + "-01", out var parsedDate))
-                {
-                    expenseDate = parsedDate;
-                }
-                else if (DateTime.TryParse(dateStr, out parsedDate))
-                {
-                    expenseDate = parsedDate;
-                }
-            }
-
-            var newExpense = new Expense
-            {
-                CategoryId = categoryId,
-                ExpenseDate = expenseDate,
-                Amount = amount,
-                Note = note,
-                CreatedAt = DateTime.Now
-            };
-
-            _context.Expenses.Add(newExpense);
-            await _context.SaveChangesAsync();
-
-            return Json(new { success = true, message = "Đã lưu chi phí thành công!" });
+            var result = await _expenseService.AddExpenseAsync(categoryId, dateStr, amount, note);
+            return Json(new { success = result.Success, message = result.Message });
         }
-
-
 
         [HttpPost]
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryModel payload)
         {
-            if (payload == null || string.IsNullOrWhiteSpace(payload.CategoryName))
-            {
-                return Json(new { success = false, message = "Tên danh mục không hợp lệ." });
-            }
+            var result = await _expenseService.CreateCategoryAsync(payload);
+            if (!result.Success) return Json(new { success = false, message = result.Message });
 
-            var nameTrimmed = payload.CategoryName.Trim();
-            var exists = await _context.ExpenseCategories.AnyAsync(c => c.CategoryName.ToLower() == nameTrimmed.ToLower());
-            if (exists)
-            {
-                return Json(new { success = false, message = "Danh mục này đã tồn tại." });
-            }
-
-            var newCategory = new ExpenseCategory
-            {
-                CategoryName = nameTrimmed
-            };
-
-            _context.ExpenseCategories.Add(newCategory);
-            await _context.SaveChangesAsync();
-
-            return Json(new { success = true, categoryId = newCategory.CategoryId, categoryName = newCategory.CategoryName });
+            return Json(new { success = true, categoryId = result.CategoryId, categoryName = result.CategoryName });
         }
+        #endregion
 
+        #region Invoices
         [HttpGet]
         public async Task<IActionResult> Invoices(string? searchInvoiceId, DateTime? searchDate, int? roomId, DateTime? fromDate, DateTime? toDate, int page = 1)
         {
-            var now = DateTime.Now;
-            var end = toDate ?? new DateTime(now.Year, now.Month, now.Day, 23, 59, 59);
-            var start = fromDate ?? new DateTime(now.Year, now.Month, 1).AddMonths(-1); // Default to show more data initially
-
-            var query = _context.Invoices
-                .Include(i => i.Room)
-                .Include(i => i.Booking)
-                    .ThenInclude(b => b!.Customer)
-                .AsQueryable();
-
-            // 1. Search by exact or partial Invoice ID
-            if (!string.IsNullOrWhiteSpace(searchInvoiceId))
-            {
-                var cleanSearch = searchInvoiceId.Replace("#", "").Replace("INV-", "").Replace("inv-", "").Trim();
-                query = query.Where(i => i.InvoiceId.ToString().Contains(cleanSearch));
-            }
-
-            // 2. Room filter
-            if (roomId.HasValue && roomId.Value > 0)
-            {
-                query = query.Where(i => i.RoomId == roomId.Value);
-            }
-
-            // 3. Date or Date Range filter
-            if (searchDate.HasValue)
-            {
-                var targetDate = searchDate.Value.Date;
-                query = query.Where(i => i.CheckInTime.Date == targetDate);
-            }
-            else
-            {
-                var searchStart = start.Date;
-                var searchEnd = end.Date.AddDays(1).AddTicks(-1);
-                query = query.Where(i => i.CheckInTime >= searchStart && i.CheckInTime <= searchEnd);
-            }
-
-            int totalCount = await query.CountAsync();
-            int pageSize = 10;
-            int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-            if (totalPages == 0) totalPages = 1;
-
-            if (page < 1) page = 1;
-            if (page > totalPages) page = totalPages;
-
-            var invoices = await query
-                .OrderByDescending(i => i.CheckInTime)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            int startEntry = totalCount == 0 ? 0 : (page - 1) * pageSize + 1;
-            int endEntry = Math.Min(page * pageSize, totalCount);
-
-            var roomsList = await _context.Rooms
-                .OrderBy(r => r.RoomName)
-                .ToListAsync();
-
-            var viewModel = new ManagerInvoicesViewModel
-            {
-                Invoices = invoices,
-                FromDate = start,
-                ToDate = end,
-                SearchInvoiceId = searchInvoiceId,
-                SearchDate = searchDate,
-                SelectedRoomId = roomId,
-                Rooms = roomsList,
-                CurrentPage = page,
-                TotalPages = totalPages,
-                TotalCount = totalCount,
-                StartEntry = startEntry,
-                EndEntry = endEntry
-            };
-
+            var viewModel = await _invoiceManagerService.GetInvoicesAsync(searchInvoiceId, searchDate, roomId, fromDate, toDate, page);
             return View(viewModel);
         }
 
         [HttpGet]
         public async Task<IActionResult> InvoiceDetails(int id)
         {
-            try
-            {
-                var invoice = await _context.Invoices
-                    .Include(i => i.Room)
-                    .ThenInclude(r => r.RoomType)
-                    .Include(i => i.Receptionist)
-                    .Include(i => i.Booking)
-                        .ThenInclude(b => b!.Customer)
-                            .ThenInclude(c => c.Tier)
-                    .Include(i => i.Booking)
-                        .ThenInclude(b => b!.Staff)
-                    .Include(i => i.InvoiceDetails)
-                    .ThenInclude(d => d.Service)
-                    .Include(i => i.PaymentTransactions)
-                    .ThenInclude(t => t.Method)
-                    .FirstOrDefaultAsync(i => i.InvoiceId == id);
+            var result = await _invoiceManagerService.GetInvoiceDetailAsync(id);
+            if (!result.Success) return Json(new { success = false, message = result.Message });
 
-                if (invoice == null)
-                {
-                    return Json(new { success = false, message = "Không tìm thấy hóa đơn." });
-                }
-
-                var duration = (invoice.CheckOutTime ?? DateTime.Now) - invoice.CheckInTime;
-                string durationText = $"{(int)duration.TotalHours} giờ {duration.Minutes} phút";
-
-                // Fetch assigned service staff names from Booking.Staff
-                var staffNamesText = invoice.Booking?.Staff?.FullName ?? "Chưa phân công";
-
-                var details = new
-                {
-                    invoiceId = invoice.InvoiceId,
-                    roomName = invoice.Room?.RoomName ?? "Chưa rõ",
-                    roomTypeName = invoice.Room?.RoomType?.TypeName ?? "Chưa rõ",
-                    pricePerHour = invoice.Room?.RoomType?.PricePerHour ?? 0,
-                    checkInTime = invoice.CheckInTime.ToString("dd/MM/yyyy HH:mm"),
-                    checkOutTime = invoice.CheckOutTime?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa checkout",
-                    durationText = durationText,
-                    customerName = invoice.Booking?.Customer?.FullName ?? "Khách lẻ",
-                    customerPhone = invoice.Booking?.Customer?.Phone ?? "N/A",
-                    customerTier = invoice.Booking?.Customer?.Tier?.TierName ?? "Thường",
-                    discountPercent = invoice.Booking?.Customer?.Tier?.DiscountPercent ?? 0,
-                    staffNames = staffNamesText,
-                    receptionistName = invoice.Receptionist?.FullName ?? "N/A",
-                    roomTotal = invoice.RoomTotal ?? 0,
-                    serviceTotal = invoice.ServiceTotal ?? 0,
-                    discountAmount = invoice.DiscountAmount ?? 0,
-                    grandTotal = invoice.GrandTotal ?? 0,
-                    status = invoice.Status,
-                    items = invoice.InvoiceDetails.Select(d => new
-                    {
-                        serviceName = d.Service?.ServiceName ?? "Dịch vụ không tồn tại",
-                        quantity = d.Quantity,
-                        unitPrice = d.UnitPrice,
-                        total = d.Quantity * d.UnitPrice,
-                        unit = d.Service?.Unit ?? "Cái"
-                    }).ToList(),
-                    payments = invoice.PaymentTransactions.Select(t => new
-                    {
-                        methodName = t.Method?.MethodName ?? "Chưa rõ",
-                        amount = t.Amount,
-                        date = t.TransactionDate?.ToString("dd/MM/yyyy HH:mm") ?? "",
-                        refCode = t.ReferenceCode ?? ""
-                    }).ToList()
-                };
-
-                return Json(new { success = true, data = details });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message + "\n" + ex.StackTrace });
-            }
+            return Json(new { success = true, data = result.Data });
         }
-
-        [HttpGet]
-        public async Task<IActionResult> RevenueReport()
-        {
-            // Total Room vs Service Revenue
-            decimal totalRoom = await _context.Invoices
-                .Where(i => i.Status == "Paid")
-                .SumAsync(i => i.RoomTotal ?? 0);
-
-            decimal totalService = await _context.Invoices
-                .Where(i => i.Status == "Paid")
-                .SumAsync(i => i.ServiceTotal ?? 0);
-
-            decimal totalRevenue = totalRoom + totalService;
-
-            // Group by Room Type
-            var roomTypeRevenue = await _context.Invoices
-                .Where(i => i.Status == "Paid")
-                .Include(i => i.Room).ThenInclude(r => r.RoomType)
-                .GroupBy(i => i.Room.RoomType.TypeName)
-                .Select(g => new { TypeName = g.Key, Amount = g.Sum(i => i.RoomTotal ?? 0) })
-                .ToListAsync();
-
-            // Group by Service Category
-            var categoryRevenue = await _context.InvoiceDetails
-                .Include(id => id.Invoice)
-                .Include(id => id.Service).ThenInclude(s => s.Category)
-                .Where(id => id.Invoice.Status == "Paid")
-                .GroupBy(id => id.Service.Category.CategoryName)
-                .Select(g => new { CategoryName = g.Key, Amount = g.Sum(id => id.Quantity * id.UnitPrice) })
-                .ToListAsync();
-
-            var viewModel = new FinancialDashboardViewModel
-            {
-                TotalRevenue = totalRevenue,
-                TotalRoomRevenue = totalRoom,
-                TotalServiceRevenue = totalService,
-                RoomTypeLabels = roomTypeRevenue.Select(r => r.TypeName).ToList(),
-                RoomTypeRevenues = roomTypeRevenue.Select(r => r.Amount).ToList(),
-                CategoryLabels = categoryRevenue.Select(c => c.CategoryName).ToList(),
-                CategoryRevenues = categoryRevenue.Select(c => c.Amount).ToList()
-            };
-
-            return View(viewModel);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> ProfitReport()
-        {
-            var now = DateTime.Now;
-            var profitItems = new List<MonthlyProfitReportItem>();
-
-            // Generate monthly profit list for the past 12 months
-            for (int i = 11; i >= 0; i--)
-            {
-                var targetMonth = now.AddMonths(-i);
-                var monthStart = new DateTime(targetMonth.Year, targetMonth.Month, 1);
-                var monthEnd = monthStart.AddMonths(1).AddTicks(-1);
-
-                decimal revenue = await _context.Invoices
-                    .Where(i => i.Status == "Paid" && i.CheckOutTime >= monthStart && i.CheckOutTime <= monthEnd)
-                    .SumAsync(i => i.GrandTotal ?? 0);
-
-                decimal expenses = await _context.Expenses
-                    .Where(e => e.ExpenseDate >= monthStart && e.ExpenseDate <= monthEnd)
-                    .SumAsync(e => e.Amount);
-
-                decimal poAmt = await _context.PurchaseOrders
-                    .Where(po => po.OrderDate >= monthStart && po.OrderDate <= monthEnd)
-                    .SumAsync(po => po.TotalAmount ?? 0);
-
-                decimal totalExpenses = expenses + poAmt;
-                decimal netProfit = revenue - totalExpenses;
-                double margin = revenue > 0 ? (double)(netProfit / revenue) * 100 : 0;
-
-                profitItems.Add(new MonthlyProfitReportItem
-                {
-                    MonthLabel = $"Tháng {targetMonth.Month}/{targetMonth.Year}",
-                    Revenue = revenue,
-                    Expenses = totalExpenses,
-                    NetProfit = netProfit,
-                    Margin = margin
-                });
-            }
-
-            // Overall summary stats
-            decimal totalRevenue = profitItems.Sum(x => x.Revenue);
-            decimal totalExpensesAll = profitItems.Sum(x => x.Expenses);
-            decimal netProfitAll = totalRevenue - totalExpensesAll;
-            double profitMarginAll = totalRevenue > 0 ? (double)(netProfitAll / totalRevenue) * 100 : 0;
-
-            var viewModel = new FinancialDashboardViewModel
-            {
-                TotalRevenue = totalRevenue,
-                TotalExpenses = totalExpensesAll,
-                NetProfit = netProfitAll,
-                ProfitMargin = profitMarginAll,
-                ProfitItems = profitItems
-            };
-
-            return View(viewModel);
-        }
+        #endregion
 
         #region Dynamic Pricing Management
-
         [HttpGet]
         public async Task<IActionResult> DynamicPricing(string tab = "prices")
         {
-            var roomPrices = await _context.RoomPrices
-                .Include(rp => rp.RoomType)
-                .OrderBy(rp => rp.RoomTypeId)
-                .ThenBy(rp => rp.StartTime)
-                .ToListAsync();
-
-            var pricingPolicies = await _context.PricingPolicies
-                .OrderBy(p => p.PolicyType)
-                .ToListAsync();
-
-            var holidays = await _context.Holidays
-                .OrderBy(h => h.HolidayDate)
-                .ToListAsync();
-
-            var roomTypes = await _context.RoomTypes
-                .OrderBy(rt => rt.TypeName)
-                .ToListAsync();
-
-            var viewModel = new DynamicPricingViewModel
-            {
-                RoomPrices = roomPrices,
-                PricingPolicies = pricingPolicies,
-                Holidays = holidays,
-                RoomTypes = roomTypes,
-                ActiveTab = tab
-            };
-
+            var viewModel = await _pricingService.GetDynamicPricingViewModelAsync(tab);
             return View(viewModel);
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateRoomPrice(int roomTypeId, TimeSpan startTime, TimeSpan endTime, decimal pricePerHour, DateTime? effectiveFrom, DateTime? effectiveTo)
         {
-            var roomPrice = new RoomPrice
-            {
-                RoomTypeId = roomTypeId,
-                StartTime = startTime,
-                EndTime = endTime,
-                PricePerHour = pricePerHour,
-                EffectiveFrom = effectiveFrom,
-                EffectiveTo = effectiveTo
-            };
-
-            _context.RoomPrices.Add(roomPrice);
-            await _context.SaveChangesAsync();
+            await _pricingService.CreateRoomPriceAsync(roomTypeId, startTime, endTime, pricePerHour, effectiveFrom, effectiveTo);
             TempData["SuccessMessage"] = "Thêm khung giá phòng thành công!";
             return RedirectToAction(nameof(DynamicPricing), new { tab = "prices" });
         }
@@ -1021,48 +188,23 @@ namespace KaraokeManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> EditRoomPrice(int priceId, int roomTypeId, TimeSpan startTime, TimeSpan endTime, decimal pricePerHour, DateTime? effectiveFrom, DateTime? effectiveTo)
         {
-            var existing = await _context.RoomPrices.FindAsync(priceId);
-            if (existing != null)
-            {
-                existing.RoomTypeId = roomTypeId;
-                existing.StartTime = startTime;
-                existing.EndTime = endTime;
-                existing.PricePerHour = pricePerHour;
-                existing.EffectiveFrom = effectiveFrom;
-                existing.EffectiveTo = effectiveTo;
-
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Cập nhật khung giá thành công!";
-            }
+            await _pricingService.EditRoomPriceAsync(priceId, roomTypeId, startTime, endTime, pricePerHour, effectiveFrom, effectiveTo);
+            TempData["SuccessMessage"] = "Cập nhật khung giá thành công!";
             return RedirectToAction(nameof(DynamicPricing), new { tab = "prices" });
         }
 
         [HttpPost]
         public async Task<IActionResult> DeleteRoomPrice(int priceId)
         {
-            var existing = await _context.RoomPrices.FindAsync(priceId);
-            if (existing != null)
-            {
-                _context.RoomPrices.Remove(existing);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Xóa khung giá thành công!";
-            }
+            await _pricingService.DeleteRoomPriceAsync(priceId);
+            TempData["SuccessMessage"] = "Xóa khung giá thành công!";
             return RedirectToAction(nameof(DynamicPricing), new { tab = "prices" });
         }
 
         [HttpPost]
         public async Task<IActionResult> CreatePricingPolicy(string policyName, string policyType, decimal value, bool isActive = true)
         {
-            var policy = new PricingPolicy
-            {
-                PolicyName = policyName,
-                PolicyType = policyType,
-                Value = value,
-                IsActive = isActive
-            };
-
-            _context.PricingPolicies.Add(policy);
-            await _context.SaveChangesAsync();
+            await _pricingService.CreatePricingPolicyAsync(policyName, policyType, value, isActive);
             TempData["SuccessMessage"] = "Thêm chính sách phụ thu thành công!";
             return RedirectToAction(nameof(DynamicPricing), new { tab = "policies" });
         }
@@ -1070,58 +212,30 @@ namespace KaraokeManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> EditPricingPolicy(int policyId, string policyName, string policyType, decimal value, bool isActive)
         {
-            var existing = await _context.PricingPolicies.FindAsync(policyId);
-            if (existing != null)
-            {
-                existing.PolicyName = policyName;
-                existing.PolicyType = policyType;
-                existing.Value = value;
-                existing.IsActive = isActive;
-
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Cập nhật chính sách phụ thu thành công!";
-            }
+            await _pricingService.EditPricingPolicyAsync(policyId, policyName, policyType, value, isActive);
+            TempData["SuccessMessage"] = "Cập nhật chính sách phụ thu thành công!";
             return RedirectToAction(nameof(DynamicPricing), new { tab = "policies" });
         }
 
         [HttpPost]
         public async Task<IActionResult> TogglePricingPolicy(int policyId)
         {
-            var existing = await _context.PricingPolicies.FindAsync(policyId);
-            if (existing != null)
-            {
-                existing.IsActive = !existing.IsActive;
-                await _context.SaveChangesAsync();
-            }
+            await _pricingService.TogglePricingPolicyAsync(policyId);
             return RedirectToAction(nameof(DynamicPricing), new { tab = "policies" });
         }
 
         [HttpPost]
         public async Task<IActionResult> DeletePricingPolicy(int policyId)
         {
-            var existing = await _context.PricingPolicies.FindAsync(policyId);
-            if (existing != null)
-            {
-                _context.PricingPolicies.Remove(existing);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Xóa chính sách phụ thu thành công!";
-            }
+            await _pricingService.DeletePricingPolicyAsync(policyId);
+            TempData["SuccessMessage"] = "Xóa chính sách phụ thu thành công!";
             return RedirectToAction(nameof(DynamicPricing), new { tab = "policies" });
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateHoliday(string holidayName, DateTime holidayDate, decimal surchargePercent, bool isActive = true)
         {
-            var holiday = new Holiday
-            {
-                HolidayName = holidayName,
-                HolidayDate = holidayDate,
-                SurchargePercent = surchargePercent,
-                IsActive = isActive
-            };
-
-            _context.Holidays.Add(holiday);
-            await _context.SaveChangesAsync();
+            await _pricingService.CreateHolidayAsync(holidayName, holidayDate, surchargePercent, isActive);
             TempData["SuccessMessage"] = "Thêm ngày lễ thành công!";
             return RedirectToAction(nameof(DynamicPricing), new { tab = "holidays" });
         }
@@ -1129,45 +243,25 @@ namespace KaraokeManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> EditHoliday(int holidayId, string holidayName, DateTime holidayDate, decimal surchargePercent, bool isActive)
         {
-            var existing = await _context.Holidays.FindAsync(holidayId);
-            if (existing != null)
-            {
-                existing.HolidayName = holidayName;
-                existing.HolidayDate = holidayDate;
-                existing.SurchargePercent = surchargePercent;
-                existing.IsActive = isActive;
-
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Cập nhật thông tin ngày lễ thành công!";
-            }
+            await _pricingService.EditHolidayAsync(holidayId, holidayName, holidayDate, surchargePercent, isActive);
+            TempData["SuccessMessage"] = "Cập nhật thông tin ngày lễ thành công!";
             return RedirectToAction(nameof(DynamicPricing), new { tab = "holidays" });
         }
 
         [HttpPost]
         public async Task<IActionResult> ToggleHoliday(int holidayId)
         {
-            var existing = await _context.Holidays.FindAsync(holidayId);
-            if (existing != null)
-            {
-                existing.IsActive = !existing.IsActive;
-                await _context.SaveChangesAsync();
-            }
+            await _pricingService.ToggleHolidayAsync(holidayId);
             return RedirectToAction(nameof(DynamicPricing), new { tab = "holidays" });
         }
 
         [HttpPost]
         public async Task<IActionResult> DeleteHoliday(int holidayId)
         {
-            var existing = await _context.Holidays.FindAsync(holidayId);
-            if (existing != null)
-            {
-                _context.Holidays.Remove(existing);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Xóa ngày lễ thành công!";
-            }
+            await _pricingService.DeleteHolidayAsync(holidayId);
+            TempData["SuccessMessage"] = "Xóa ngày lễ thành công!";
             return RedirectToAction(nameof(DynamicPricing), new { tab = "holidays" });
         }
-
         #endregion
     }
 }
