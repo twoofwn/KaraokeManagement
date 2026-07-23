@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -144,7 +144,7 @@ public partial class KaraokeManagementDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Booking__Created__6E01572D");
 
-            entity.HasOne(d => d.Staff).WithMany(p => p.Bookings)
+            entity.HasOne(d => d.Staff).WithMany()
                 .HasForeignKey(d => d.StaffId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Booking__Created__6E015DDD");
