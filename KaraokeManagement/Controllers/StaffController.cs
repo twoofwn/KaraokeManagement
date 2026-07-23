@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -61,18 +61,18 @@ namespace KaraokeManagement.Controllers
 
             foreach (var sched in schedules)
             {
-                var rooms = await _context.RoomAssignments
-                    .Include(ra => ra.Room)
-                    .ThenInclude(r => r.RoomType)
-                    .Where(ra => ra.ScheduleId == sched.ScheduleId)
-                    .Select(ra => ra.Room)
-                    .ToListAsync();
+                //var rooms = await _context.RoomAssignments
+                //    .Include(ra => ra.Room)
+                //    .ThenInclude(r => r.RoomType)
+                //    .Where(ra => ra.ScheduleId == sched.ScheduleId)
+                //    .Select(ra => ra.Room)
+                //    .ToListAsync();
 
-                todaySchedulesList.Add(new StaffScheduleItemViewModel
-                {
-                    Schedule = sched,
-                    AssignedRooms = rooms
-                });
+                //todaySchedulesList.Add(new StaffScheduleItemViewModel
+                //{
+                //    Schedule = sched,
+                //    AssignedRooms = rooms
+                //});
             }
 
             // Fetch incoming swap requests for this target employee
