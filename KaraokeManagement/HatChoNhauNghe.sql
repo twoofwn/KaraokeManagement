@@ -179,11 +179,9 @@ CREATE TABLE [Booking] (
     StartTime DATETIME NOT NULL,
     EndTime DATETIME NULL,
     Status NVARCHAR(50) DEFAULT 'Pending',
-	StaffId INT NULL,
     GuestCount INT NULL DEFAULT 1,
     Note NVARCHAR(255) NULL,
     FOREIGN KEY (CustomerID) REFERENCES [Customer](CustomerID),
-	FOREIGN KEY (StaffId) REFERENCES [Account](AccountID),
     FOREIGN KEY (CreatedByID) REFERENCES [Account](AccountID),
     FOREIGN KEY (RoomID) REFERENCES [Room](RoomID)
 );
@@ -308,6 +306,15 @@ CREATE TABLE [EmployeeTask] (
     Status NVARCHAR(30) NULL DEFAULT 'Pending',
     FOREIGN KEY (AssignedToID) REFERENCES [Account](AccountID),
     FOREIGN KEY (CreatedByID) REFERENCES [Account](AccountID)
+);
+
+CREATE TABLE [RoomAssignment] (
+    RoomAssignmentId INT IDENTITY(1,1) PRIMARY KEY,
+    RoomId INT NOT NULL,
+    ScheduleId INT NOT NULL,
+    AssignedAt DATETIME NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (RoomId) REFERENCES [Room](RoomID),
+    FOREIGN KEY (ScheduleId) REFERENCES [EmployeeSchedule](ScheduleID)
 );
 
 CREATE TABLE [LeaveRequest] (
@@ -488,11 +495,14 @@ INSERT INTO [Category] (CategoryID, CategoryName) VALUES (1, N'Đồ Uống');
 INSERT INTO [Category] (CategoryID, CategoryName) VALUES (2, N'Đồ Ăn');
 INSERT INTO [Category] (CategoryID, CategoryName) VALUES (3, N'Trái Cây');
 INSERT INTO [Category] (CategoryID, CategoryName) VALUES (4, N'Đồ Ăn');
-INSERT INTO [Category] (CategoryID, CategoryName) VALUES (5, N'Combo');
-INSERT INTO [Category] (CategoryID, CategoryName) VALUES (6, N'Bia');
-INSERT INTO [Category] (CategoryID, CategoryName) VALUES (7, N'Rượu');
-INSERT INTO [Category] (CategoryID, CategoryName) VALUES (8, N'Nước Khát');
-INSERT INTO [Category] (CategoryID, CategoryName) VALUES (9, N'Trái Cây');
+INSERT INTO [Category] (CategoryID, CategoryName) VALUES (5, N'Trái Cây');
+INSERT INTO [Category] (CategoryID, CategoryName) VALUES (6, N'Combo');
+INSERT INTO [Category] (CategoryID, CategoryName) VALUES (7, N'Bia');
+INSERT INTO [Category] (CategoryID, CategoryName) VALUES (8, N'Rượu');
+INSERT INTO [Category] (CategoryID, CategoryName) VALUES (9, N'Nước Khát');
+INSERT INTO [Category] (CategoryID, CategoryName) VALUES (10, N'Đồ Ăn');
+INSERT INTO [Category] (CategoryID, CategoryName) VALUES (11, N'Trái Cây');
+INSERT INTO [Category] (CategoryID, CategoryName) VALUES (12, N'Combo');
 SET IDENTITY_INSERT [Category] OFF;
 
 SET IDENTITY_INSERT [Supplier] ON;
@@ -512,6 +522,10 @@ INSERT INTO [PaymentMethod] (MethodID, MethodName) VALUES (1, N'Tiền mặt');
 INSERT INTO [PaymentMethod] (MethodID, MethodName) VALUES (2, N'VNPay');
 INSERT INTO [PaymentMethod] (MethodID, MethodName) VALUES (3, N'Visa');
 INSERT INTO [PaymentMethod] (MethodID, MethodName) VALUES (4, N'Momo');
+INSERT INTO [PaymentMethod] (MethodID, MethodName) VALUES (5, N'Tiền mặt');
+INSERT INTO [PaymentMethod] (MethodID, MethodName) VALUES (6, N'VNPay');
+INSERT INTO [PaymentMethod] (MethodID, MethodName) VALUES (7, N'Visa');
+INSERT INTO [PaymentMethod] (MethodID, MethodName) VALUES (8, N'Momo');
 SET IDENTITY_INSERT [PaymentMethod] OFF;
 
 SET IDENTITY_INSERT [WorkShift] ON;
@@ -569,7 +583,7 @@ INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phon
 VALUES (13, 4, 'service3', '123456', N'Lê Phục Vụ 3', '0912345603', 'service3@karaoke.com', '2026-07-22 15:47:51', 3, NULL, NULL);
 
 INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
-VALUES (14, 7, 'service4', '123456', N'Phạm Phục Vụ 4', '0912345604', 'service4@karaoke.com', '2026-07-22 15:47:51', 1, NULL, NULL);
+VALUES (14, 4, 'service4', '123456', N'Phạm Phục Vụ 4', '0912345604', 'service4@karaoke.com', '2026-07-22 15:47:51', 1, NULL, NULL);
 
 SET IDENTITY_INSERT [Account] OFF;
 
@@ -708,66 +722,36 @@ INSERT INTO [RoomPrice] (PriceID, RoomTypeID, StartTime, EndTime, PricePerHour, 
 SET IDENTITY_INSERT [RoomPrice] OFF;
 
 SET IDENTITY_INSERT [Booking] ON;
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (1, 1, 3, 5, '2026-06-24 21:58:47', '2026-06-25 21:58:47', '2026-06-26 01:58:47', N'Completed', NULL, 4, N'Khách gọi đặt trước');
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (2, 2, 4, 8, '2026-06-26 21:58:47', '2026-06-26 21:58:47', '2026-06-27 00:58:47', N'Completed', NULL, 10, N'Sinh nhật');
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (3, 3, 3, 4, '2026-06-27 21:58:47', '2026-06-27 21:58:47', '2026-06-27 23:58:47', N'CheckedIn', NULL, NULL, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (4, 1, 3, 1, '2026-06-12 21:58:47', '2026-06-13 21:58:47', '2026-06-13 23:58:47', N'Completed', NULL, NULL, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (5, 2, 3, 2, '2026-06-13 21:58:47', '2026-06-14 21:58:47', '2026-06-15 00:58:47', N'Completed', NULL, NULL, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (6, 3, 4, 4, '2026-06-14 21:58:47', '2026-06-15 21:58:47', '2026-06-15 23:58:47', N'Completed', NULL, NULL, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (7, 4, 4, 5, '2026-06-15 21:58:47', '2026-06-16 21:58:47', '2026-06-17 01:58:47', N'Completed', NULL, NULL, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (8, 5, 3, 6, '2026-06-16 21:58:47', '2026-06-17 21:58:47', '2026-06-18 02:58:47', N'Completed', NULL, NULL, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (9, 1, 3, 7, '2026-06-17 21:58:47', '2026-06-18 21:58:47', '2026-06-18 23:58:47', N'Completed', NULL, NULL, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (10, 2, 4, 8, '2026-06-18 21:58:47', '2026-06-19 21:58:47', '2026-06-20 00:58:47', N'Completed', NULL, NULL, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (11, 3, 4, 9, '2026-06-19 21:58:47', '2026-06-20 21:58:47', '2026-06-21 01:58:47', N'Completed', NULL, NULL, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (12, 4, 3, 10, '2026-06-20 21:58:47', '2026-06-21 21:58:47', '2026-06-21 23:58:47', N'Completed', NULL, NULL, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (13, 5, 3, 1, '2026-06-21 21:58:47', '2026-06-22 21:58:47', '2026-06-23 00:58:47', N'Completed', NULL, NULL, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (14, 1, 4, 2, '2026-06-22 21:58:47', '2026-06-23 21:58:47', '2026-06-23 23:58:47', N'Completed', NULL, NULL, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (15, 2, 4, 5, '2026-06-23 21:58:47', '2026-06-24 21:58:47', '2026-06-25 01:58:47', N'Completed', NULL, NULL, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (16, 1, 3, 5, '2026-07-19 19:45:15', '2026-07-20 19:45:15', '2026-07-20 23:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (17, 2, 4, 8, '2026-07-21 19:45:15', '2026-07-21 19:45:15', '2026-07-21 22:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (18, 3, 3, 4, '2026-07-22 19:45:15', '2026-07-22 19:45:15', '2026-07-22 21:45:15', N'CheckedIn', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (19, 1, 3, 1, '2026-07-07 19:45:15', '2026-07-08 19:45:15', '2026-07-08 21:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (20, 2, 3, 2, '2026-07-08 19:45:15', '2026-07-09 19:45:15', '2026-07-09 22:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (21, 3, 4, 4, '2026-07-09 19:45:15', '2026-07-10 19:45:15', '2026-07-10 21:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (22, 4, 4, 5, '2026-07-10 19:45:15', '2026-07-11 19:45:15', '2026-07-11 23:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (23, 5, 3, 6, '2026-07-11 19:45:15', '2026-07-12 19:45:15', '2026-07-13 00:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (24, 1, 3, 7, '2026-07-12 19:45:15', '2026-07-13 19:45:15', '2026-07-13 21:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (25, 2, 4, 8, '2026-07-13 19:45:15', '2026-07-14 19:45:15', '2026-07-14 22:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (26, 3, 4, 9, '2026-07-14 19:45:15', '2026-07-15 19:45:15', '2026-07-15 23:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (27, 4, 3, 10, '2026-07-15 19:45:15', '2026-07-16 19:45:15', '2026-07-16 21:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (28, 5, 3, 1, '2026-07-16 19:45:15', '2026-07-17 19:45:15', '2026-07-17 22:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (29, 1, 4, 2, '2026-07-17 19:45:15', '2026-07-18 19:45:15', '2026-07-18 21:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (30, 2, 4, 5, '2026-07-18 19:45:15', '2026-07-19 19:45:15', '2026-07-19 23:45:15', N'Completed', NULL, 1, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (1, 1, 3, 5, '2026-06-24 21:58:47', '2026-06-25 21:58:47', '2026-06-26 01:58:47', N'Completed', 4, N'Khách gọi đặt trước');
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (2, 2, 4, 8, '2026-06-26 21:58:47', '2026-06-26 21:58:47', '2026-06-27 00:58:47', N'Completed', 10, N'Sinh nhật');
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (3, 3, 3, 4, '2026-06-27 21:58:47', '2026-06-27 21:58:47', '2026-06-27 23:58:47', N'CheckedIn', NULL, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (4, 1, 3, 1, '2026-06-12 21:58:47', '2026-06-13 21:58:47', '2026-06-13 23:58:47', N'Completed', NULL, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (5, 2, 3, 2, '2026-06-13 21:58:47', '2026-06-14 21:58:47', '2026-06-15 00:58:47', N'Completed', NULL, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (6, 3, 4, 4, '2026-06-14 21:58:47', '2026-06-15 21:58:47', '2026-06-15 23:58:47', N'Completed', NULL, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (7, 4, 4, 5, '2026-06-15 21:58:47', '2026-06-16 21:58:47', '2026-06-17 01:58:47', N'Completed', NULL, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (8, 5, 3, 6, '2026-06-16 21:58:47', '2026-06-17 21:58:47', '2026-06-18 02:58:47', N'Completed', NULL, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (9, 1, 3, 7, '2026-06-17 21:58:47', '2026-06-18 21:58:47', '2026-06-18 23:58:47', N'Completed', NULL, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (10, 2, 4, 8, '2026-06-18 21:58:47', '2026-06-19 21:58:47', '2026-06-20 00:58:47', N'Completed', NULL, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (11, 3, 4, 9, '2026-06-19 21:58:47', '2026-06-20 21:58:47', '2026-06-21 01:58:47', N'Completed', NULL, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (12, 4, 3, 10, '2026-06-20 21:58:47', '2026-06-21 21:58:47', '2026-06-21 23:58:47', N'Completed', NULL, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (13, 5, 3, 1, '2026-06-21 21:58:47', '2026-06-22 21:58:47', '2026-06-23 00:58:47', N'Completed', NULL, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (14, 1, 4, 2, '2026-06-22 21:58:47', '2026-06-23 21:58:47', '2026-06-23 23:58:47', N'Completed', NULL, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (15, 2, 4, 5, '2026-06-23 21:58:47', '2026-06-24 21:58:47', '2026-06-25 01:58:47', N'Completed', NULL, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (16, 1, 3, 5, '2026-07-19 19:45:15', '2026-07-20 19:45:15', '2026-07-20 23:45:15', N'Completed', 1, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (17, 2, 4, 8, '2026-07-21 19:45:15', '2026-07-21 19:45:15', '2026-07-21 22:45:15', N'Completed', 1, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (18, 3, 3, 4, '2026-07-22 19:45:15', '2026-07-22 19:45:15', '2026-07-22 21:45:15', N'CheckedIn', 1, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (19, 1, 3, 1, '2026-07-07 19:45:15', '2026-07-08 19:45:15', '2026-07-08 21:45:15', N'Completed', 1, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (20, 2, 3, 2, '2026-07-08 19:45:15', '2026-07-09 19:45:15', '2026-07-09 22:45:15', N'Completed', 1, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (21, 3, 4, 4, '2026-07-09 19:45:15', '2026-07-10 19:45:15', '2026-07-10 21:45:15', N'Completed', 1, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (22, 4, 4, 5, '2026-07-10 19:45:15', '2026-07-11 19:45:15', '2026-07-11 23:45:15', N'Completed', 1, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (23, 5, 3, 6, '2026-07-11 19:45:15', '2026-07-12 19:45:15', '2026-07-13 00:45:15', N'Completed', 1, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (24, 1, 3, 7, '2026-07-12 19:45:15', '2026-07-13 19:45:15', '2026-07-13 21:45:15', N'Completed', 1, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (25, 2, 4, 8, '2026-07-13 19:45:15', '2026-07-14 19:45:15', '2026-07-14 22:45:15', N'Completed', 1, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (26, 3, 4, 9, '2026-07-14 19:45:15', '2026-07-15 19:45:15', '2026-07-15 23:45:15', N'Completed', 1, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (27, 4, 3, 10, '2026-07-15 19:45:15', '2026-07-16 19:45:15', '2026-07-16 21:45:15', N'Completed', 1, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (28, 5, 3, 1, '2026-07-16 19:45:15', '2026-07-17 19:45:15', '2026-07-17 22:45:15', N'Completed', 1, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (29, 1, 4, 2, '2026-07-17 19:45:15', '2026-07-18 19:45:15', '2026-07-18 21:45:15', N'Completed', 1, NULL);
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, GuestCount, Note) VALUES (30, 2, 4, 5, '2026-07-18 19:45:15', '2026-07-19 19:45:15', '2026-07-19 23:45:15', N'Completed', 1, NULL);
 SET IDENTITY_INSERT [Booking] OFF;
 
 SET IDENTITY_INSERT [Invoice] ON;
@@ -928,6 +912,9 @@ SET IDENTITY_INSERT [EmployeeTask] ON;
 INSERT INTO [EmployeeTask] (TaskID, AssignedToID, CreatedByID, Title, Description, DueDate, Status) VALUES (1, 3, 1, N'Dọn dẹp phòng VIP 1', N'Lau chùi bàn ghế, kiểm tra micro', '2026-07-21 17:07:43', N'Pending');
 INSERT INTO [EmployeeTask] (TaskID, AssignedToID, CreatedByID, Title, Description, DueDate, Status) VALUES (2, 4, 1, N'Kiểm kê kho bia', N'Đếm số lượng bia Tiger và Heineken', '2026-07-22 15:07:43', N'InProgress');
 SET IDENTITY_INSERT [EmployeeTask] OFF;
+
+SET IDENTITY_INSERT [RoomAssignment] ON;
+SET IDENTITY_INSERT [RoomAssignment] OFF;
 
 SET IDENTITY_INSERT [NotificationLog] ON;
 INSERT INTO [NotificationLog] (NotificationID, BookingID, CustomerID, Channel, Recipient, MessageContent, SentStatus, SentAt) VALUES (1, 1, 1, N'SMS', N'0901234567', N'Cảm ơn quý khách đã đặt phòng tại Karaoke Management. Mã đặt phòng: #1', N'Sent', '2026-07-21 15:07:43');
