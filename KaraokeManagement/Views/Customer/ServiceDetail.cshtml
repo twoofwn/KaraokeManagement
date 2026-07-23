@@ -450,15 +450,19 @@
                     <div class="t-servicedetail-form-group">
                         <label for="roomSelect">Phòng đang hát của bạn</label>
                         <select id="roomSelect" class="t-servicedetail-input" required>
-                            <!-- Tương lai: Lấy danh sách phòng User đang booking -->
-                            <option value="VIP101">Phòng VIP 101</option>
-                            <option value="VIP102">Phòng VIP 102</option>
+                            @if (ViewBag.ActiveBookings != null && ((IEnumerable<KaraokeManagement.Models.Booking>)ViewBag.ActiveBookings).Any())
+                            {
+                                foreach (var booking in (IEnumerable<KaraokeManagement.Models.Booking>)ViewBag.ActiveBookings)
+                                {
+                                    <!-- Lấy RoomName để hiển thị cho KH, nhưng bạn có thể đổi value thành RoomId nếu xử lý POST -->
+                                    <option value="@booking.Room.RoomName">@booking.Room.RoomName</option>
+                                }
+                            }
+                            else
+                            {
+                                <option value="" disabled selected>Bạn chưa có phòng nào đang hát</option>
+                            }
                         </select>
-                    </div>
-
-                    <div class="t-servicedetail-form-group">
-                        <label for="expectedTime">Thời gian mang lên (Bỏ trống nếu cần ngay)</label>
-                        <input type="time" id="expectedTime" class="t-servicedetail-input" />
                     </div>
 
                     <div class="t-servicedetail-form-group">
@@ -477,9 +481,13 @@
                         <textarea id="notes" class="t-servicedetail-textarea" placeholder="Ví dụ: Xin thêm nhiều đá, mang thêm ly..."></textarea>
                     </div>
 
-                    @if (Model.StockQuantity.HasValue && Model.StockQuantity.Value <= 0)
+                    @if (ViewBag.ActiveBookings == null || !((IEnumerable<KaraokeManagement.Models.Booking>)ViewBag.ActiveBookings).Any())
                     {
-                        <button type="button" class="t-servicedetail-submit-btn" disabled>TẠM HẾT HÀNG</button>
+                        <button type="button" class="t-servicedetail-submit-btn" disabled style="background-color: #9ca3af; cursor: not-allowed;">BẠN ĐANG KHÔNG Ở PHÒNG NÀO</button>
+                    }
+                    else if (Model.StockQuantity.HasValue && Model.StockQuantity.Value <= 0)
+                    {
+                        <button type="button" class="t-servicedetail-submit-btn" disabled style="background-color: #dc3545; cursor: not-allowed;">TẠM HẾT HÀNG</button>
                     }
                     else
                     {

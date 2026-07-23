@@ -197,6 +197,23 @@ namespace KaraokeManagement.Controllers
                 return NotFound(); // Trả về 404 nếu không tìm thấy ID
             }
 
+            //Lấy các booking hiện tại đang hát
+            var activeBookings = new List<Booking>();
+            var customerIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!string.IsNullOrEmpty(customerIdStr) && int.TryParse(customerIdStr, out int customerId))
+            {
+                var now = DateTime.Now;
+                activeBookings = _context.Bookings
+                    .Include(b => b.Room)
+                    .Where(b => b.CustomerId == customerId
+                             && b.Status == "CheckedIn"
+                             && b.StartTime <= now
+                             && (b.EndTime == null || b.EndTime >= now))
+                    .ToList();
+            }
+            ViewBag.ActiveBookings = activeBookings;
+
             // Lấy các dịch vụ gợi ý (cùng danh mục, nhưng khác dịch vụ hiện tại) - Lấy tối đa 5 cái
             var suggestedServices = _context.ServiceItems
                 .Include(s => s.Category)
