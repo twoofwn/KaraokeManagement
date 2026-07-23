@@ -1,5 +1,4 @@
 using KaraokeManagement.Models;
-using KaraokeManagement.Service;
 using KaraokeManagement.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,8 +8,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<KaraokeManagementDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
 builder.Services.AddScoped<KaraokeManagement.Services.IScheduleService, KaraokeManagement.Services.ScheduleService>();
-builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<IPricingService, PricingService>();
+builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<PricePolicyService>();
 
 builder.Services.AddAuthentication("CookieAuth")
     .AddCookie("CookieAuth", options =>

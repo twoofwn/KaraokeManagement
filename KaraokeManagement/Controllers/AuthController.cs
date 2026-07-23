@@ -1,6 +1,5 @@
 using KaraokeManagement.Helpers;
 using KaraokeManagement.Models;
-using KaraokeManagement.Service;
 using KaraokeManagement.Services;
 using KaraokeManagement.ViewModel;
 using Microsoft.AspNetCore.Authentication;
@@ -16,9 +15,8 @@ namespace KaraokeManagement.Controllers
     public class AuthController : Controller
     {
         private readonly KaraokeManagementDbContext _context;
-        private readonly IEmailService _emailService;
-
-        public AuthController(KaraokeManagementDbContext context, IEmailService emailService)
+        private readonly EmailService _emailService;
+        public AuthController(KaraokeManagementDbContext context, EmailService emailService)
         {
             _context = context;
             _emailService = emailService;
@@ -135,44 +133,58 @@ namespace KaraokeManagement.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CustomerLogin(string PhoneOrEmail, string Password)
+        public async Task<IActionResult> CustomerLogin(string Email, string Password)
         {
-            if (string.IsNullOrEmpty(PhoneOrEmail) || string.IsNullOrEmpty(Password))
+            if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Password))
             {
                 ViewBag.Error = "Vui lòng nhập đầy đủ thông tin đăng nhập.";
                 return View();
             }
 
             var customer = await _context.Customers
-                .FirstOrDefaultAsync(c => c.Phone == PhoneOrEmail || c.Email == PhoneOrEmail);
+                .FirstOrDefaultAsync(c => c.Email == Email);
 
-            if (customer != null && !string.IsNullOrEmpty(customer.PasswordHash))
+            if (customer != null && PasswordHelper.VerifyPassword(Password, customer.PasswordHash))
             {
-                bool isValid = PasswordHelper.VerifyPassword(Password, customer.PasswordHash);
-                if (isValid)
+                if (!customer.IsEmailVerified)
                 {
-                    if (!customer.IsEmailVerified)
-                    {
-                        ViewBag.Error = "Tài khoản của bạn chưa được xác thực Email. Vui lòng kiểm tra hòm thư.";
-                        return View();
-                    }
+                    string newOtp = GenerateOtpCode();
+                    customer.OtpCode = newOtp;
+                    customer.OtpExpiry = DateTime.Now.AddMinutes(30);
 
-                    var claims = new List<Claim>
-                                {
-                                    new Claim(ClaimTypes.NameIdentifier, customer.CustomerId.ToString()),
-                                    new Claim(ClaimTypes.Name, customer.FullName),
-                                    new Claim(ClaimTypes.Role, "Customer")
-                                };
-                    if (!string.IsNullOrEmpty(customer.Email))
-                    {
-                        claims.Add(new Claim(ClaimTypes.Email, customer.Email));
-                    }
+                    _context.Customers.Update(customer);
+                    await _context.SaveChangesAsync();
 
-                    var claimsIdentity = new ClaimsIdentity(claims, "CookieAuth");
-                    await HttpContext.SignInAsync("CookieAuth", new ClaimsPrincipal(claimsIdentity));
+                    string emailBody = $@"
+                <h2>Xác thực tài khoản - Minh Tuấn Karaoke</h2>
+                <p>Tài khoản của bạn chưa được kích hoạt. Mã OTP kích hoạt mới là: <b style='font-size: 20px; color: #4F46E5;'>{newOtp}</b></p>
+                <p>Mã này có hiệu lực trong 30 phút.</p>";
 
-                    return RedirectToAction("Index", "Customer");
+                    await _emailService.SendEmailAsync(customer.Email!, "Mã OTP Kích hoạt tài khoản", emailBody);
+
+                    ViewBag.Email = customer.Email;
+                    ViewBag.ActionType = "Register";
+                    ViewBag.Error = "Tài khoản của bạn chưa kích hoạt. Mã OTP mới đã được gửi tới email, vui lòng nhập để kích hoạt!";
+
+                    return View("VerifyOtp");
                 }
+
+                var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, customer.CustomerId.ToString()),
+            new Claim(ClaimTypes.Name, customer.FullName),
+            new Claim(ClaimTypes.Role, "Customer")
+        };
+
+                if (!string.IsNullOrEmpty(customer.Email))
+                {
+                    claims.Add(new Claim(ClaimTypes.Email, customer.Email));
+                }
+
+                var claimsIdentity = new ClaimsIdentity(claims, "CookieAuth");
+                await HttpContext.SignInAsync("CookieAuth", new ClaimsPrincipal(claimsIdentity));
+
+                return RedirectToAction("Index", "Customer");
             }
 
             ViewBag.Error = "Số điện thoại/Email hoặc mật khẩu không đúng.";
@@ -206,6 +218,7 @@ namespace KaraokeManagement.Controllers
 
             var newCustomer = new Customer
             {
+                TierId = 0,
                 FullName = model.FullName,
                 Phone = model.Phone,
                 Email = model.Email,
@@ -214,7 +227,7 @@ namespace KaraokeManagement.Controllers
                 CreatedAt = DateTime.Now,
                 IsEmailVerified = false,
                 OtpCode = otp,
-                OtpExpiry = DateTime.Now.AddMinutes(30) // Hiệu lực 30 phút
+                OtpExpiry = DateTime.Now.AddMinutes(30) 
             };
 
             _context.Customers.Add(newCustomer);
@@ -229,7 +242,6 @@ namespace KaraokeManagement.Controllers
 
             await _emailService.SendEmailAsync(model.Email, "Mã OTP Kích hoạt tài khoản - Minh Tuấn Karaoke", emailBody);
 
-            // Chuyển sang trang VerifyOtp với actionType = Register
             ViewBag.Email = model.Email;
             ViewBag.ActionType = "Register";
             return View("VerifyOtp");
@@ -380,6 +392,52 @@ namespace KaraokeManagement.Controllers
             return RedirectToAction("Login");
         }
 
+
+        [HttpPost]
+        public async Task<IActionResult> ResendOtp(string email, string actionType)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                return Json(new { success = false, message = "Email không hợp lệ!" });
+            }
+
+            string newOtp = GenerateOtpCode();
+            DateTime expiry = DateTime.Now.AddMinutes(30);
+            
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == email);
+            if (customer != null)
+            {
+                customer.OtpCode = newOtp;
+                customer.OtpExpiry = expiry;
+                _context.Customers.Update(customer);
+            }
+            else
+            {
+                var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == email);
+                if (account != null)
+                {
+                    account.OtpCode = newOtp;
+                    account.OtpExpiry = expiry;
+                    _context.Accounts.Update(account);
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Không tìm thấy thông tin tài khoản!" });
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Gửi Email OTP mới
+            string emailBody = $@"
+        <h2>Mã OTP mới - Minh Tuấn Karaoke</h2>
+        <p>Mã xác thực OTP mới của bạn là: <b style='font-size: 20px; color: #4F46E5;'>{newOtp}</b></p>
+        <p>Mã này có hiệu lực trong 30 phút.</p>";
+
+            await _emailService.SendEmailAsync(email, "Mã OTP mới - Minh Tuấn Karaoke", emailBody);
+
+            return Json(new { success = true, message = "Mã OTP mới đã được gửi vào Email của bạn!" });
+        }
         private string GenerateOtpCode()
         {
             Random random = new Random();

@@ -580,9 +580,13 @@
 						<div class="t-roomdetail-form-group full-width">
 							<label class="t-roomdetail-form-label">Phòng</label>
 							<div class="t-roomdetail-input-wrapper">
+
+								<!-- THÊM: Input ẩn để lưu RoomId -->
+								<input type="hidden" id="selectedRoomId" value="@(Model.Rooms != null && Model.Rooms.Any() ? Model.Rooms.First().RoomId : 0)" />
+
 								<div class="t-roomdetail-custom-select-trigger" onclick="toggleRoomDropdown()">
 									<span id="selectedRoomText">
-										@(Model.Rooms != null && Model.Rooms.Any() ? $"Phòng {Model.Rooms.First().RoomId}" : "Chọn phòng")
+										@(Model.Rooms != null && Model.Rooms.Any() ? Model.Rooms.First().RoomName : "Chọn phòng")
 									</span>
 									<i class='bx bx-chevron-down'></i>
 								</div>
@@ -593,8 +597,9 @@
 											bool isFirst = true;
 											foreach (var room in Model.Rooms)
 											{
+												<!-- THÊM: Truyền thêm @room.RoomId vào tham số đầu tiên của selectFormRoom -->
 												<div class="t-roomdetail-room-item @(isFirst ? "selected" : "")"
-													 onclick="selectFormRoom('@room.RoomName', this)">
+													 onclick="selectFormRoom(@room.RoomId, '@room.RoomName', this)">
 													@room.RoomName
 												</div>
 												isFirst = false;
@@ -636,8 +641,10 @@
 			document.getElementById('roomDropdown').classList.toggle('show');
 		}
 
-		function selectFormRoom(roomName, element) {
+		function selectFormRoom(roomId, roomName, element) {
+			document.getElementById('selectedRoomId').value = roomId;
 			document.getElementById('selectedRoomText').innerText = roomName;
+
 			const items = document.querySelectorAll('#roomDropdown .t-roomdetail-room-item');
 			items.forEach(i => i.classList.remove('selected'));
 			element.classList.add('selected');
@@ -654,20 +661,25 @@
 		});
 
 		// Xử lý Form Đặt Phòng
-		function handleBooking(e) {
+		async function handleBooking(e) {
 			e.preventDefault();
 
-			const selectedRoom = document.getElementById('selectedRoomText').innerText;
+			const selectedRoomId = document.getElementById('selectedRoomId').value;
+			const selectedRoomName = document.getElementById('selectedRoomText').innerText;
 			const bookingDate = document.getElementById('bookingDate').value;
 			const bookingStartTime = document.getElementById('bookingStartTime').value;
 			const bookingDuration = document.getElementById('bookingDuration').value;
 			const roomTypeName = "@Html.Raw(Model.TypeName)";
 
+			if (!selectedRoomId || selectedRoomId == 0) {
+				Swal.fire('Lỗi', 'Vui lòng chọn phòng để đặt!', 'error');
+				return;
+			}
+
 			// Gộp ngày và giờ để kiểm tra với thời gian hiện tại
 			const selectedDateTime = new Date(`${bookingDate}T${bookingStartTime}`);
 			const now = new Date();
 
-			// So sánh thời gian
 			if (selectedDateTime < now) {
 				Swal.fire({
 					title: 'Thời gian không hợp lệ!',
@@ -675,36 +687,66 @@
 					icon: 'error',
 					confirmButtonColor: '#E83C91'
 				});
-				return; // Ngăn không cho form tiếp tục submit
+				return;
 			}
 
-			// Format hiển thị cho SweetAlert
-			const formattedDate = selectedDateTime.toLocaleDateString('vi-VN');
-			const formattedTime = selectedDateTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-
+			// Hiển thị loading trong lúc gọi API kiểm tra Database
 			Swal.fire({
-				title: 'Xác nhận thông tin?',
-				icon: 'info',
-				html: `
-					<div style="text-align: left; padding: 0 1rem; color: #43334C;">
-						<p><strong>Loại phòng:</strong> ${roomTypeName}</p>
-						<p><strong>Tên phòng:</strong> ${selectedRoom}</p>
-						<p><strong>Ngày hát:</strong> ${formattedDate}</p>
-						<p><strong>Giờ bắt đầu:</strong> ${formattedTime}</p>
-						<p><strong>TG dự kiến:</strong> ${bookingDuration} phút</p>
-					</div>
-				`,
-				showCancelButton: true,
-				confirmButtonColor: '#E83C91',
-				cancelButtonColor: '#9ca3af',
-				confirmButtonText: 'Đồng ý đặt!',
-				cancelButtonText: 'Hủy'
-			}).then((result) => {
-				if (result.isConfirmed) {
-					const url = `/Customer/BookingConfirmation?roomName=${encodeURIComponent(selectedRoom)}&typeName=${encodeURIComponent(roomTypeName)}&bookingDate=${encodeURIComponent(bookingDate)}&startTime=${encodeURIComponent(bookingStartTime)}&duration=${encodeURIComponent(bookingDuration)}`;
-					window.location.href = url;
+				title: 'Đang kiểm tra phòng...',
+				allowOutsideClick: false,
+				didOpen: () => {
+					Swal.showLoading();
 				}
-			})
+			});
+
+			try {
+				// GỌI API KIỂM TRA PHÒNG
+				const response = await fetch(`/Customer/CheckRoomAvailability?roomId=${selectedRoomId}&date=${bookingDate}&time=${bookingStartTime}&duration=${bookingDuration}`);
+				const data = await response.json();
+
+				// NẾU PHÒNG ĐÃ CÓ NGƯỜI ĐẶT
+				if (!data.available) {
+					Swal.fire({
+						title: 'Phòng đã có người đặt!',
+						text: 'Phòng này đã được khách khác đặt trong khung giờ bạn chọn. Vui lòng đổi khung giờ khác hoặc chọn phòng khác!',
+						icon: 'warning',
+						confirmButtonColor: '#E83C91'
+					});
+					return; // Dừng lại, không cho đặt tiếp
+				}
+
+				// NẾU PHÒNG TRỐNG -> Hiển thị xác nhận bình thường
+				const formattedDate = selectedDateTime.toLocaleDateString('vi-VN');
+				const formattedTime = selectedDateTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+				Swal.fire({
+					title: 'Xác nhận thông tin?',
+					icon: 'info',
+					html: `
+						<div style="text-align: left; padding: 0 1rem; color: #43334C;">
+							<p><strong>Loại phòng:</strong> ${roomTypeName}</p>
+							<p><strong>Tên phòng:</strong> ${selectedRoomName}</p>
+							<p><strong>Ngày hát:</strong> ${formattedDate}</p>
+							<p><strong>Giờ bắt đầu:</strong> ${formattedTime}</p>
+							<p><strong>TG dự kiến:</strong> ${bookingDuration} phút</p>
+						</div>
+					`,
+					showCancelButton: true,
+					confirmButtonColor: '#E83C91',
+					cancelButtonColor: '#9ca3af',
+					confirmButtonText: 'Đồng ý đặt!',
+					cancelButtonText: 'Hủy'
+				}).then((result) => {
+					if (result.isConfirmed) {
+						// Chuyển sang màn hình Confirmation
+						const url = `/Customer/BookingConfirmation?roomName=${encodeURIComponent(selectedRoomName)}&typeName=${encodeURIComponent(roomTypeName)}&roomId=${encodeURIComponent(selectedRoomId)}&bookingDate=${encodeURIComponent(bookingDate)}&startTime=${encodeURIComponent(bookingStartTime)}&duration=${encodeURIComponent(bookingDuration)}`;
+						window.location.href = url;
+					}
+				});
+
+			} catch (error) {
+				Swal.fire('Lỗi kết nối', 'Không thể kết nối đến máy chủ để kiểm tra phòng, vui lòng thử lại sau!', 'error');
+			}
 		}
 	</script>
 }

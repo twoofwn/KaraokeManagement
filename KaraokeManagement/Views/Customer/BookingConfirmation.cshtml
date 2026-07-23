@@ -218,7 +218,7 @@
         <div class="t-checkout-header">
             <h1>Xác nhận đặt phòng</h1>
             <div class="t-checkout-header-decorator"></div>
-            <p style="color: var(--dark-purple); opacity: 0.8; margin-top: 10px;">Vui lòng kiểm tra lại thông tin và điền chi tiết liên hệ của bạn.</p>
+            <p style="color: var(--dark-purple); opacity: 0.8; margin-top: 10px;">Vui lòng kiểm tra lại thông tin. Dữ liệu liên hệ được lấy tự động từ tài khoản của bạn.</p>
         </div>
 
         <form onsubmit="handleFinalBooking(event)">
@@ -231,25 +231,25 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div class="t-checkout-form-group">
                             <label>Họ và tên *</label>
-                            <input type="text" class="t-checkout-input" id="custName" placeholder="Nhập họ và tên..." required />
+                            <input type="text" class="t-checkout-input" id="custName" value="@Model.CustomerName" readonly />
                         </div>
                         <div class="t-checkout-form-group">
                             <label>Số điện thoại *</label>
-                            <input type="tel" class="t-checkout-input" id="custPhone" placeholder="Nhập số điện thoại..." required />
+                            <input type="tel" class="t-checkout-input" id="custPhone" value="@Model.Phone" readonly />
                         </div>
                     </div>
 
                     <div class="t-checkout-form-group">
-                        <label>Email (Tùy chọn)</label>
-                        <input type="email" class="t-checkout-input" placeholder="Nhập email để nhận hóa đơn..." />
+                        <label>Email</label>
+                        <input type="email" class="t-checkout-input" value="@Model.Email" readonly />
                     </div>
 
                     <div class="t-checkout-form-group">
                         <label>Yêu cầu đặc biệt (Tùy chọn)</label>
-                        <textarea class="t-checkout-input" placeholder="Ví dụ: Cần trang trí sinh nhật, chuẩn bị sẵn tháp bia..."></textarea>
+                        <textarea id="custNote" class="t-checkout-input" placeholder="Ví dụ: Cần trang trí sinh nhật, chuẩn bị sẵn tháp bia..."></textarea>
                     </div>
 
-                    <!-- Nút bấm (Hiển thị trên mobile hoặc để dưới cùng form) -->
+                    <!-- Nút bấm -->
                     <div class="t-checkout-actions">
                         <button type="button" class="t-btn t-btn-cancel" onclick="window.history.back()">
                             <i class="fa-solid fa-arrow-left"></i> Quay lại sửa
@@ -269,14 +269,14 @@
                             <i class="fa-solid fa-crown"></i>
                             <div>
                                 <strong>Loại phòng:</strong>
-                                <span>@ViewBag.TypeName</span>
+                                <span>@Model.TypeName</span>
                             </div>
                         </li>
                         <li>
                             <i class="fa-solid fa-door-open"></i>
                             <div>
                                 <strong>Phòng chọn:</strong>
-                                <span>@ViewBag.RoomName</span>
+                                <span>@Model.RoomName</span>
                             </div>
                         </li>
                         <li>
@@ -284,16 +284,14 @@
                             <div>
                                 <strong>Ngày nhận:</strong>
                                 @{
-                                    var dateStr = ViewBag.BookingDate?.ToString();
                                     DateTime parsedDate = DateTime.MinValue;
-
-                                    if (!string.IsNullOrEmpty(dateStr) && DateTime.TryParse(dateStr, out parsedDate))
+                                    if (!string.IsNullOrEmpty(Model.BookingDate) && DateTime.TryParse(Model.BookingDate, out parsedDate))
                                     {
                                         <span>@parsedDate.ToString("dd/MM/yyyy")</span>
                                     }
                                     else
                                     {
-                                        <span>@ViewBag.BookingDate</span>
+                                        <span>@Model.BookingDate</span>
                                     }
                                 }
                             </div>
@@ -302,14 +300,36 @@
                             <i class="fa-regular fa-clock"></i>
                             <div>
                                 <strong>Giờ bắt đầu:</strong>
-                                <span>@ViewBag.StartTime</span>
+                                <span>@Model.StartTime</span>
                             </div>
                         </li>
                         <li>
                             <i class="fa-solid fa-hourglass-half"></i>
                             <div>
                                 <strong>Thời lượng:</strong>
-                                <span>@ViewBag.Duration phút</span>
+                                <span>@Model.Duration phút</span>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-money-bill-wave"></i>
+                            <div class="t-price-box">
+                                <div class="t-price-row">
+                                    <span>Tạm tính tiền phòng:</span>
+                                    <span>@Model.BasePrice.ToString("N0") ₫</span>
+                                </div>
+
+                                @if (Model.SurchargeAmount > 0)
+                                {
+                                    <div class="t-price-row" style="color: var(--pink-soft);">
+                                        <span>Phụ thu (@Model.SurchargeNote):</span>
+                                        <span>+ @Model.SurchargeAmount.ToString("N0") ₫</span>
+                                    </div>
+                                }
+
+                                <div class="t-price-total">
+                                    <span>TỔNG CỘNG:</span>
+                                    <span>@Model.EstimatedTotalPrice.ToString("N0") ₫</span>
+                                </div>
                             </div>
                         </li>
                     </ul>
@@ -328,11 +348,13 @@
 
 @section Scripts {
     <script>
-        function handleFinalBooking(e) {
+        async function handleFinalBooking(e) {
             e.preventDefault();
 
             const name = document.getElementById('custName').value;
             const phone = document.getElementById('custPhone').value;
+            const noteElement = document.getElementById('custNote');
+            const note = noteElement ? noteElement.value : "";
 
             Swal.fire({
                 title: 'Đang xử lý...',
@@ -343,20 +365,61 @@
                 }
             });
 
-            // Giả lập delay gửi API Backend
-            setTimeout(() => {
-                Swal.fire({
-                    title: 'Đặt phòng thành công!',
-                    html: `Cảm ơn <b>${name}</b> đã lựa chọn Minh Tuấn Karaoke.<br/>Chúng tôi sẽ gọi lại số <b>${phone}</b> để xác nhận trong ít phút tới.`,
-                    icon: 'success',
-                    confirmButtonColor: '#E83C91',
-                    confirmButtonText: 'Về trang chủ'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = '/Customer/Index';
-                    }
+            // Lấy ID và GuestCount an toàn từ ViewBag
+            const roomId = parseInt("@ViewBag.RoomId") || 0;
+            const guestCount = parseInt("@ViewBag.GuestCount") || 2;
+
+            if (roomId === 0) {
+                Swal.fire('Lỗi', 'Không tìm thấy thông tin phòng đặt. Vui lòng quay lại chọn phòng!', 'error');
+                return;
+            }
+
+            // Lấy luôn DateTime chuẩn ISO từ C# xử lý sẵn (không cần tự parse bằng JS nữa)
+            const startTimeIso = "@ViewBag.StartDateTimeISO";
+            const endTimeIso = "@ViewBag.EndDateTimeISO";
+
+            try {
+                // Đóng gói JSON
+                const payload = {
+                    RoomId: roomId,
+                    StartTime: startTimeIso,
+                    EndTime: endTimeIso,
+                    GuestCount: guestCount,
+                    Note: note
+                };
+
+                const response = await fetch('/Customer/ConfirmAndSaveBooking', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
-            }, 1500);
+
+                // Bẫy lỗi nếu Server trả về 400 Bad Request hoặc 500 Internal Error
+                if (!response.ok) {
+                    throw new Error(`Mã lỗi HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Đặt phòng thành công!',
+                        html: `Cảm ơn <b>${name}</b> đã lựa chọn Minh Tuấn Karaoke.<br/>Chúng tôi sẽ gọi lại số <b>${phone}</b> để xác nhận trong ít phút tới.`,
+                        icon: 'success',
+                        confirmButtonColor: '#E83C91',
+                        confirmButtonText: 'Về trang chủ'
+                    }).then((result) => {
+                        if (result.isConfirmed || result.isDismissed) {
+                            window.location.href = '/Customer/Index';
+                        }
+                    });
+                } else {
+                    Swal.fire('Lỗi đặt phòng!', data.message, 'error');
+                }
+            } catch (error) {
+                console.error("Lỗi Booking:", error);
+                Swal.fire('Lỗi hệ thống', 'Không thể kết nối đến máy chủ hoặc dữ liệu gửi đi không hợp lệ. Vui lòng thử lại!', 'error');
+            }
         }
     </script>
 }

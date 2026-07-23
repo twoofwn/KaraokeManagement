@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System;
 using System.Collections.Generic;
 
@@ -16,6 +16,12 @@ public partial class InvoiceDetail
     public int Quantity { get; set; }
 
     public decimal UnitPrice { get; set; }
+
+    public bool IsService { get; set; }
+
+    public bool IsFulFilled { get; set; }
+
+    public string? Note { get; set; }
 
     public virtual Invoice Invoice { get; set; } = null!;
 

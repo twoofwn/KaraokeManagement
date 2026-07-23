@@ -66,7 +66,6 @@ public partial class KaraokeManagementDbContext : DbContext
     public virtual DbSet<WorkShift> WorkShifts { get; set; }
     public virtual DbSet<EmployeeSchedule> EmployeeSchedules { get; set; }
     public virtual DbSet<Attendance> Attendances { get; set; }
-    public virtual DbSet<Payroll> Payrolls { get; set; }
     public virtual DbSet<EmployeeProfile> EmployeeProfiles { get; set; }
     public virtual DbSet<TrainingRecord> TrainingRecords { get; set; }
     public virtual DbSet<EmployeeTask> EmployeeTasks { get; set; }
@@ -77,7 +76,6 @@ public partial class KaraokeManagementDbContext : DbContext
     public virtual DbSet<CustomerAutomationRule> CustomerAutomationRules { get; set; }
     public virtual DbSet<ShiftSwapRequest> ShiftSwapRequests { get; set; }
     public virtual DbSet<LeaveRequest> LeaveRequests { get; set; }
-    public virtual DbSet<RoomAssignment> RoomAssignments { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -145,6 +143,11 @@ public partial class KaraokeManagementDbContext : DbContext
                 .HasForeignKey(d => d.CreatedById)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Booking__Created__6E01572D");
+
+            entity.HasOne(d => d.Staff).WithMany(p => p.Bookings)
+                .HasForeignKey(d => d.StaffId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Booking__Created__6E015DDD");
 
             entity.HasOne(d => d.Customer).WithMany(p => p.Bookings)
                 .HasForeignKey(d => d.CustomerId)
@@ -634,12 +637,6 @@ public partial class KaraokeManagementDbContext : DbContext
             entity.ToTable("Attendance");
         });
 
-        modelBuilder.Entity<Payroll>(entity =>
-        {
-            entity.HasKey(e => e.PayrollId);
-            entity.ToTable("Payroll");
-        });
-
         modelBuilder.Entity<EmployeeProfile>(entity =>
         {
             entity.HasKey(e => e.ProfileId);
@@ -728,20 +725,6 @@ public partial class KaraokeManagementDbContext : DbContext
 
             entity.HasOne(d => d.ApprovedBy).WithMany()
                 .HasForeignKey(d => d.ApprovedById);
-        });
-
-        modelBuilder.Entity<RoomAssignment>(entity =>
-        {
-            entity.HasKey(e => e.RoomAssignmentId);
-            entity.ToTable("RoomAssignment");
-
-            entity.HasOne(d => d.Room).WithMany()
-                .HasForeignKey(d => d.RoomId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-
-            entity.HasOne(d => d.Schedule).WithMany()
-                .HasForeignKey(d => d.ScheduleId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         OnModelCreatingPartial(modelBuilder);
