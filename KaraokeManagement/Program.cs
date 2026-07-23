@@ -11,6 +11,13 @@ builder.Services.AddDbContext<KaraokeManagementDbContext>(options =>
 builder.Services.AddScoped<KaraokeManagement.Services.IScheduleService, KaraokeManagement.Services.ScheduleService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<PricePolicyService>();
+// Receptionist
+builder.Services.AddScoped<DashboardService>();
+builder.Services.AddScoped<OrderService>();
+builder.Services.AddScoped<RoomBookingService>();
+builder.Services.AddScoped<PaymentService>();
+builder.Services.AddScoped<CustomerService>();
+builder.Services.AddScoped<InvoiceService>();
 
 builder.Services.AddAuthentication("CookieAuth")
     .AddCookie("CookieAuth", options =>
@@ -44,5 +51,6 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}");
 app.MapRazorPages();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

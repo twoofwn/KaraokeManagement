@@ -399,8 +399,8 @@
 			{
 				<a href="@Url.Action("ServiceDetail", "Customer", new { id = item.ServiceId })" class="cvs-card">
 					<div class="cvs-card-img">
-						<!-- Ảnh tĩnh mặc định do Model chưa có ImageURL -->
-						<img src="https://images.unsplash.com/photo-1600984880922-6b997c2317af?auto=format&fit=crop&q=80&w=600" alt="@item.ServiceName" />
+						<img src="@(!string.IsNullOrEmpty(item.ImageUrl) ? item.ImageUrl : "https://images.unsplash.com/photo-1600984880922-6b997c2317af?auto=format&fit=crop&q=80&w=600")"
+							 alt="@item.ServiceName" />
 					</div>
 					<div class="cvs-card-info">
 						<div class="cvs-card-top">

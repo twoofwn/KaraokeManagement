@@ -1,0 +1,589 @@
+@model KaraokeManagement.Models.Customer
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+    Layout = "~/Views/Customer/_CustomerLayout.cshtml";
+    ViewData["ActiveNav"] = "profile";
+}
+
+<div class="profile-page-wrapper">
+    <div class="profile-container">
+        
+        <!-- Cột trái: Thẻ thành viên VIP & Điểm tích lũy & Các nút chức năng -->
+        <div class="profile-left-col">
+            <div class="member-card">
+                <div class="member-card-glow"></div>
+                <div class="member-card-header">
+                    <span class="brand-text">MINH TUẤN KARAOKE</span>
+                    <i class="fa-solid fa-crown card-crown-icon"></i>
+                </div>
+                <div class="member-card-body">
+                    <h3 class="member-name">@Model.FullName</h3>
+                    <p class="member-phone"><i class="fa-solid fa-phone"></i> @Model.Phone</p>
+                </div>
+                @*
+                <div class="member-card-footer">
+                    <div class="tier-info">
+                        <span class="label">Hạng thành viên</span>
+                        <span class="value">@(Model.Tier?.TierName ?? "Standard")</span>
+                    </div>
+                    <div class="discount-info">
+                        <span class="label">Ưu đãi giảm giá</span>
+                        <span class="value">@(Model.Tier?.DiscountPercent ?? 0)%</span>
+                    </div>
+                </div>
+                *@
+            </div>
+
+            @*
+            <div class="points-stats-card">
+                <div class="points-icon-box">
+                    <i class="fa-solid fa-gem"></i>
+                </div>
+                <div class="points-info-box">
+                    <span class="points-label">Điểm tích lũy hiện tại</span>
+                    <h2 class="points-value">@(Model.LoyaltyPoints ?? 0) <span class="points-unit">Điểm</span></h2>
+                </div>
+            </div>
+            *@
+
+            <div class="joined-info-card">
+                <p><i class="fa-regular fa-calendar-check"></i> Ngày tham gia: @(Model.CreatedAt?.ToString("dd/MM/yyyy") ?? "—")</p>
+                <p><i class="fa-solid fa-envelope-circle-check"></i> Trạng thái Email: 
+                    @if(Model.IsEmailVerified) {
+                        <span class="status-verified">Đã xác thực</span>
+                    } else {
+                        <span class="status-unverified">Chưa xác thực</span>
+                    }
+                </p>
+            </div>
+
+            <!-- Các nút hành động: Đăng xuất & Đổi mật khẩu -->
+            <div class="profile-actions-box" style="display: flex; gap: 12px; margin-top: 8px;">
+                <button type="button" class="custom-btn btn-secondary-purple" style="flex: 1; border-radius: 12px; justify-content: center; padding: 10px 16px; font-size: 13.5px;" onclick="openPasswordModal()">
+                    <i class="fa-solid fa-key"></i> Đổi mật khẩu
+                </button>
+                <a href="/Auth/Logout" class="custom-btn" style="flex: 1; border-radius: 12px; background: #fff; border: 1px solid #dcd5e2; color: #e71d36; justify-content: center; text-decoration: none; padding: 10px 16px; font-size: 13.5px; display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+
+        <!-- Cột phải: Cập nhật thông tin cá nhân -->
+        <div class="profile-right-col">
+            
+            <!-- Form Cập nhật thông tin -->
+            <div class="profile-section-card">
+                <h3 class="section-title"><i class="fa-regular fa-user"></i> Thông tin cá nhân</h3>
+                
+                @if (TempData["ProfileSuccess"] != null)
+                {
+                    <div class="alert alert-success">
+                        <i class="fa-solid fa-circle-check"></i> @TempData["ProfileSuccess"]
+                    </div>
+                }
+                @if (TempData["ProfileError"] != null)
+                {
+                    <div class="alert alert-danger">
+                        <i class="fa-solid fa-circle-exclamation"></i> @TempData["ProfileError"]
+                    </div>
+                }
+
+                <form method="post" action="/Customer/UpdateProfile">
+                    @Html.AntiForgeryToken()
+                    <div class="form-group-custom">
+                        <label class="input-label">Họ và tên</label>
+                        <input type="text" name="fullName" value="@Model.FullName" class="custom-input" required />
+                    </div>
+
+                    <div class="form-group-custom">
+                        <label class="input-label">Số điện thoại</label>
+                        <input type="text" name="phone" value="@Model.Phone" class="custom-input" required />
+                    </div>
+
+                    <div class="form-group-custom">
+                        <label class="input-label">Email (Không thể thay đổi)</label>
+                        <div style="position: relative;">
+                            <input type="email" value="@Model.Email" class="custom-input" readonly style="background-color: #f3f0f8; color: #8c7f99; padding-right: 40px; cursor: not-allowed;" placeholder="Chưa liên kết email..." />
+                            <i class="fa-solid fa-lock" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #8c7f99;"></i>
+                        </div>
+                        <span style="font-size: 11px; color: #8c7f99; margin-top: 4px; display: block;"><i class="fa-solid fa-circle-info"></i> Vui lòng liên hệ CSKH nếu bạn cần thay đổi địa chỉ Email.</span>
+                    </div>
+
+                    <button type="submit" class="custom-btn btn-primary-pink">
+                        <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal Đổi mật khẩu (Pop-up) -->
+<div id="passwordModal" class="custom-modal-overlay" style="display: none;">
+    <div class="custom-modal-content">
+        <div class="custom-modal-header">
+            <h3 class="modal-title"><i class="fa-solid fa-key" style="color: var(--pink-bold);"></i> Đổi mật khẩu</h3>
+            <button type="button" class="close-modal-btn" onclick="closePasswordModal()">&times;</button>
+        </div>
+        <div class="custom-modal-body">
+            @if (TempData["PasswordSuccess"] != null)
+            {
+                <div class="alert alert-success">
+                    <i class="fa-solid fa-circle-check"></i> @TempData["PasswordSuccess"]
+                </div>
+            }
+            @if (TempData["PasswordError"] != null)
+            {
+                <div class="alert alert-danger">
+                    <i class="fa-solid fa-circle-exclamation"></i> @TempData["PasswordError"]
+                </div>
+            }
+
+            <form method="post" action="/Customer/ChangePassword">
+                @Html.AntiForgeryToken()
+                <div class="form-group-custom" style="margin-bottom: 16px;">
+                    <label class="input-label">Mật khẩu hiện tại</label>
+                    <input type="password" name="oldPassword" class="custom-input" required />
+                </div>
+
+                <div class="form-group-custom" style="margin-bottom: 16px;">
+                    <label class="input-label">Mật khẩu mới</label>
+                    <input type="password" name="newPassword" class="custom-input" required />
+                </div>
+
+                <div class="form-group-custom" style="margin-bottom: 24px;">
+                    <label class="input-label">Xác nhận mật khẩu mới</label>
+                    <input type="password" name="confirmPassword" class="custom-input" required />
+                </div>
+
+                <div style="display: flex; gap: 12px;">
+                    <button type="submit" class="custom-btn btn-primary-pink" style="flex: 1; justify-content: center; border-radius: 12px;">
+                        <i class="fa-solid fa-shield-halved"></i> Xác nhận
+                    </button>
+                    <button type="button" class="custom-btn" style="flex: 1; justify-content: center; border-radius: 12px; background: #f3f0f8; color: var(--dark-purple);" onclick="closePasswordModal()">
+                        Hủy bỏ
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --bg-light: #F8F4EC;
+        --pink-soft: #FF8FB7;
+        --pink-bold: #E83C91;
+        --dark-purple: #43334C;
+        --vip-gold: linear-gradient(135deg, #FFE07D 0%, #B8860B 100%);
+    }
+
+    .profile-page-wrapper {
+        background-color: var(--bg-light);
+        min-height: 100vh;
+        padding: 40px 10%;
+    }
+
+    .profile-container {
+        display: flex;
+        gap: 40px;
+        align-items: flex-start;
+    }
+
+    .profile-left-col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .profile-right-col {
+        flex: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    /* VIP Card styling */
+    .member-card {
+        position: relative;
+        background: linear-gradient(135deg, #2b1f3d 0%, #4c3566 100%);
+        border-radius: 20px;
+        padding: 30px;
+        color: #fff;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(67, 51, 76, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .member-card-glow {
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(232, 60, 145, 0.15) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .member-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 35px;
+    }
+
+    .brand-text {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        opacity: 0.8;
+    }
+
+    .card-crown-icon {
+        color: #ffd700;
+        font-size: 22px;
+        filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+    }
+
+    .member-card-body {
+        margin-bottom: 40px;
+    }
+
+    .member-name {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        letter-spacing: 0.5px;
+        color: #fff;
+    }
+
+    .member-phone {
+        font-size: 14px;
+        opacity: 0.7;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .member-card-footer {
+        display: flex;
+        justify-content: space-between;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 20px;
+    }
+
+    .tier-info, .discount-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .member-card-footer .label {
+        font-size: 10px;
+        text-transform: uppercase;
+        opacity: 0.6;
+        letter-spacing: 1px;
+    }
+
+    .member-card-footer .value {
+        font-size: 16px;
+        font-weight: 700;
+        color: #ffe89e;
+    }
+
+    /* Stats Card styling */
+    .points-stats-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        border: 1px solid rgba(255, 143, 183, 0.2);
+    }
+
+    .points-icon-box {
+        background: rgba(232, 60, 145, 0.1);
+        color: var(--pink-bold);
+        width: 55px;
+        height: 55px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+    .points-info-box {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .points-label {
+        font-size: 12px;
+        color: #8c7f99;
+        font-weight: 500;
+    }
+
+    .points-value {
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--dark-purple);
+        margin: 0;
+    }
+
+    .points-unit {
+        font-size: 14px;
+        font-weight: 500;
+        color: #8c7f99;
+    }
+
+    .joined-info-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        border: 1px solid rgba(0,0,0,0.04);
+        font-size: 14px;
+    }
+
+    .joined-info-card p {
+        margin: 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--dark-purple);
+    }
+
+    .status-verified {
+        color: #2ec4b6;
+        font-weight: 600;
+    }
+
+    .status-unverified {
+        color: #e71d36;
+        font-weight: 600;
+    }
+
+    /* Form and Section styling */
+    .profile-section-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        border: 1px solid rgba(0,0,0,0.04);
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--dark-purple);
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-title i {
+        color: var(--pink-bold);
+    }
+
+    .form-group-custom {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .input-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--dark-purple);
+        opacity: 0.8;
+    }
+
+    .custom-input {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid #dcd5e2;
+        font-size: 14px;
+        outline: none;
+        color: var(--dark-purple);
+        transition: all 0.2s ease;
+    }
+
+    .custom-input:focus {
+        border-color: var(--pink-soft);
+        box-shadow: 0 0 0 3px rgba(255, 143, 183, 0.15);
+    }
+
+    .custom-btn {
+        padding: 12px 24px;
+        border-radius: 30px;
+        font-size: 14px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary-pink {
+        background: var(--pink-bold);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(232, 60, 145, 0.2);
+    }
+
+    .btn-primary-pink:hover {
+        background: #d02c7e;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary-purple {
+        background: var(--dark-purple);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(67, 51, 76, 0.15);
+    }
+
+    .btn-secondary-purple:hover {
+        background: #32253a;
+        transform: translateY(-1px);
+    }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        font-size: 13.5px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .alert-success {
+        background: #e8f7f5;
+        color: #1a8f82;
+        border: 1px solid #c7ece7;
+    }
+
+    .alert-danger {
+        background: #fdeced;
+        color: #c71e2e;
+        border: 1px solid #fad2d6;
+    }
+
+    /* Modal styles */
+    .custom-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(67, 51, 76, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        backdrop-filter: blur(4px);
+        animation: fadeIn 0.25s ease;
+    }
+
+    .custom-modal-content {
+        background: #fff;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 480px;
+        padding: 30px;
+        box-shadow: 0 15px 35px rgba(67, 51, 76, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transform: scale(0.95);
+        animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .custom-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        border-bottom: 1px solid #f0ecff;
+        padding-bottom: 15px;
+    }
+
+    .modal-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--dark-purple);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .close-modal-btn {
+        background: none;
+        border: none;
+        font-size: 28px;
+        color: #8c7f99;
+        cursor: pointer;
+        line-height: 1;
+        transition: color 0.2s;
+    }
+
+    .close-modal-btn:hover {
+        color: var(--pink-bold);
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @@keyframes slideUp {
+        from { transform: translateY(20px) scale(0.95); }
+        to { transform: translateY(0) scale(1); }
+    }
+
+    /* Mobile responsive */
+    @@media (max-width: 992px) {
+        .profile-container {
+            flex-direction: column;
+            gap: 30px;
+        }
+        .profile-left-col, .profile-right-col {
+            width: 100%;
+        }
+        .profile-page-wrapper {
+            padding: 30px 5%;
+        }
+    }
+</style>
+
+<script>
+    function openPasswordModal() {
+        document.getElementById('passwordModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closePasswordModal() {
+        document.getElementById('passwordModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    // Auto open modal on redirect back if there's password feedback
+    window.addEventListener('DOMContentLoaded', () => {
+        const hasError = '@(TempData["PasswordError"] != null ? "true" : "false")' === 'true';
+        const hasSuccess = '@(TempData["PasswordSuccess"] != null ? "true" : "false")' === 'true';
+        if (hasError || hasSuccess) {
+            openPasswordModal();
+        }
+    });
+</script>

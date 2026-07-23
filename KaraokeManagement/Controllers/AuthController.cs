@@ -88,10 +88,12 @@ namespace KaraokeManagement.Controllers
             {
                 string username = account?.FullName ?? "Admin";
                 string role = account?.Role?.RoleName ?? "Admin";
+                string accountIdStr = account?.AccountId.ToString() ?? "0";
 
                 var claims = new List<Claim>
                     {
                         new Claim(ClaimTypes.NameIdentifier, account?.AccountId.ToString() ?? "0"),
+                        new Claim("AccountId", accountIdStr),
                         new Claim(ClaimTypes.Name, username),
                         new Claim(ClaimTypes.Role, role)
                     };
@@ -250,6 +252,7 @@ namespace KaraokeManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> Logout()
         {
+            bool isCustomer = User.IsInRole("Customer");
             try
             {
                 await HttpContext.SignOutAsync("CookieAuth");
@@ -259,6 +262,10 @@ namespace KaraokeManagement.Controllers
             Response.Cookies.Delete("UserSession");
             Response.Cookies.Delete("UserRole");
 
+            if (isCustomer)
+            {
+                return RedirectToAction("CustomerLogin", "Auth");
+            }
             return RedirectToAction("Login");
         }
 

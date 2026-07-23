@@ -636,3 +636,51 @@ body {
     color: var(--text-muted);
     margin-bottom: 16px;
 }
+
+.btn-confirm {
+    background-color: #10b981;
+    color: #fff;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-right: 4px;
+}
+
+    .btn-confirm:hover {
+        background-color: #059669;
+        transform: translateY(-1px);
+    }
+
+.btn-cancel-booking {
+    background-color: #ef4444;
+    color: #fff;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+    .btn-cancel-booking:hover {
+        background-color: #dc2626;
+        transform: translateY(-1px);
+    }
+
+.badge-status.pending {
+    background-color: #fef3c7;
+    color: #d97706;
+}
+
+.badge-status.confirmed {
+    background-color: #d1fae5;
+    color: #059669;
+}
+
+.badge-status.cancelled {
+    background-color: #fee2e2;
+    color: #dc2626;
+}

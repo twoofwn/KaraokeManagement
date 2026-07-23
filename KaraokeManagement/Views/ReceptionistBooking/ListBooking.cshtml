@@ -1,0 +1,291 @@
+﻿@model KaraokeManagement.ViewModel.ListBookingViewModel
+@{
+    Layout = null;
+}
+@using System.Security.Claims
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Danh sách đặt phòng - Minh Tuấn Karaoke</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/receptionist.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Checkout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/InvoiceHistory.css" asp-append-version="true" />
+</head>
+<body class="invoice-history-page">
+    <partial name="_ReceptionistSidebar" />
+
+    <div class="reception-main">
+        <form id="bookingForm" method="get" action="/ReceptionistBooking/ListBooking" style="display: contents;">
+            <input type="hidden" name="page" id="pageNumberInput" value="@Model.CurrentPage" />
+
+            <header class="reception-header">
+                <div class="header-title-wrapper" style="margin-left: 0; display: flex; align-items: center; gap: 16px; flex-grow: 1;">
+                    <h1 class="header-title-text" style="font-size: 1.5rem; font-weight: 800; margin: 0;">Danh sách đặt phòng</h1>
+                </div>
+
+                <div class="header-actions">
+                    <div class="user-profile">
+                        <span class="user-name">@(User.Identity?.Name ?? "Chưa rõ")</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="history-container">
+
+                <div class="history-card">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-magnifying-glass"></i> BỘ LỌC TÌM KIẾM
+                    </h2>
+
+                    <div class="filter-grid">
+                        <div class="filter-input-group">
+                            <label>Khách hàng / Số điện thoại</label>
+                            <input type="text" name="customerFilter" value="@Model.CustomerFilter" placeholder="Tìm theo tên hoặc SĐT..." class="filter-control" autocomplete="off" />
+                        </div>
+
+                        <div class="filter-input-group">
+                            <label>Thời gian đặt</label>
+                            <select name="dateRange" class="filter-control">
+                                <option value="all" selected="@(Model.DateRange == "all" ? "selected" : null)">Tất cả thời gian</option>
+                                <option value="3days" selected="@(Model.DateRange == "3days" ? "selected" : null)">3 ngày gần đây</option>
+                                <option value="7days" selected="@(Model.DateRange == "7days" ? "selected" : null)">7 ngày gần đây</option>
+                                <option value="30days" selected="@(Model.DateRange == "30days" ? "selected" : null)">1 tháng gần đây</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="filter-actions">
+                        <button type="button" class="btn-filter btn-filter-reset" onclick="resetFilters()">
+                            <i class="fa-solid fa-rotate-right"></i> Đặt lại
+                        </button>
+                        <button type="button" class="btn-filter btn-filter-search" onclick="submitForm(1)">
+                            <i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+
+                <div class="history-card">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-calendar-check"></i> Danh sách Đặt Phòng
+                    </h2>
+
+                    <div class="history-table-container">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>TÊN PHÒNG</th>
+                                    <th>KHÁCH HÀNG</th>
+                                    <th>SỐ ĐIỆN THOẠI</th>
+                                    <th>THỜI GIAN BẮT ĐẦU</th>
+                                    <th>THỜI GIAN KẾT THÚC</th>
+                                    <th style="text-align: center;">SỐ NGUỜI</th>
+                                    <th>GHI CHÚ</th>
+                                    <th style="text-align: center;">TRẠNG THÁI</th>
+                                    <th style="text-align: center; width: 100px;">HÀNH ĐỘNG</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int index = 1;
+                                }
+                                @if (Model.Bookings != null && Model.Bookings.Any())
+                                {
+                                    @foreach (var booking in Model.Bookings)
+                                    {
+                                        <tr>
+                                            <td class="col-invoice-code">@((index++).ToString("D3"))</td>
+
+                                            <td>
+                                                <span class="badge-room">@booking.RoomName</span>
+                                            </td>
+
+                                            <td>
+                                                <div class="customer-name">@booking.CustomerName</div>
+                                            </td>
+
+                                            <td class="customer-phone">
+                                                @(string.IsNullOrEmpty(booking.CustomerPhone) ? "--" : booking.CustomerPhone)
+                                            </td>
+
+                                            <td>
+                                                <div class="time-entry-row">
+                                                    <span class="status-dot in"></span>
+                                                    <span>@booking.StartTime.ToString("dd/MM/yyyy HH:mm")</span>
+                                                </div>
+                                            </td>
+
+                                            <td>
+                                                <div class="time-entry-row">
+                                                    <span class="status-dot out"></span>
+                                                    <span>@(booking.EndTime.HasValue? booking.EndTime.Value.ToString("dd/MM/yyyy HH:mm") : "--:--")</span>
+                                                </div>
+                                            </td>
+
+                                            <td style="text-align: center;">
+                                                @(booking.GuestCount.HasValue? booking.GuestCount.Value.ToString() : "--")
+                                            </td>
+
+                                            <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="@booking.Note">
+                                                @(string.IsNullOrEmpty(booking.Note) ? "--" : booking.Note)
+                                            </td>
+
+                                            <td style="text-align: center;">
+                                                @if (booking.Status == "Pending")
+                                                {
+                                                    <span class="badge-status pending">Chờ xử lý</span>
+                                                }
+                                                else if (booking.Status == "Confirmed")
+                                                {
+                                                    <span class="badge-status confirmed">Đã xác nhận</span>
+                                                }
+                                                else if (booking.Status == "Cancelled")
+                                                {
+                                                    <span class="badge-status cancelled">Đã hủy</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge-status">@booking.Status</span>
+                                                }
+                                            </td>
+
+                                            <td style="display: flex ">
+                                                @if (booking.Status == "Pending")
+                                                {
+                                                    <button type="button" class="btn-confirm" onclick="updateBookingStatus(@booking.BookingId, 'Confirmed')" title="Xác nhận Booking">
+                                                        <i class="fa-solid fa-check"></i>
+                                                    </button>
+                                                    <button type="button" class="btn-cancel-booking" onclick="updateBookingStatus(@booking.BookingId, 'Cancelled')" title="Hủy Booking">
+                                                        <i class="fa-solid fa-xmark"></i>
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <span style="color: var(--text-muted); font-size: 0.85rem;">--</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="10" class="empty-table-state">
+                                            <i class="fa-solid fa-folder-open"></i>
+                                            <p>Không tìm thấy thông tin đặt phòng nào phù hợp.</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (Model.TotalPages > 1)
+                    {
+                        <div class="pagination-container">
+                            <ul class="pagination-list">
+                                <li>
+                                    <button type="button" class="page-item-link @(Model.CurrentPage == 1 ? "disabled" : "")"
+                                            onclick="submitForm(@(Model.CurrentPage - 1))" aria-label="Previous page">
+                                        <i class="fa-solid fa-chevron-left"></i>
+                                    </button>
+                                </li>
+
+                                @for (int i = 1; i <= Model.TotalPages; i++)
+                                {
+                                    <li>
+                                        <button type="button" class="page-item-link @(Model.CurrentPage == i ? "active" : "")"
+                                                onclick="submitForm(@i)">
+                                            @i
+                                        </button>
+                                    </li>
+                                }
+
+                                <li>
+                                    <button type="button" class="page-item-link @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")"
+                                            onclick="submitForm(@(Model.CurrentPage + 1))" aria-label="Next page">
+                                        <i class="fa-solid fa-chevron-right"></i>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                </div>
+
+            </main>
+        </form>
+    </div>
+
+    <script>
+        function submitForm(page) {
+            document.getElementById('pageNumberInput').value = page;
+            document.getElementById('bookingForm').submit();
+        }
+
+        function resetFilters() {
+            const form = document.getElementById('bookingForm');
+
+            const quickSearch = document.getElementById('quickSearchInput');
+            if (quickSearch) quickSearch.value = '';
+
+            const customer = form.querySelector('input[name="customerFilter"]');
+            if (customer) customer.value = '';
+
+            const dateRange = form.querySelector('select[name="dateRange"]');
+            if (dateRange) dateRange.value = 'all';
+
+            const status = form.querySelector('select[name="status"]');
+            if (status) status.value = 'Pending';
+
+            submitForm(1);
+        }
+
+        function updateBookingStatus(bookingId, status) {
+            const actionText = status === 'Confirmed' ? 'XÁC NHẬN' : 'HỦY';
+            if (!confirm(`Bạn có chắc chắn muốn ${actionText} đơn đặt phòng #BK-${String(bookingId).padStart(4, '0')}?`)) {
+                return;
+            }
+
+            fetch('/ReceptionistBooking/UpdateBookingStatus', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ bookingId: bookingId, status: status })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Có lỗi xảy ra khi gửi yêu cầu.');
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const quickSearch = document.getElementById('quickSearchInput');
+            let timeout = null;
+            quickSearch.addEventListener('input', () => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    submitForm(1);
+                }, 800);
+            });
+
+            if (quickSearch.value) {
+                quickSearch.focus();
+                quickSearch.setSelectionRange(quickSearch.value.length, quickSearch.value.length);
+            }
+        });
+    </script>
+</body>
+</html>
