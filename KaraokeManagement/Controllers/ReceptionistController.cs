@@ -1,3 +1,4 @@
+﻿using KaraokeManagement.Services.ReceptionistServices;
 using KaraokeManagement.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

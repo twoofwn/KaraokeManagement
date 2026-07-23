@@ -12,12 +12,12 @@ builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<PricePolicyService>();
 
 // Receptionist
-builder.Services.AddScoped<DashboardService>();
-builder.Services.AddScoped<OrderService>();
-builder.Services.AddScoped<RoomBookingService>();
-builder.Services.AddScoped<PaymentService>();
-builder.Services.AddScoped<CustomerService>();
-builder.Services.AddScoped<InvoiceService>();
+builder.Services.AddScoped<KaraokeManagement.Services.ReceptionistServices.DashboardService>();
+builder.Services.AddScoped<KaraokeManagement.Services.ReceptionistServices.OrderService>();
+builder.Services.AddScoped<KaraokeManagement.Services.ReceptionistServices.RoomBookingService>();
+builder.Services.AddScoped<KaraokeManagement.Services.ReceptionistServices.PaymentService>();
+builder.Services.AddScoped<KaraokeManagement.Services.ReceptionistServices.CustomerService>();
+builder.Services.AddScoped<KaraokeManagement.Services.ReceptionistServices.InvoiceService>();
 
 //Customer Service
 builder.Services.AddScoped<KaraokeManagement.Services.CustomerServices.CustomerService>();

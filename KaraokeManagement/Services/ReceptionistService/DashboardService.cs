@@ -3,6 +3,7 @@ using KaraokeManagement.Models;
 using KaraokeManagement.ViewModel;
 using Microsoft.EntityFrameworkCore;
 
+namespace KaraokeManagement.Services.ReceptionistServices;
 public class DashboardService
 {
     private readonly KaraokeManagementDbContext _context;

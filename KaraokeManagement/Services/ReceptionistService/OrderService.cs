@@ -2,7 +2,7 @@
 using KaraokeManagement.Models;
 using KaraokeManagement.ViewModel;
 using Microsoft.EntityFrameworkCore;
-
+namespace KaraokeManagement.Services.ReceptionistServices;
 public class OrderService
 {
     private readonly KaraokeManagementDbContext _context;
