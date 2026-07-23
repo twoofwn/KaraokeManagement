@@ -12,7 +12,7 @@
             <span class="breadcrumb-current">Users</span>
         </nav>
     </div>
-    <a href="/Admin/UserCreate" class="btn-primary-sm">
+    <a href="javascript:void(0)" onclick="handleCreate()" class="btn-primary-sm">
         <i class="fa-solid fa-plus"></i> Add User
     </a>
 </div>
@@ -82,7 +82,7 @@
             {
                 <tr>
                     <td colspan="7" style="text-align:center;color:#a09098;padding:32px;">
-                        Chưa có tài khoản nào. <a href="/Admin/UserCreate">Thêm mới</a>
+                        Chưa có tài khoản nào. <a href="javascript:void(0)" onclick="handleCreate()">Thêm mới</a>
                     </td>
                 </tr>
             }
@@ -127,6 +127,13 @@
         const verified = await verifyPassword();
         if (verified === true) {
             window.location.href = `/Admin/UserEdit/${accountId}`;
+        }
+    }
+
+    async function handleCreate() {
+        const verified = await verifyPassword();
+        if (verified === true) {
+            window.location.href = '/Admin/UserCreate';
         }
     }
 
