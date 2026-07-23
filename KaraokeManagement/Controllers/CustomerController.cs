@@ -426,7 +426,7 @@ namespace KaraokeManagement.Controllers
                 // Gán các thuộc tính còn thiếu
                 booking.CustomerId = customerId;
                 booking.BookingTime = DateTime.Now;
-                booking.Status = "Confirmed"; // Trạng thái ban đầu
+                booking.Status = "Pending"; // Trạng thái ban đầu
                 if (booking.GuestCount <= 0) booking.GuestCount = 2;
 
                 // Lấy tạm 1 Admin gắn vào CreatedById do Database yêu cầu NOT NULL
