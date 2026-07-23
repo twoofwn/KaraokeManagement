@@ -1,9 +1,12 @@
 ﻿using KaraokeManagement.Models;
 using KaraokeManagement.ViewModel;
+using KaraokeManagement.Helpers;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace KaraokeManagement.Controllers
 {
@@ -32,7 +35,9 @@ namespace KaraokeManagement.Controllers
             ViewBag.SortOrder = sortOrder;
 
             // Truy vấn lấy dữ liệu RoomType
-            var roomTypes = _context.RoomTypes.AsQueryable();
+            var roomTypes = _context.RoomTypes
+            .Include(rt => rt.RoomImages)
+            .AsQueryable();
 
             // 1. Lọc theo tên phòng
             if (!string.IsNullOrEmpty(searchString))
@@ -76,6 +81,7 @@ namespace KaraokeManagement.Controllers
             var roomType = _context.RoomTypes
                 .Include(rt => rt.Rooms)
                 .Include(rt => rt.RoomPrices)
+                .Include(rt => rt.RoomImages)
                 .FirstOrDefault(rt => rt.RoomTypeId == id);
 
             if (roomType == null)
@@ -420,7 +426,7 @@ namespace KaraokeManagement.Controllers
                 // Gán các thuộc tính còn thiếu
                 booking.CustomerId = customerId;
                 booking.BookingTime = DateTime.Now;
-                booking.Status = "Confirmed"; // Trạng thái ban đầu
+                booking.Status = "Pending"; // Trạng thái ban đầu
                 if (booking.GuestCount <= 0) booking.GuestCount = 2;
 
                 // Lấy tạm 1 Admin gắn vào CreatedById do Database yêu cầu NOT NULL
@@ -449,6 +455,322 @@ namespace KaraokeManagement.Controllers
             {
                 return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message });
             }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> Profile()
+        {
+            ViewData["ActiveNav"] = "profile";
+            var customerIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(customerIdStr) || !int.TryParse(customerIdStr, out int customerId))
+            {
+                return RedirectToAction("CustomerLogin", "Auth");
+            }
+
+            var customer = await _context.Customers
+                .Include(c => c.Tier)
+                .FirstOrDefaultAsync(c => c.CustomerId == customerId);
+
+            if (customer == null)
+            {
+                return RedirectToAction("CustomerLogin", "Auth");
+            }
+
+            return View(customer);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Customer")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateProfile(string fullName, string phone)
+        {
+            var customerIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(customerIdStr) || !int.TryParse(customerIdStr, out int customerId))
+            {
+                return RedirectToAction("CustomerLogin", "Auth");
+            }
+
+            var customer = await _context.Customers.FindAsync(customerId);
+            if (customer == null)
+            {
+                return RedirectToAction("CustomerLogin", "Auth");
+            }
+
+            if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(phone))
+            {
+                TempData["ProfileError"] = "Họ tên và Số điện thoại không được để trống.";
+                return RedirectToAction("Profile");
+            }
+
+            // Check duplicate phone
+            var isPhoneDup = await _context.Customers.AnyAsync(c => c.Phone == phone && c.CustomerId != customerId);
+            if (isPhoneDup)
+            {
+                TempData["ProfileError"] = "Số điện thoại này đã được sử dụng bởi tài khoản khác.";
+                return RedirectToAction("Profile");
+            }
+
+            customer.FullName = fullName.Trim();
+            customer.Phone = phone.Trim();
+
+            _context.Customers.Update(customer);
+            await _context.SaveChangesAsync();
+
+            // Refresh cookie claims with updated FullName
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, customer.CustomerId.ToString()),
+                new Claim(ClaimTypes.Name, customer.FullName),
+                new Claim(ClaimTypes.Role, "Customer")
+            };
+            if (!string.IsNullOrEmpty(customer.Email))
+            {
+                claims.Add(new Claim(ClaimTypes.Email, customer.Email));
+            }
+
+            var claimsIdentity = new ClaimsIdentity(claims, "CookieAuth");
+            await HttpContext.SignInAsync("CookieAuth", new ClaimsPrincipal(claimsIdentity));
+
+            TempData["ProfileSuccess"] = "Cập nhật thông tin cá nhân thành công!";
+            return RedirectToAction("Profile");
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Customer")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(string oldPassword, string newPassword, string confirmPassword)
+        {
+            var customerIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(customerIdStr) || !int.TryParse(customerIdStr, out int customerId))
+            {
+                return RedirectToAction("CustomerLogin", "Auth");
+            }
+
+            var customer = await _context.Customers.FindAsync(customerId);
+            if (customer == null)
+            {
+                return RedirectToAction("CustomerLogin", "Auth");
+            }
+
+            if (string.IsNullOrEmpty(oldPassword) || string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
+            {
+                TempData["PasswordError"] = "Vui lòng nhập đầy đủ thông tin mật khẩu.";
+                return RedirectToAction("Profile");
+            }
+
+            if (!PasswordHelper.VerifyPassword(oldPassword, customer.PasswordHash))
+            {
+                TempData["PasswordError"] = "Mật khẩu cũ không chính xác.";
+                return RedirectToAction("Profile");
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                TempData["PasswordError"] = "Mật khẩu mới và xác nhận mật khẩu không khớp.";
+                return RedirectToAction("Profile");
+            }
+
+            if (newPassword.Length < 6)
+            {
+                TempData["PasswordError"] = "Mật khẩu mới phải có ít nhất 6 ký tự.";
+                return RedirectToAction("Profile");
+            }
+
+            customer.PasswordHash = PasswordHelper.HashPassword(newPassword);
+            _context.Customers.Update(customer);
+            await _context.SaveChangesAsync();
+
+            TempData["PasswordSuccess"] = "Đổi mật khẩu thành công!";
+            return RedirectToAction("Profile");
+        }
+
+        // ===== BOOKING HISTORY =====
+
+        [HttpGet]
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> Bookings()
+        {
+            ViewData["ActiveNav"] = "bookings";
+
+            var customerIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(customerIdStr) || !int.TryParse(customerIdStr, out int customerId))
+            {
+                return RedirectToAction("CustomerLogin", "Auth");
+            }
+
+            var bookings = await _context.Bookings
+                .Where(b => b.CustomerId == customerId)
+                .Include(b => b.Room)
+                    .ThenInclude(r => r.RoomType)
+                .Include(b => b.Invoices)
+                .OrderByDescending(b => b.StartTime)
+                .ToListAsync();
+
+            return View(bookings);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> BookingDetail(int id)
+        {
+            ViewData["ActiveNav"] = "bookings";
+
+            var customerIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(customerIdStr) || !int.TryParse(customerIdStr, out int customerId))
+            {
+                return RedirectToAction("CustomerLogin", "Auth");
+            }
+
+            var booking = await _context.Bookings
+                .Include(b => b.Room)
+                    .ThenInclude(r => r.RoomType)
+                .Include(b => b.Invoices)
+                    .ThenInclude(i => i.InvoiceDetails)
+                        .ThenInclude(d => d.Service)
+                .Include(b => b.Invoices)
+                    .ThenInclude(i => i.PaymentTransactions)
+                .FirstOrDefaultAsync(b => b.BookingId == id);
+
+            if (booking == null || booking.CustomerId != customerId)
+            {
+                return NotFound();
+            }
+
+            // Load existing review if any (for Completed bookings)
+            CustomerReview? existingReview = null;
+            Invoice? invoice = booking.Invoices.FirstOrDefault();
+            if (invoice != null)
+            {
+                existingReview = await _context.CustomerReviews
+                    .FirstOrDefaultAsync(r => r.BookingId == booking.BookingId);
+            }
+
+            // Load reports sent by this customer for this booking
+            var reports = await _context.NotificationLogs
+                .Where(n => n.BookingId == booking.BookingId && n.CustomerId == customerId)
+                .OrderByDescending(n => n.SentAt)
+                .ToListAsync();
+
+            ViewBag.ExistingReview = existingReview;
+            ViewBag.Invoice = invoice;
+            ViewBag.Reports = reports;
+
+            return View(booking);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Customer")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendBookingReport(int bookingId, string message)
+        {
+            var customerIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(customerIdStr) || !int.TryParse(customerIdStr, out int customerId))
+            {
+                return RedirectToAction("CustomerLogin", "Auth");
+            }
+
+            var booking = await _context.Bookings.FirstOrDefaultAsync(b => b.BookingId == bookingId);
+
+            // IDOR protection + status check
+            if (booking == null || booking.CustomerId != customerId)
+            {
+                return Forbid();
+            }
+
+            if (booking.Status != "CheckedIn")
+            {
+                TempData["ReportError"] = "Chỉ có thể gửi báo cáo khi phòng đang được sử dụng.";
+                return RedirectToAction("BookingDetail", new { id = bookingId });
+            }
+
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                TempData["ReportError"] = "Vui lòng nhập nội dung báo cáo.";
+                return RedirectToAction("BookingDetail", new { id = bookingId });
+            }
+
+            var notification = new NotificationLog
+            {
+                BookingId = bookingId,
+                CustomerId = customerId,
+                Channel = "Web",
+                Recipient = "Receptionist",
+                MessageContent = message.Trim(),
+                SentStatus = "Sent",
+                SentAt = DateTime.Now
+            };
+
+            _context.NotificationLogs.Add(notification);
+            await _context.SaveChangesAsync();
+
+            TempData["ReportSuccess"] = "Báo cáo sự cố đã được gửi thành công! Nhân viên sẽ xử lý sớm nhất.";
+            return RedirectToAction("BookingDetail", new { id = bookingId });
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Customer")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubmitReview(int bookingId, int invoiceId, int rating, string? comment)
+        {
+            var customerIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(customerIdStr) || !int.TryParse(customerIdStr, out int customerId))
+            {
+                return RedirectToAction("CustomerLogin", "Auth");
+            }
+
+            // Verify booking belongs to customer
+            var booking = await _context.Bookings
+                .Include(b => b.Invoices)
+                .FirstOrDefaultAsync(b => b.BookingId == bookingId);
+
+            if (booking == null || booking.CustomerId != customerId)
+            {
+                return Forbid();
+            }
+
+            if (booking.Status != "Completed")
+            {
+                TempData["ReviewError"] = "Chỉ có thể đánh giá sau khi hoàn thành phòng hát.";
+                return RedirectToAction("BookingDetail", new { id = bookingId });
+            }
+
+            // Verify invoice belongs to this booking
+            var invoice = booking.Invoices.FirstOrDefault(i => i.InvoiceId == invoiceId);
+            if (invoice == null)
+            {
+                TempData["ReviewError"] = "Không tìm thấy hóa đơn liên kết.";
+                return RedirectToAction("BookingDetail", new { id = bookingId });
+            }
+
+            // Check duplicate review
+            var existingReview = await _context.CustomerReviews
+                .AnyAsync(r => r.BookingId == booking.BookingId);
+
+            if (existingReview)
+            {
+                TempData["ReviewError"] = "Bạn đã đánh giá cho lượt hát này rồi.";
+                return RedirectToAction("BookingDetail", new { id = bookingId });
+            }
+
+            if (rating < 1 || rating > 5)
+            {
+                TempData["ReviewError"] = "Vui lòng chọn số sao từ 1 đến 5.";
+                return RedirectToAction("BookingDetail", new { id = bookingId });
+            }
+
+            var review = new CustomerReview
+            {
+                Rating = rating,
+                Comment = comment?.Trim(),
+                CreatedAt = DateTime.Now
+            };
+
+            _context.CustomerReviews.Add(review);
+            await _context.SaveChangesAsync();
+
+            TempData["ReviewSuccess"] = "Cảm ơn bạn đã đánh giá! Ý kiến của bạn giúp chúng tôi phục vụ tốt hơn.";
+            return RedirectToAction("BookingDetail", new { id = bookingId });
         }
     }
 }

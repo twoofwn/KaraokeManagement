@@ -27,7 +27,10 @@ public partial class Booking
 
     public string? Note { get; set; }
 
+    public int? StaffId { get; set; }
+
     public virtual Account CreatedBy { get; set; } = null!;
+    public virtual Account? Staff { get; set; }
 
     public virtual Customer Customer { get; set; } = null!;
 
