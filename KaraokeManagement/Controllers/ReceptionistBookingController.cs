@@ -1,4 +1,4 @@
-﻿using KaraokeManagement.Models;
+using KaraokeManagement.Models;
 using KaraokeManagement.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -53,7 +53,7 @@ namespace KaraokeManagement.Controllers
                 switch (dateRange.ToLower())
                 {
                     case "3days":
-                        DateTime threeDaysAgo = now.AddDays(-3).Date; // Bắt đầu từ 00:00 của 3 ngày trước
+                        DateTime threeDaysAgo = now.AddDays(-3).Date;
                         query = query.Where(b => b.StartTime >= threeDaysAgo);
                         break;
 
@@ -180,6 +180,250 @@ namespace KaraokeManagement.Controllers
             }
 
             return Json(new { success = true, message = $"Đã cập nhật trạng thái đơn đặt phòng thành {request.Status}." });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CheckIn(string search = "")
+        {
+            DateTime todayStart = DateTime.Today; 
+            DateTime todayEnd = todayStart.AddDays(1).AddTicks(-1); 
+
+            // Loc cac booking co status la Confirmed va trong hom nay
+            var query = _context.Bookings
+                .Include(b => b.Customer)
+                .Include(b => b.Room)
+                    .ThenInclude(r => r.RoomType)
+                .Where(b => b.Status == "Confirmed"
+                         && b.StartTime >= todayStart
+                         && b.StartTime <= todayEnd)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                search = search.Trim().ToLower();
+                query = query.Where(b => (b.Customer != null && b.Customer.FullName.ToLower().Contains(search))
+                                      || (b.Customer != null && b.Customer.Phone != null && b.Customer.Phone.Contains(search))
+                                      || (b.Room != null && b.Room.RoomName.ToLower().Contains(search)));
+            }
+
+            var pendingBookings = await query.OrderBy(b => b.StartTime).ToListAsync();
+            return View(pendingBookings);
+        }
+
+        // CheckinDetail
+        [HttpGet]
+        public async Task<IActionResult> CheckInDetail(int id)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.Customer)
+                .Include(b => b.Room)
+                .ThenInclude(r => r.RoomType)
+                .FirstOrDefaultAsync(b => b.BookingId == id);
+
+            if (booking == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy thông tin đơn đặt phòng này!";
+                return RedirectToAction("CheckIn");
+            }
+
+            DateTime startTime = booking.StartTime;
+            DateTime endTime = booking.EndTime ?? startTime.AddHours(2);
+
+            // Tim phong available, ko dc trung lich
+            var occupiedRoomIds = await _context.Bookings
+                .Where(b => b.BookingId != booking.BookingId
+                         && (b.Status == "Confirmed" || b.Status == "CheckedIn")
+                         && b.StartTime < endTime
+                         && (b.EndTime ?? b.StartTime.AddHours(2)) > startTime)
+                .Select(b => b.RoomId)
+                .Distinct()
+                .ToListAsync();
+
+            // Tim phong available, ko dc trung lich
+            var availableRooms = await _context.Rooms
+                .Include(r => r.RoomType)
+                .Where(r => !occupiedRoomIds.Contains(r.RoomId))
+                .Select(r => new AvailableRoomItem
+                {
+                    RoomId = r.RoomId,
+                    RoomName = r.RoomName,
+                    TypeName = r.RoomType.TypeName,
+                    PricePerHour = r.RoomType.PricePerHour
+                })
+                .ToListAsync();
+
+            // Tìm danh sách nhân viên phục vụ có lịch làm việc trùng khung giờ booking
+            DateOnly bookingDate = DateOnly.FromDateTime(booking.StartTime);
+            TimeSpan bookingStart = booking.StartTime.TimeOfDay;
+            TimeSpan bookingEnd = (booking.EndTime ?? booking.StartTime.AddHours(2)).TimeOfDay;
+
+            var scheduledStaffList = await _context.EmployeeSchedules
+                .Include(s => s.Account)
+                .ThenInclude(a => a.Role)
+                .Include(s => s.Shift)
+                .Where(s => s.WorkDate == bookingDate 
+                         && s.IsActive 
+                         && (s.Account.Role.RoleName == "Service Staff" || s.Account.Role.RoleName.Contains("Phục vụ")))
+                .ToListAsync();
+
+            var matchedStaff = scheduledStaffList.Where(s => {
+                var shiftStart = s.Shift.StartTime;
+                var shiftEnd = s.Shift.EndTime;
+                if (shiftEnd > shiftStart)
+                {
+                    return bookingStart < shiftEnd && bookingEnd > shiftStart;
+                }
+                else
+                {
+                    return bookingStart >= shiftStart || bookingEnd <= shiftEnd || bookingStart < shiftEnd;
+                }
+            }).Select(s => new StaffItem
+            {
+                AccountId = s.Account.AccountId,
+                FullName = s.Account.FullName,
+                Phone = s.Account.Phone ?? string.Empty,
+                ShiftInfo = $"{s.Shift.ShiftName} ({s.Shift.StartTime:hh\\:mm} - {s.Shift.EndTime:hh\\:mm})"
+            }).ToList();
+
+            if (!matchedStaff.Any())
+            {
+                var allStaff = await _context.Accounts
+                    .Include(a => a.Role)
+                    .Where(a => a.Role.RoleName == "Service Staff" || a.Role.RoleName.Contains("Phục vụ"))
+                    .ToListAsync();
+
+                matchedStaff = allStaff.Select(a => new StaffItem
+                {
+                    AccountId = a.AccountId,
+                    FullName = a.FullName,
+                    Phone = a.Phone ?? string.Empty,
+                    ShiftInfo = "Không có ca trực (Tất cả)"
+                }).ToList();
+            }
+
+            var viewModel = new CheckInDetailViewModel
+            {
+                BookingId = booking.BookingId,
+                CustomerId = booking.CustomerId,
+                CustomerName = booking.Customer.FullName,
+                Phone = booking.Customer.Phone,
+                Email = booking.Customer.Email,
+                CurrentRoomId = booking.RoomId,
+                CurrentRoomName = booking.Room.RoomName,
+                CurrentRoomTypeName = booking.Room.RoomType.TypeName,
+                CurrentPricePerHour = booking.Room.RoomType.PricePerHour,
+                CurrentRoomTypeImageUrl = booking.Room.RoomType.ImageUrl,
+                StartTime = booking.StartTime,
+                EndTime = booking.EndTime,
+                GuestCount = booking.GuestCount,
+                Note = booking.Note,
+                Status = booking.Status ?? "Confirmed",
+                SelectedNewRoomId = booking.RoomId,
+                AvailableRoomsToSwitch = availableRooms,
+                SelectedStaffId = booking.StaffId,
+                EligibleStaffs = matchedStaff
+            };
+
+            return View(viewModel);
+        }
+
+        // Confirm Checkin
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmCheckIn(CheckInDetailViewModel model)
+        {
+            var booking = await _context.Bookings.FirstOrDefaultAsync(b => b.BookingId == model.BookingId);
+            if (booking == null)
+            {
+                return NotFound();
+            }
+
+            var accountIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                              ?? User.FindFirstValue("AccountId");
+
+            if (!int.TryParse(accountIdClaim, out int accountId) || accountId <= 0)
+            {
+                return Json(new { success = false, message = "Phiên làm việc hết hạn hoặc không xác định được tài khoản thao tác." });
+            }
+
+            // Cap nhat thong tin khach hang
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.CustomerId == booking.CustomerId);
+            if (customer != null)
+            {
+                customer.FullName = model.CustomerName;
+                customer.Phone = model.Phone;
+                customer.Email = model.Email;
+                _context.Customers.Update(customer);
+            }
+
+            // Cập nhật RoomId nếu có chọn đổi phòng
+            if (model.SelectedNewRoomId > 0 && model.SelectedNewRoomId != booking.RoomId)
+            {
+                booking.RoomId = model.SelectedNewRoomId;
+            }
+
+            // Cập nhật số lượng khách và ghi chú
+            booking.GuestCount = model.GuestCount;
+            booking.Note = model.Note;
+
+            // Cập nhật nhân viên phục vụ
+            if (model.SelectedStaffId.HasValue && model.SelectedStaffId.Value > 0)
+            {
+                booking.StaffId = model.SelectedStaffId;
+            }
+            else
+            {
+                booking.StaffId = null;
+            }
+
+            // Cập nhật trạng thái Booking sang CheckedIn
+            booking.Status = "CheckedIn";
+            _context.Bookings.Update(booking);
+
+            // Cập nhật trạng thái phòng sang Occupied
+            var room = await _context.Rooms.FirstOrDefaultAsync(r => r.RoomId == booking.RoomId);
+            if (room != null)
+            {
+                room.Status = "Occupied";
+                _context.Rooms.Update(room);
+            }
+
+            // Tao Invoice moi
+            var invoice = new Invoice
+            {
+                BookingId = booking.BookingId,
+                RoomId = booking.RoomId,
+                ReceptionistId = accountId,
+                PromotionId = 2,
+                CheckInTime = DateTime.Now,
+                Status = "Unpaid",
+                RoomTotal = 0,
+                ServiceTotal = 0,
+                GrandTotal = 0
+            };
+
+            _context.Invoices.Add(invoice);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Check-in thành công!";
+            return RedirectToAction("Index", "Receptionist");
+        }
+
+        // Huy Booking
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelBooking(int bookingId)
+        {
+            var booking = await _context.Bookings.FirstOrDefaultAsync(b => b.BookingId == bookingId);
+            if (booking != null)
+            {
+                booking.Status = "Cancelled";
+                _context.Bookings.Update(booking);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Đã hủy đơn đặt phòng thành công.";
+            }
+
+            return RedirectToAction("CheckIn");
         }
     }
 }

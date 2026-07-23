@@ -1,8 +1,8 @@
-using KaraokeManagement.Controllers;
 using KaraokeManagement.Models;
 using KaraokeManagement.ViewModel;
 using Microsoft.EntityFrameworkCore;
 namespace KaraokeManagement.Services.ReceptionistServices;
+
 public class RoomBookingService
 {
     private readonly KaraokeManagementDbContext _context;

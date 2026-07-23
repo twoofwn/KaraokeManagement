@@ -57,7 +57,14 @@ public class InvoiceService
 
     public async Task<CheckoutViewModel?> GetInvoiceDetailAsync(int invoiceId)
     {
-        var invoice = await _context.Invoices.Include(i => i.Room).ThenInclude(r => r.RoomType).Include(i => i.InvoiceDetails).ThenInclude(id => id.Service).Include(i => i.Booking).ThenInclude(b => b.Customer).ThenInclude(c => c.Tier).FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
+        var invoice = await _context.Invoices.Include(i => i.Room)
+                                            .ThenInclude(r => r.RoomType)
+                                            .Include(i => i.InvoiceDetails)
+                                            .ThenInclude(id => id.Service)
+                                            .Include(i => i.Booking)
+                                            .ThenInclude(b => b.Customer)
+                                            .ThenInclude(c => c.Tier)
+                                            .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
         if (invoice == null) return null;
 
         var duration = TimeSpan.FromSeconds(Math.Max(0, ((invoice.CheckOutTime ?? DateTime.Now) - invoice.CheckInTime).TotalSeconds));

@@ -1,0 +1,144 @@
+@model IEnumerable<KaraokeManagement.Models.Booking>
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Xác nhận đặt phòng - Minh Tuấn Karaoke</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/receptionist.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Checkout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/InvoiceHistory.css" asp-append-version="true" />
+</head>
+<body class="invoice-history-page">
+    <partial name="_ReceptionistSidebar" />
+
+    <div class="reception-main">
+        <form id="checkInForm" method="get" action="/ReceptionistBooking/CheckIn" style="display: contents;">
+            <header class="reception-header">
+                <div class="header-title-wrapper" style="margin-left: 0; display: flex; align-items: center; gap: 16px; flex-grow: 1;">
+                    <h1 class="header-title-text" style="font-size: 1.5rem; font-weight: 800; margin: 0;">Check-in Đặt Phòng</h1>
+                </div>
+
+                <div class="header-actions">
+                    <div class="user-profile">
+                        <span class="user-name">@(User.Identity?.Name ?? "Chưa rõ")</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="history-container">
+
+                <!-- Bộ lọc tìm kiếm -->
+                <div class="history-card">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-magnifying-glass"></i> BỘ LỌC TÌM KIẾM
+                    </h2>
+
+                    <div class="filter-grid">
+                        <div class="filter-input-group" style="grid-column: span 2;">
+                            <label>Từ khóa tìm kiếm</label>
+                            <input type="text" name="search" value="@Context.Request.Query["search"]" placeholder="Nhập tên khách hàng, số điện thoại hoặc tên phòng..." class="filter-control" autocomplete="off" />
+                        </div>
+                    </div>
+
+                    <div class="filter-actions">
+                        <button type="button" class="btn-filter btn-filter-reset" onclick="window.location.href='/ReceptionistBooking/CheckIn'">
+                            <i class="fa-solid fa-rotate-right"></i> Đặt lại
+                        </button>
+                        <button type="submit" class="btn-filter btn-filter-search">
+                            <i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bảng Danh Sách Đơn Chờ Check-in -->
+                <div class="history-card">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-file-signature"></i> Danh Sách Chờ Check-In
+                    </h2>
+
+                    <div class="history-table-container">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>TÊN PHÒNG</th>
+                                    <th>KHÁCH HÀNG</th>
+                                    <th>SỐ ĐIỆN THOẠI</th>
+                                    <th>THỜI GIAN BẮT ĐẦU</th>
+                                    <th style="text-align: center;">SỐ NGUỜI</th>
+                                    <th style="text-align: center;">TRẠNG THÁI</th>
+                                    <th style="text-align: center; width: 140px;">HÀNH ĐỘNG</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int index = 1;
+                                }
+                                @if (Model != null && Model.Any())
+                                {
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td class="col-invoice-code">@((index++).ToString("D3"))</td>
+
+                                            <td>
+                                                <span class="badge-room">@item.Room?.RoomName</span>
+                                                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">@item.Room?.RoomType?.TypeName</div>
+                                            </td>
+
+                                            <td>
+                                                <div class="customer-name">@item.Customer?.FullName</div>
+                                            </td>
+
+                                            <td class="customer-phone">
+                                                @(string.IsNullOrEmpty(item.Customer?.Phone) ? "--" : item.Customer.Phone)
+                                            </td>
+
+                                            <td>
+                                                <div class="time-entry-row">
+                                                    <span class="status-dot in"></span>
+                                                    <span>@item.StartTime.ToString("dd/MM/yyyy HH:mm")</span>
+                                                </div>
+                                            </td>
+
+                                            <td style="text-align: center;">
+                                                @(item.GuestCount.HasValue? item.GuestCount.Value.ToString() : "--")
+                                            </td>
+
+                                            <td style="text-align: center;">
+                                                <span class="badge-status confirmed">@item.Status</span>
+                                            </td>
+
+                                            <td style="text-align: center;">
+                                                <a href="/ReceptionistBooking/CheckInDetail?id=@item.BookingId" class="btn-filter btn-filter-search" style="padding: 6px 12px; font-size: 0.825rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                                                    <i class="fa-solid fa-arrow-right-to-bracket"></i> Check-in
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="8" class="empty-table-state">
+                                            <i class="fa-solid fa-folder-open"></i>
+                                            <p>Không tìm thấy đơn đặt phòng nào đang chờ Check-in.</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+        </form>
+    </div>
+</body>
+</html>

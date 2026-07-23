@@ -761,36 +761,6 @@ INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, 
 VALUES (14, 1, 4, 2, '2026-06-22 21:58:47', '2026-06-23 21:58:47', '2026-06-23 23:58:47', N'Completed', NULL, NULL, NULL);
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
 VALUES (15, 2, 4, 5, '2026-06-23 21:58:47', '2026-06-24 21:58:47', '2026-06-25 01:58:47', N'Completed', NULL, NULL, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (16, 1, 3, 5, '2026-07-19 19:45:15', '2026-07-20 19:45:15', '2026-07-20 23:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (17, 2, 4, 8, '2026-07-21 19:45:15', '2026-07-21 19:45:15', '2026-07-21 22:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (18, 3, 3, 4, '2026-07-22 19:45:15', '2026-07-22 19:45:15', '2026-07-22 21:45:15', N'CheckedIn', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (19, 1, 3, 1, '2026-07-07 19:45:15', '2026-07-08 19:45:15', '2026-07-08 21:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (20, 2, 3, 2, '2026-07-08 19:45:15', '2026-07-09 19:45:15', '2026-07-09 22:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (21, 3, 4, 4, '2026-07-09 19:45:15', '2026-07-10 19:45:15', '2026-07-10 21:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (22, 4, 4, 5, '2026-07-10 19:45:15', '2026-07-11 19:45:15', '2026-07-11 23:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (23, 5, 3, 6, '2026-07-11 19:45:15', '2026-07-12 19:45:15', '2026-07-13 00:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (24, 1, 3, 7, '2026-07-12 19:45:15', '2026-07-13 19:45:15', '2026-07-13 21:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (25, 2, 4, 8, '2026-07-13 19:45:15', '2026-07-14 19:45:15', '2026-07-14 22:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (26, 3, 4, 9, '2026-07-14 19:45:15', '2026-07-15 19:45:15', '2026-07-15 23:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (27, 4, 3, 10, '2026-07-15 19:45:15', '2026-07-16 19:45:15', '2026-07-16 21:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (28, 5, 3, 1, '2026-07-16 19:45:15', '2026-07-17 19:45:15', '2026-07-17 22:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (29, 1, 4, 2, '2026-07-17 19:45:15', '2026-07-18 19:45:15', '2026-07-18 21:45:15', N'Completed', NULL, 1, NULL);
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (30, 2, 4, 5, '2026-07-18 19:45:15', '2026-07-19 19:45:15', '2026-07-19 23:45:15', N'Completed', NULL, 1, NULL);
 SET IDENTITY_INSERT [Booking] OFF;
 
 SET IDENTITY_INSERT [Invoice] ON;
@@ -809,22 +779,6 @@ INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID
 INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (13, 13, 1, 3, 2, '2026-06-22 21:58:47', '2026-06-23 00:58:47', 450000.00, 260000.00, 0.00, 710000.00, N'Paid');
 INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (14, 14, 2, 4, 2, '2026-06-23 21:58:47', '2026-06-23 23:58:47', 300000.00, 140000.00, 0.00, 440000.00, N'Paid');
 INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (15, 15, 5, 4, 2, '2026-06-24 21:58:47', '2026-06-25 01:58:47', 1200000.00, 600000.00, 180000.00, 1620000.00, N'Paid');
-INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (16, NULL, 6, 1, NULL, '2026-06-28 06:58:21', NULL, 0.00, 0.00, 0.00, 0.00, N'Unpaid');
-INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (17, 1, 5, 3, 2, '2026-07-20 19:45:15', '2026-07-20 23:45:15', 1200000.00, 2750000.00, 790000.00, 3160000.00, N'Paid');
-INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (18, 2, 8, 3, 1, '2026-07-21 19:45:15', '2026-07-21 22:45:15', 1800000.00, 1500000.00, 500000.00, 2800000.00, N'Paid');
-INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (19, 3, 4, 4, 2, '2026-07-22 19:45:15', NULL, 0.00, 0.00, 0.00, 0.00, N'Unpaid');
-INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (20, 4, 1, 3, 2, '2026-07-08 19:45:15', '2026-07-08 21:45:15', 300000.00, 140000.00, 0.00, 440000.00, N'Paid');
-INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (21, 5, 2, 3, 2, '2026-07-09 19:45:15', '2026-07-09 22:45:15', 450000.00, 80000.00, 0.00, 530000.00, N'Paid');
-INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (22, 6, 4, 4, 2, '2026-07-10 19:45:15', '2026-07-10 21:45:15', 240000.00, 190000.00, 0.00, 430000.00, N'Paid');
-INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (23, 7, 5, 4, 2, '2026-07-11 19:45:15', '2026-07-11 23:45:15', 1200000.00, 490000.00, 0.00, 1690000.00, N'Paid');
-INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (24, 8, 6, 3, 2, '2026-07-12 19:45:15', '2026-07-13 00:45:15', 1500000.00, 700000.00, 150000.00, 2050000.00, N'Paid');
-INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (25, 9, 7, 3, 2, '2026-07-13 19:45:15', '2026-07-13 21:45:15', 600000.00, 300000.00, 90000.00, 810000.00, N'Paid');
-INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (26, 10, 8, 4, 2, '2026-07-14 19:45:15', '2026-07-14 22:45:15', 1800000.00, 1500000.00, 330000.00, 2970000.00, N'Paid');
-INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (27, 11, 9, 4, 2, '2026-07-15 19:45:15', '2026-07-15 23:45:15', 2400000.00, 1500000.00, 390000.00, 3510000.00, N'Paid');
-INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (28, 12, 10, 3, 2, '2026-07-16 19:45:15', '2026-07-16 21:45:15', 300000.00, 100000.00, 0.00, 400000.00, N'Paid');
-INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (29, 13, 1, 3, 2, '2026-07-17 19:45:15', '2026-07-17 22:45:15', 450000.00, 260000.00, 0.00, 710000.00, N'Paid');
-INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (30, 14, 2, 4, 2, '2026-07-18 19:45:15', '2026-07-18 21:45:15', 300000.00, 140000.00, 0.00, 440000.00, N'Paid');
-INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (31, 15, 5, 4, 2, '2026-07-19 19:45:15', '2026-07-19 23:45:15', 1200000.00, 600000.00, 180000.00, 1620000.00, N'Paid');
 SET IDENTITY_INSERT [Invoice] OFF;
 
 SET IDENTITY_INSERT [InvoiceDetail] ON;

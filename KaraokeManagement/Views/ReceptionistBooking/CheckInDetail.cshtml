@@ -1,0 +1,218 @@
+@model KaraokeManagement.ViewModel.CheckInDetailViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chi Tiết Nhận Phòng - Minh Tuấn Karaoke</title>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/receptionist.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/CheckIn.css" asp-append-version="true" />
+ 
+</head>
+<body class="invoice-history-page">
+    <partial name="_ReceptionistSidebar" />
+
+    <div class="reception-main">
+        <header class="reception-header">
+            <div class="header-title-wrapper" style="margin-left: 0; display: flex; align-items: center; gap: 16px; flex-grow: 1;">
+                <h1 class="header-title-text" style="font-size: 1.5rem; font-weight: 800; margin: 0;">Chi Tiết Đặt Phòng & Check-in</h1>
+            </div>
+
+            <div class="header-actions">
+                <div class="user-profile">
+                    <span class="user-name">@(User.Identity?.Name ?? "Chưa rõ")</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="history-container1" style="padding-top: 10px; overflow-y: auto; height: calc(100vh - 80px);">
+            
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="validation-alert" style="display: block;">
+                    <i class="fa-solid fa-triangle-exclamation" style="margin-right: 8px;"></i>
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
+            <form asp-controller="ReceptionistBooking" asp-action="ConfirmCheckIn" method="post" id="confirmCheckInForm">
+                <input type="hidden" asp-for="BookingId" />
+                <input type="hidden" asp-for="CustomerId" />
+                <input type="hidden" asp-for="CurrentRoomId" />
+
+                <div class="detail-grid">
+
+
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        
+                        <div class="checkin-card">
+                            <div class="checkin-card-title">
+                                <i class="fa-solid fa-user-pen"></i>
+                                <span>Thông tin Khách Hàng</span>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div class="form-group">
+                                    <label class="info-label" for="CustomerName"><i class="fa-solid fa-signature"></i> Họ và tên</label>
+                                    <input type="text" asp-for="CustomerName" class="form-input" required />
+                                </div>
+                                <div class="form-group">
+                                    <label class="info-label" for="Phone"><i class="fa-solid fa-phone"></i> Số điện thoại</label>
+                                    <input type="text" asp-for="Phone" class="form-input" required />
+                                </div>
+                                <div class="form-group" style="grid-column: span 2; margin-bottom: 0;">
+                                    <label class="info-label" for="Email"><i class="fa-solid fa-envelope"></i> Email</label>
+                                    <input type="email" asp-for="Email" class="form-input" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dat phong -->
+                        <div class="checkin-card">
+                            <div class="checkin-card-title">
+                                <i class="fa-solid fa-calendar-days"></i>
+                                <span>Thông tin đặt lịch trước</span>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div class="info-group">
+                                    <span class="info-label"><i class="fa-solid fa-clock"></i> Giờ nhận dự kiến</span>
+                                    <div class="info-value">@Model.StartTime.ToString("HH:mm - dd/MM/yyyy")</div>
+                                </div>
+                                <div class="info-group">
+                                    <span class="info-label"><i class="fa-solid fa-clock"></i> Giờ trả dự kiến</span>
+                                    <div class="info-value">@(Model.EndTime.HasValue ? Model.EndTime.Value.ToString("HH:mm - dd/MM/yyyy") : "--")</div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="info-label" for="GuestCount"><i class="fa-solid fa-users"></i> Số khách</label>
+                                    <input type="number" asp-for="GuestCount" class="form-input" min="1" required />
+                                </div>
+                                <div class="info-group">
+                                    <span class="info-label"><i class="fa-solid fa-circle-info"></i> Trạng thái</span>
+                                    <div style="margin-top: 2px;">
+                                        <span class="badge-info-status confirmed">
+                                            <i class="fa-solid fa-circle-check"></i> @Model.Status
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="grid-column: span 2; margin-bottom: 0;">
+                                    <label class="info-label" for="Note"><i class="fa-solid fa-note-sticky"></i> Ghi chú đặt phòng</label>
+                                    <textarea asp-for="Note" class="form-input" style="min-height: 70px; resize: vertical;"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+
+
+                    <div>
+                        
+                        <div class="checkin-card">
+                            <div class="checkin-card-title">
+                                <i class="fa-solid fa-door-open"></i>
+                                <span>Thông Tin Phòng & Phục Vụ</span>
+                            </div>
+
+                            <!-- thong tin phong -->
+                            <div class="room-current-box">
+                                @if (!string.IsNullOrEmpty(Model.CurrentRoomTypeImageUrl))
+                                {
+                                    <div class="room-image-wrapper" style="margin-bottom: 12px; border-radius: 8px; overflow: hidden; height: 120px; border: 1px solid #EADADF;">
+                                        <img src="@Model.CurrentRoomTypeImageUrl" alt="@Model.CurrentRoomTypeName" style="width: 100%; height: 100%; object-fit: cover;" />
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="room-image-wrapper" style="margin-bottom: 12px; border-radius: 8px; overflow: hidden; height: 100px; border: 1px solid #EADADF; background-color: #FAFAFB; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                                        <i class="fa-solid fa-image" style="font-size: 2rem; color: #E6D4D8;"></i>
+                                    </div>
+                                }
+                                <span class="info-label" style="color: var(--primary-magenta); font-weight: 700;">Phòng đã đặt</span>
+                                <div class="room-current-title">
+                                    <i class="fa-solid fa-microphone-lines"></i> @Model.CurrentRoomName
+                                </div>
+                                <div style="margin-top: 6px; font-size: 0.825rem; color: var(--text-secondary-dark);">
+                                    <p>Loại phòng: <strong>@Model.CurrentRoomTypeName</strong></p>
+                                    <p style="margin-top: 2px;">Giá phòng: <strong style="color: #DC2626;">@(Model.CurrentPricePerHour.ToString("N0"))đ/giờ</strong></p>
+                                </div>
+                            </div>
+                            
+                            <!-- Doi phong -->
+                            <div class="form-group">
+                                <label class="form-label" for="SelectedNewRoomId">Đổi sang phòng khác (Nếu cần)</label>
+                                <select asp-for="SelectedNewRoomId" class="form-input" style="background-color: white;">
+                                    <option value="@Model.CurrentRoomId">-- Giữ nguyên phòng đã đặt (@Model.CurrentRoomName) --</option>
+                                    @if (Model.AvailableRoomsToSwitch != null && Model.AvailableRoomsToSwitch.Any())
+                                    {
+                                        @foreach (var room in Model.AvailableRoomsToSwitch.Where(r => r.RoomId != Model.CurrentRoomId))
+                                        {
+                                            <option value="@room.RoomId">
+                                                @room.RoomName - @room.TypeName (@(room.PricePerHour.ToString("N0"))đ/giờ)
+                                            </option>
+                                        }
+                                    }
+                                </select>
+                                <small style="display: block; margin-top: 4px; color: var(--text-secondary); font-size: 0.725rem;">
+                                    * Chỉ hiển thị phòng trống không trùng lịch ở cùng khung giờ.
+                                </small>
+                            </div>
+
+                            <!-- Nhan vien  -->
+                            <div class="form-group">
+                                <label class="form-label" for="SelectedStaffId">Nhân viên phục vụ phòng</label>
+                                <select asp-for="SelectedStaffId" class="form-input" style="background-color: white;">
+                                    <option value="">-- Chọn nhân viên phục vụ --</option>
+                                    @if (Model.EligibleStaffs != null && Model.EligibleStaffs.Any())
+                                    {
+                                        @foreach (var staff in Model.EligibleStaffs)
+                                        {
+                                            <option value="@staff.AccountId">
+                                                @staff.FullName (@staff.ShiftInfo)
+                                            </option>
+                                        }
+                                    }
+                                </select>
+                                <small style="display: block; margin-top: 4px; color: var(--text-secondary); font-size: 0.725rem;">
+                                    * Ưu tiên hiển thị các nhân viên có ca trực trùng khung giờ này.
+                                </small>
+                            </div>
+
+                            <div class="action-buttons-container">
+                                <button type="submit" class="btn-confirm-booking">
+                                    <i class="fa-solid fa-circle-check"></i> Xác nhận nhận phòng (Check-in)
+                                </button>
+                                
+                                <button type="submit" form="cancelBookingForm" class="btn-cancel-booking">
+                                    <i class="fa-solid fa-trash-can"></i> Hủy đơn đặt lịch
+                                </button>
+                            </div>
+
+                            <div style="margin-top: 20px; border-top: 1px solid var(--border-color-soft); padding-top: 12px;">
+                                <a href="/ReceptionistBooking/CheckIn" class="btn-back" style="width: 100%;">
+                                    <i class="fa-solid fa-angle-left"></i> Trở về danh sách
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </form>
+
+        </main>
+    </div>
+
+    <form asp-controller="ReceptionistBooking" asp-action="CancelBooking" method="post" id="cancelBookingForm" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn đặt phòng này?');">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="bookingId" value="@Model.BookingId" />
+    </form>
+</body>
+</html>
