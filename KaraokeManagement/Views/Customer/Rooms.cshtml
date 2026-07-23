@@ -294,13 +294,19 @@
 				{
 					<div class="t-customer-room-card">
 						<div class="t-customer-room-card-image-wrapper">
-							<!-- Ảnh tĩnh mặc định do db chưa có trường ảnh -->
-							<img src="https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?auto=format&fit=crop&q=80&w=600" alt="@roomType.TypeName" class="t-customer-room-card-image" />
+							@{
+								// Lấy ảnh đầu tiên của loại phòng này, nếu chưa có thì dùng ảnh mặc định
+								var displayImg = (roomType.RoomImages != null && roomType.RoomImages.Any())
+								? roomType.RoomImages.First().ImageUrl
+								: "https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?auto=format&fit=crop&q=80&w=600";
+							}
+							<!-- Hiển thị ảnh động -->
+							<img src="@displayImg" alt="@roomType.TypeName" class="t-customer-room-card-image" />
 						</div>
 						<div class="t-customer-room-card-content">
 							<div class="t-customer-room-card-price">
 								<!-- Format số tiền chuẩn VNĐ -->
-								@roomType.PricePerHour.ToString("N0") ₫<span class="t-customer-room-card-price-night"> / giờ</span>
+								<span class="t-customer-room-card-price-night">chỉ từ  </span>@roomType.PricePerHour.ToString("N0") ₫<span class="t-customer-room-card-price-night"> / giờ</span>
 							</div>
 							<h3 class="t-customer-room-card-name">@roomType.TypeName</h3>
 

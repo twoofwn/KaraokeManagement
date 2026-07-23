@@ -434,22 +434,38 @@
 
 				<!-- Image Gallery -->
 				<div class="t-roomdetail-gallery">
-					<img src="https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?auto=format&fit=crop&q=80&w=800"
+					@{
+						var firstImage = (Model.RoomImages != null && Model.RoomImages.Any())
+						? Model.RoomImages.First().ImageUrl
+						: "https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?auto=format&fit=crop&q=80&w=800";
+					}
+
+					<!-- Ảnh chính -->
+					<img src="@firstImage"
 						 alt="Room main view" id="mainRoomImage" class="t-roomdetail-gallery-main-img" />
 
+					<!-- Danh sách các ảnh nhỏ (Thumbnails) -->
 					<div class="t-roomdetail-gallery-thumbnails">
-						<div class="t-roomdetail-gallery-thumbnail-item">
-							<img src="https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?auto=format&fit=crop&q=80&w=400"
-								 class="t-roomdetail-gallery-thumbnail-img active" onclick="changeImage(this)" />
-						</div>
-						<div class="t-roomdetail-gallery-thumbnail-item">
-							<img src="https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?auto=format&fit=crop&q=80&w=400"
-								 class="t-roomdetail-gallery-thumbnail-img" onclick="changeImage(this)" />
-						</div>
-						<div class="t-roomdetail-gallery-thumbnail-item">
-							<img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=400"
-								 class="t-roomdetail-gallery-thumbnail-img" onclick="changeImage(this)" />
-						</div>
+						@if (Model.RoomImages != null && Model.RoomImages.Any())
+						{
+							bool isFirstImg = true;
+							foreach (var img in Model.RoomImages)
+							{
+								<div class="t-roomdetail-gallery-thumbnail-item">
+									<img src="@img.ImageUrl"
+										 class="t-roomdetail-gallery-thumbnail-img @(isFirstImg ? "active" : "")" onclick="changeImage(this)" />
+								</div>
+								isFirstImg = false;
+							}
+						}
+						else
+						{
+							<!-- Fallback nếu DB trống -->
+							<div class="t-roomdetail-gallery-thumbnail-item">
+								<img src="https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?auto=format&fit=crop&q=80&w=400"
+									 class="t-roomdetail-gallery-thumbnail-img active" onclick="changeImage(this)" />
+							</div>
+						}
 					</div>
 				</div>
 

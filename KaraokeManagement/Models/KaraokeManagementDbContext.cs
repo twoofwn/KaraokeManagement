@@ -140,20 +140,27 @@ public partial class KaraokeManagementDbContext : DbContext
                 .HasMaxLength(50)
                 .HasDefaultValue("Pending");
 
-            entity.HasOne(d => d.CreatedBy).WithMany(p => p.Bookings)
-                .HasForeignKey(d => d.CreatedById)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Booking__Created__6E01572D");
+            entity.HasOne(d => d.CreatedBy)
+    .WithMany(p => p.Bookings)
+    .HasForeignKey(d => d.CreatedById)
+    .OnDelete(DeleteBehavior.ClientSetNull)
+    .HasConstraintName("FK_Booking_CreatedBy");
 
-            entity.HasOne(d => d.Customer).WithMany(p => p.Bookings)
+            entity.HasOne(d => d.Staff)
+                .WithMany(p => p.StaffHasBookings)
+                .HasForeignKey(d => d.StaffId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Booking_Staff");
+
+            entity.HasOne(d => d.Customer)
+                .WithMany(p => p.Bookings)
                 .HasForeignKey(d => d.CustomerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Booking__Custome__6D0D32F4");
+                .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(d => d.Room).WithMany(p => p.Bookings)
+            entity.HasOne(d => d.Room)
+                .WithMany(p => p.Bookings)
                 .HasForeignKey(d => d.RoomId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Booking__RoomID__6EF57B66");
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<Category>(entity =>
@@ -568,10 +575,20 @@ public partial class KaraokeManagementDbContext : DbContext
         modelBuilder.Entity<RoomImage>(entity =>
         {
             entity.HasKey(e => e.RoomImageId);
+
             entity.ToTable("RoomImage");
-            entity.Property(e => e.ImageUrl).HasMaxLength(500);
+
+            entity.Property(e => e.RoomImageId)
+                  .HasColumnName("RoomImageID");
+
+            entity.Property(e => e.RoomTypeId)
+                  .HasColumnName("RoomTypeID");
+
+            entity.Property(e => e.ImageUrl)
+                  .HasMaxLength(500);
+
             entity.HasOne(e => e.RoomType)
-                  .WithMany()
+                  .WithMany(r => r.RoomImages)
                   .HasForeignKey(e => e.RoomTypeId)
                   .OnDelete(DeleteBehavior.Cascade);
         });

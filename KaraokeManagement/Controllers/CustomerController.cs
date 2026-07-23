@@ -32,7 +32,9 @@ namespace KaraokeManagement.Controllers
             ViewBag.SortOrder = sortOrder;
 
             // Truy vấn lấy dữ liệu RoomType
-            var roomTypes = _context.RoomTypes.AsQueryable();
+            var roomTypes = _context.RoomTypes
+            .Include(rt => rt.RoomImages)
+            .AsQueryable();
 
             // 1. Lọc theo tên phòng
             if (!string.IsNullOrEmpty(searchString))
@@ -76,6 +78,7 @@ namespace KaraokeManagement.Controllers
             var roomType = _context.RoomTypes
                 .Include(rt => rt.Rooms)
                 .Include(rt => rt.RoomPrices)
+                .Include(rt => rt.RoomImages)
                 .FirstOrDefault(rt => rt.RoomTypeId == id);
 
             if (roomType == null)
