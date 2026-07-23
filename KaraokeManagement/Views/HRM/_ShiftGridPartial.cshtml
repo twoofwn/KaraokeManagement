@@ -1,0 +1,105 @@
+@model KaraokeManagement.Models.ShiftGridViewModel
+@{
+    var shift = Model.Shift;
+    var shiftHeaderClass = "shift-header-default";
+    var shiftIcon = "fa-clock";
+
+    if (shift.ShiftName.Contains("Sáng", StringComparison.OrdinalIgnoreCase) || shift.StartTime.Hours < 12)
+    {
+        shiftHeaderClass = "shift-header-morning";
+        shiftIcon = "fa-sun";
+    }
+    else if (shift.ShiftName.Contains("Chiều", StringComparison.OrdinalIgnoreCase) || (shift.StartTime.Hours >= 12 && shift.StartTime.Hours < 17))
+    {
+        shiftHeaderClass = "shift-header-afternoon";
+        shiftIcon = "fa-cloud-sun";
+    }
+    else if (shift.ShiftName.Contains("Tối", StringComparison.OrdinalIgnoreCase) || shift.StartTime.Hours >= 17)
+    {
+        shiftHeaderClass = "shift-header-night";
+        shiftIcon = "fa-moon";
+    }
+
+    var totalSchedulesInShift = Model.Model.Schedules.Count(s => s.ShiftId == shift.ShiftId);
+}
+
+<div class="shift-section">
+    <!-- Shift Section Header -->
+    <div class="px-3 py-2 d-flex justify-content-between align-items-center @shiftHeaderClass">
+        <div class="d-flex align-items-center gap-2">
+            <i class="fa-solid @shiftIcon fs-5"></i>
+            <h5 class="mb-0 fw-bold">@shift.ShiftName</h5>
+            <span class="badge bg-white text-dark border ms-2">
+                @shift.StartTime.ToString(@"hh\:mm") - @shift.EndTime.ToString(@"hh\:mm")
+            </span>
+        </div>
+        <span class="badge rounded-pill bg-dark bg-opacity-10 text-dark fw-semibold">
+            Tổng cộng: @totalSchedulesInShift lượt phân ca
+        </span>
+    </div>
+
+    <!-- Shift Weekly Grid Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered mb-0 schedule-grid-table">
+            <thead class="table-light">
+                <tr>
+                    @for (int i = 0; i < 7; i++)
+                    {
+                        var dayDate = Model.Model.WeekDays[i];
+                        var isToday = dayDate == DateOnly.FromDateTime(DateTime.Now);
+                        <th class="@(isToday ? "text-brand-vibrant-pink border-brand-vibrant-pink fw-bold" : "")">
+                            <div>@Model.DayNames[i]</div>
+                            <div class="small fw-normal text-muted">@dayDate.ToString("dd/MM")</div>
+                        </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    @for (int i = 0; i < 7; i++)
+                    {
+                        var dayDate = Model.Model.WeekDays[i];
+                        var dateStr = dayDate.ToString("yyyy-MM-dd");
+                        var cellSchedules = Model.Model.Schedules
+                            .Where(s => s.ShiftId == shift.ShiftId && s.WorkDate == dayDate)
+                            .ToList();
+                        var isToday = dayDate == DateOnly.FromDateTime(DateTime.Now);
+
+                        <td class="@(isToday ? "today-column" : "")" 
+                            data-cell-shift="@shift.ShiftId" 
+                            data-cell-date="@dateStr">
+
+                            <!-- Badge Container for Staff -->
+                            <div class="badge-container">
+                                @foreach (var s in cellSchedules)
+                                {
+                                    <div class="staff-badge" id="badge-db-@s.ScheduleId" 
+                                         onclick="openEditStaffModal(@s.ScheduleId, 0, @shift.ShiftId, '@dateStr', @s.AccountId, '@shift.ShiftName')">
+                                        <div class="text-truncate me-1">
+                                            <i class="fa-solid fa-user-check text-brand-vibrant-pink me-1" style="font-size: 0.75rem;"></i>
+                                            <span class="fw-semibold">@s.Account.FullName</span>
+                                            @if (s.Account.Role != null)
+                                            {
+                                                <span class="text-muted small ms-1" style="font-size: 0.7rem;">(@s.Account.Role.RoleName)</span>
+                                            }
+                                        </div>
+                                        <button type="button" class="btn-remove-badge" title="Đánh dấu xóa" 
+                                                onclick="event.stopPropagation(); deleteStaffBadge(@s.ScheduleId, 0)">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- [+] Add Staff Button inside Cell -->
+                            <button type="button" class="btn-add-staff-cell mt-1" 
+                                    onclick="openAddStaffModal(@shift.ShiftId, '@dateStr', '@shift.ShiftName')">
+                                <i class="fa-solid fa-plus me-1"></i>Thêm NV
+                            </button>
+                        </td>
+                    }
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

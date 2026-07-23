@@ -70,6 +70,94 @@ a {
    SHIFT & SCHEDULE MANAGEMENT SYSTEM CUSTOM STYLES
    ========================================================================== */
 
+:root {
+    --brand-cream: #F8F4EC;
+    --brand-light-pink: #FF8FB7;
+    --brand-vibrant-pink: #E83C91;
+    --brand-deep-purple: #43334C;
+}
+
+.bg-brand-cream { background-color: var(--brand-cream) !important; }
+.bg-brand-light-pink { background-color: var(--brand-light-pink) !important; }
+.bg-brand-vibrant-pink { background-color: var(--brand-vibrant-pink) !important; }
+.bg-brand-deep-purple { background-color: var(--brand-deep-purple) !important; }
+
+.text-brand-cream { color: var(--brand-cream) !important; }
+.text-brand-light-pink { color: var(--brand-light-pink) !important; }
+.text-brand-vibrant-pink { color: var(--brand-vibrant-pink) !important; }
+.text-brand-deep-purple { color: var(--brand-deep-purple) !important; }
+
+.border-brand-cream { border-color: var(--brand-cream) !important; }
+.border-brand-light-pink { border-color: var(--brand-light-pink) !important; }
+.border-brand-vibrant-pink { border-color: var(--brand-vibrant-pink) !important; }
+.border-brand-deep-purple { border-color: var(--brand-deep-purple) !important; }
+
+.btn-brand-primary {
+    background-color: var(--brand-vibrant-pink) !important;
+    border-color: var(--brand-vibrant-pink) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+}
+.btn-brand-primary:hover {
+    background-color: #d12c7b !important;
+    border-color: #d12c7b !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(232, 60, 145, 0.2);
+}
+
+.btn-brand-secondary {
+    background-color: var(--brand-light-pink) !important;
+    border-color: var(--brand-light-pink) !important;
+    color: var(--brand-deep-purple) !important;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+}
+.btn-brand-secondary:hover {
+    background-color: #ff75a5 !important;
+    border-color: #ff75a5 !important;
+    color: var(--brand-deep-purple) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(255, 143, 183, 0.25);
+}
+
+.brand-card {
+    background-color: var(--brand-cream) !important;
+    border: 1px solid var(--brand-light-pink) !important;
+    border-radius: 12px;
+}
+
+.brand-table th {
+    background-color: var(--brand-deep-purple) !important;
+    color: #ffffff !important;
+    border-color: var(--brand-deep-purple) !important;
+    font-weight: 600;
+}
+
+.brand-table td {
+    background-color: #ffffff;
+    color: var(--brand-deep-purple);
+    border-color: var(--brand-light-pink) !important;
+}
+
+.schedule-table-header-pink {
+    background-color: var(--brand-vibrant-pink) !important;
+    color: #ffffff !important;
+    font-weight: bold !important;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid var(--brand-light-pink) !important;
+}
+
+.schedule-cell-white {
+    background-color: #ffffff !important;
+    border: 1px solid var(--brand-light-pink) !important;
+    color: var(--brand-deep-purple) !important;
+    padding: 8px !important;
+    position: relative;
+}
+
 /* Schedule cards base styling */
 .staff-schedule-card {
     transition: all 0.2s ease-in-out;

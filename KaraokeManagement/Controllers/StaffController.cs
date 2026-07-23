@@ -61,11 +61,16 @@ namespace KaraokeManagement.Controllers
 
             foreach (var sched in schedules)
             {
-                var rooms = await _context.RoomAssignments
-                    .Include(ra => ra.Room)
+                var workDate = sched.WorkDate;
+                var rooms = await _context.Bookings
+                    .Include(b => b.Room)
                     .ThenInclude(r => r.RoomType)
-                    .Where(ra => ra.ScheduleId == sched.ScheduleId)
-                    .Select(ra => ra.Room)
+                    .Where(b => b.StaffId == sched.AccountId 
+                             && b.StartTime.Year == workDate.Year 
+                             && b.StartTime.Month == workDate.Month 
+                             && b.StartTime.Day == workDate.Day)
+                    .Select(b => b.Room)
+                    .Distinct()
                     .ToListAsync();
 
                 todaySchedulesList.Add(new StaffScheduleItemViewModel
@@ -207,6 +212,12 @@ namespace KaraokeManagement.Controllers
         {
             string? idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!int.TryParse(idClaim, out int accountId)) return BadRequest("Không xác định được nhân viên.");
+
+            var reqSched = await _context.EmployeeSchedules.FindAsync(requesterScheduleId);
+            if (reqSched != null && reqSched.WorkDate < DateOnly.FromDateTime(DateTime.Today))
+            {
+                return BadRequest("Không thể chỉnh sửa hoặc đổi ca cho các ngày trong quá khứ.");
+            }
 
             var res = await _scheduleService.SubmitSwapRequest(accountId, requesterScheduleId, targetEmployeeId, targetScheduleId);
             if (res.Success) return Ok(new { success = true, message = res.Message });

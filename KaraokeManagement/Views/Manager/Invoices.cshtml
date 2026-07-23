@@ -2,7 +2,7 @@
 
 @{
     Layout = "~/Views/Manager/_ManagerLayout.cshtml";
-    ViewData["Title"] = "Lịch sử hóa đơn";
+    ViewData["Title"] = "Quản lý hóa đơn";
     ViewData["ActiveNav"] = "invoices";
 }
 
@@ -29,69 +29,17 @@
         margin-bottom: 0.2rem;
     }
 
-    /* Top Filter Bar */
-    .date-filter-container {
-        background-color: var(--bg-light-grey);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        padding: 0.3rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .date-input-wrapper {
-        display: flex;
-        align-items: center;
-        background: transparent;
-        padding: 0.2rem 0.5rem;
-    }
-
-    .date-input-wrapper input[type="date"] {
-        border: none;
-        background: transparent;
-        color: var(--text-main);
-        font-size: 0.85rem;
-        font-weight: 500;
-        outline: none;
-        cursor: pointer;
-    }
-    
-    .date-input-wrapper input[type="date"]::-webkit-calendar-picker-indicator {
-        opacity: 0.6;
-        cursor: pointer;
-    }
-
-    .filter-btn {
-        background-color: #ffb1c8; /* Màu hồng nhạt cho nút filter */
-        color: var(--brand-pink);
-        border: none;
-        border-radius: 6px;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: 0.2s;
-    }
-
-    .filter-btn:hover {
-        background-color: #ff9eac;
-        color: #8c0042;
-    }
-
     /* Main Table Card */
     .invoice-card {
         background-color: var(--bg-light-grey);
         border-radius: 12px;
-        padding: 2rem 1.5rem 1rem 1.5rem;
+        padding: 1.25rem 1.25rem 0.75rem 1.25rem;
         border: 1px solid var(--border-color);
     }
 
     /* Table Styles */
     .table-invoice {
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
     }
 
     .table-invoice th {
@@ -99,35 +47,32 @@
         font-weight: 500;
         font-size: 0.85rem;
         border-bottom: 1px solid var(--border-color);
-        padding-bottom: 1.5rem;
-        padding-top: 0;
+        padding-bottom: 0.75rem;
+        padding-top: 0.25rem;
         background: transparent;
     }
 
     .table-invoice td {
         vertical-align: middle;
-        padding: 1.5rem 0.5rem;
-        border-bottom: none; /* Bỏ viền ngang như thiết kế */
+        padding: 0.75rem 0.5rem;
+        border-bottom: none;
         background: transparent;
     }
 
     .invoice-id {
         color: var(--brand-pink);
-        font-weight: 500;
+        font-weight: 600;
         font-size: 0.95rem;
-        line-height: 1.4;
     }
 
     .date-text {
         color: var(--text-main);
         font-size: 0.9rem;
-        line-height: 1.5;
     }
 
     .currency-val {
         font-size: 0.95rem;
         color: var(--text-main);
-        text-align: right;
     }
 
     .currency-symbol {
@@ -139,20 +84,25 @@
     .total-val {
         font-size: 1rem;
         font-weight: 700;
-        color: #4a4a4a; /* Xám đậm */
     }
 
-    .action-btn {
-        background: transparent;
-        border: none;
-        color: #555;
-        font-size: 1.2rem;
-        cursor: pointer;
-        transition: color 0.2s;
+    /* Badges */
+    .badge-custom {
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.4rem 0.8rem;
+        border-radius: 30px;
+        display: inline-block;
     }
-
-    .action-btn:hover {
-        color: var(--brand-pink);
+    .badge-paid {
+        background-color: rgba(46, 125, 50, 0.1);
+        color: #2e7d32;
+        border: 1px solid rgba(46, 125, 50, 0.2);
+    }
+    .badge-unpaid {
+        background-color: rgba(239, 108, 0, 0.1);
+        color: #ef6c00;
+        border: 1px solid rgba(239, 108, 0, 0.2);
     }
 
     /* Pagination */
@@ -209,44 +159,82 @@
     }
 </style>
 
-<div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
-    <div>
-        <h1 class="page-title">Lịch sử hóa đơn</h1>
-        <p class="text-muted mb-0">Xem và quản lý các hóa đơn đã thanh toán hoàn tất.</p>
+<div class="mb-4">
+    <h1 class="page-title">Quản lý hóa đơn</h1>
+    <p class="text-muted mb-0">Tra cứu, tìm kiếm và lọc danh sách hóa đơn của các phòng hát.</p>
+</div>
+
+<!-- STICKY FILTER BAR -->
+<form method="get" action="/Manager/Invoices" class="row g-3 mb-4 align-items-end filter-bar sticky-top shadow-sm py-3 px-4 bg-white border border-light" style="border-radius: 12px; top: 10px; z-index: 99;">
+    <div class="col-md-3">
+        <label for="searchInvoiceId" class="form-label fw-bold text-muted mb-1" style="font-size: 0.85rem;">Mã hóa đơn</label>
+        <div class="input-group">
+            <span class="input-group-text bg-light border-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+            <input type="text" name="searchInvoiceId" id="searchInvoiceId" class="form-control bg-light border-0" placeholder="Nhập mã hóa đơn (e.g. 10023)" value="@Model.SearchInvoiceId" />
+        </div>
+    </div>
+    
+    <div class="col-md-2">
+        <label for="searchDate" class="form-label fw-bold text-muted mb-1" style="font-size: 0.85rem;">Ngày tạo cụ thể</label>
+        <input type="date" name="searchDate" id="searchDate" class="form-control bg-light border-0" value="@Model.SearchDate?.ToString("yyyy-MM-dd")" />
     </div>
 
-    <div class="date-filter-container shadow-sm">
-        <div class="date-input-wrapper">
-            <input type="date" id="fromDate" value="@Model.FromDate.ToString("yyyy-MM-dd")" />
-        </div>
-        <span class="text-muted" style="font-size: 0.85rem;">to</span>
-        <div class="date-input-wrapper">
-            <input type="date" id="toDate" value="@Model.ToDate.ToString("yyyy-MM-dd")" />
-        </div>
-        <button class="filter-btn" id="btnFilter" title="Lọc dữ liệu">
-            <i class="fa-solid fa-filter"></i>
-        </button>
+    <div class="col-md-2">
+        <label for="roomId" class="form-label fw-bold text-muted mb-1" style="font-size: 0.85rem;">Phòng hát</label>
+        <select name="roomId" id="roomId" class="form-select bg-light border-0">
+            <option value="">-- Tất cả phòng --</option>
+            @foreach (var room in Model.Rooms)
+            {
+                if (Model.SelectedRoomId == room.RoomId)
+                {
+                    <option value="@room.RoomId" selected="selected">@room.RoomName</option>
+                }
+                else
+                {
+                    <option value="@room.RoomId">@room.RoomName</option>
+                }
+            }
+        </select>
     </div>
-</div>
+
+    <div class="col-md-4">
+        <label class="form-label fw-bold text-muted mb-1" style="font-size: 0.85rem;">Khoảng thời gian tạo (Khi không tìm theo ngày cụ thể)</label>
+        <div class="d-flex gap-2 align-items-center">
+            <input type="date" name="fromDate" id="fromDate" class="form-control bg-light border-0" value="@Model.FromDate.ToString("yyyy-MM-dd")" />
+            <span class="text-muted" style="font-size: 0.85rem;">đến</span>
+            <input type="date" name="toDate" id="toDate" class="form-control bg-light border-0" value="@Model.ToDate.ToString("yyyy-MM-dd")" />
+        </div>
+    </div>
+
+    <div class="col-md-1 d-flex gap-2">
+        <button type="submit" class="btn w-100 py-2 fw-semibold" style="background-color: var(--brand-pink); color: white; border-radius: 8px; border: none; font-size: 0.9rem;">
+            <i class="fa-solid fa-filter me-1"></i> Lọc
+        </button>
+        <a href="/Manager/Invoices" class="btn btn-outline-secondary py-2" style="border-radius: 8px;" title="Reset bộ lọc">
+            <i class="fa-solid fa-arrows-rotate"></i>
+        </a>
+    </div>
+</form>
 
 <div class="invoice-card">
     <div class="table-responsive">
         <table class="table table-borderless table-invoice table-hover">
             <thead>
                 <tr>
-                    <th width="15%">Mã HD</th>
-                    <th width="20%">Ngày thanh toán</th>
-                    <th width="15%" class="text-end">Tiền hát</th>
-                    <th width="15%" class="text-end">Dịch vụ</th>
-                    <th width="20%" class="text-end">Tổng</th>
-                    <th width="15%" class="text-center">Chi tiết</th>
+                    <th width="15%">Mã hóa đơn</th>
+                    <th width="15%">Phòng hát</th>
+                    <th width="20%">Khách hàng</th>
+                    <th width="20%">Ngày tạo</th>
+                    <th width="15%">Trạng thái</th>
+                    <th width="15%" class="text-end">Tổng tiền</th>
+                    <th width="10%" class="text-center">Hành động</th>
                 </tr>
             </thead>
             <tbody>
                 @if (Model.Invoices == null || !Model.Invoices.Any())
                 {
                     <tr>
-                        <td colspan="6" class="text-center text-muted">Không tìm thấy hóa đơn nào trong khoảng thời gian này.</td>
+                        <td colspan="7" class="text-center text-muted py-4">Không tìm thấy hóa đơn nào phù hợp với bộ lọc.</td>
                     </tr>
                 }
                 else
@@ -255,25 +243,38 @@
                     {
                         <tr>
                             <td>
-                                <div class="invoice-id">#INV-<br>@inv.InvoiceId</div>
+                                <div class="invoice-id">#INV-@inv.InvoiceId</div>
+                            </td>
+                            <td>
+                                <div class="fw-semibold text-dark">@inv.Room.RoomName</div>
+                            </td>
+                            <td>
+                                <div class="text-dark">@(inv.Booking?.Customer?.FullName ?? "Khách lẻ")</div>
                             </td>
                             <td>
                                 <div class="date-text">
-                                    @inv.CheckOutTime?.ToString("dd/MM/yyyy") <br>
-                                    - @inv.CheckOutTime?.ToString("HH:mm")
+                                    @inv.CheckInTime.ToString("dd/MM/yyyy HH:mm")
                                 </div>
                             </td>
                             <td>
-                                <div class="currency-val">@((inv.RoomTotal ?? 0).ToString("N0"))<br><span class="currency-symbol">₫</span></div>
+                                @if (inv.Status == "Paid")
+                                {
+                                    <span class="badge-custom badge-paid">Paid</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-custom badge-unpaid">Unpaid</span>
+                                }
                             </td>
                             <td>
-                                <div class="currency-val">@((inv.ServiceTotal ?? 0).ToString("N0"))<br><span class="currency-symbol">₫</span></div>
-                            </td>
-                            <td>
-                                <div class="currency-val total-val text-pink">@((inv.GrandTotal ?? 0).ToString("N0")) <span class="currency-symbol">₫</span></div>
+                                <div class="currency-val total-val text-pink fw-bold text-end">
+                                    @((inv.GrandTotal ?? 0).ToString("N0")) <span class="currency-symbol">₫</span>
+                                </div>
                             </td>
                             <td class="text-center">
-                                <button class="action-btn view-invoice-btn" data-id="@inv.InvoiceId"><i class="fa-regular fa-eye"></i></button>
+                                <button type="button" class="btn btn-outline-pink btn-sm view-invoice-btn px-3" data-id="@inv.InvoiceId" style="border-color: var(--brand-pink); color: var(--brand-pink); border-radius: 6px;">
+                                    <i class="fa-regular fa-eye me-1"></i> Xem chi tiết
+                                </button>
                             </td>
                         </tr>
                     }
@@ -290,7 +291,7 @@
         <ul class="pagination-custom">
             <!-- Nút Trước -->
             <li class="@(Model.CurrentPage == 1 ? "disabled" : "")">
-                <a href="/Manager/Invoices?fromDate=@Model.FromDate.ToString("yyyy-MM-dd")&toDate=@Model.ToDate.ToString("yyyy-MM-dd")&page=@(Model.CurrentPage - 1)">
+                <a href="/Manager/Invoices?searchInvoiceId=@Model.SearchInvoiceId&searchDate=@Model.SearchDate?.ToString("yyyy-MM-dd")&roomId=@Model.SelectedRoomId&fromDate=@Model.FromDate.ToString("yyyy-MM-dd")&toDate=@Model.ToDate.ToString("yyyy-MM-dd")&page=@(Model.CurrentPage - 1)">
                     <i class="fa-solid fa-chevron-left" style="font-size: 0.7rem;"></i>
                 </a>
             </li>
@@ -299,13 +300,13 @@
             @for (int i = 1; i <= Model.TotalPages; i++)
             {
                 <li class="@(Model.CurrentPage == i ? "active" : "")">
-                    <a href="/Manager/Invoices?fromDate=@Model.FromDate.ToString("yyyy-MM-dd")&toDate=@Model.ToDate.ToString("yyyy-MM-dd")&page=@i">@i</a>
+                    <a href="/Manager/Invoices?searchInvoiceId=@Model.SearchInvoiceId&searchDate=@Model.SearchDate?.ToString("yyyy-MM-dd")&roomId=@Model.SelectedRoomId&fromDate=@Model.FromDate.ToString("yyyy-MM-dd")&toDate=@Model.ToDate.ToString("yyyy-MM-dd")&page=@i">@i</a>
                 </li>
             }
 
             <!-- Nút Sau -->
             <li class="@(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
-                <a href="/Manager/Invoices?fromDate=@Model.FromDate.ToString("yyyy-MM-dd")&toDate=@Model.ToDate.ToString("yyyy-MM-dd")&page=@(Model.CurrentPage + 1)">
+                <a href="/Manager/Invoices?searchInvoiceId=@Model.SearchInvoiceId&searchDate=@Model.SearchDate?.ToString("yyyy-MM-dd")&roomId=@Model.SelectedRoomId&fromDate=@Model.FromDate.ToString("yyyy-MM-dd")&toDate=@Model.ToDate.ToString("yyyy-MM-dd")&page=@(Model.CurrentPage + 1)">
                     <i class="fa-solid fa-chevron-right" style="font-size: 0.7rem;"></i>
                 </a>
             </li>
@@ -313,7 +314,7 @@
     </div>
 </div>
 
-<!-- Invoice Detail Modal -->
+<!-- INVOICE DETAILS MODAL -->
 <div class="modal fade" id="invoiceDetailModal" tabindex="-1" aria-labelledby="invoiceDetailModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content" style="border-radius: 16px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
@@ -333,11 +334,12 @@
                         <div class="mb-2"><small class="text-muted">Nhận: <span id="modalCheckIn"></span> | Trả: <span id="modalCheckOut"></span></small></div>
                     </div>
                     <div class="col-md-6">
-                        <h6 class="fw-bold text-pink mb-3"><i class="fa-solid fa-user me-2"></i>Thông tin khách hàng & NV</h6>
+                        <h6 class="fw-bold text-pink mb-3"><i class="fa-solid fa-user me-2"></i>Khách hàng & Phục vụ</h6>
                         <div class="mb-2"><strong>Khách hàng:</strong> <span id="modalCustomerName"></span></div>
                         <div class="mb-2"><strong>Số điện thoại:</strong> <span id="modalCustomerPhone"></span></div>
                         <div class="mb-2"><strong>Hạng thành viên:</strong> <span id="modalCustomerTier"></span></div>
-                        <div class="mb-2"><strong>Nhân viên thanh toán:</strong> <span id="modalReceptionistName"></span></div>
+                        <div class="mb-2"><strong>Nhân viên phục vụ:</strong> <span id="modalStaffNames" class="fw-semibold text-dark"></span></div>
+                        <div class="mb-2"><strong>Thu ngân thanh toán:</strong> <span id="modalReceptionistName"></span></div>
                     </div>
                 </div>
 
@@ -368,11 +370,11 @@
                     </div>
                 </div>
 
-                <!-- Summary Column -->
+                <!-- Financial Breakdown -->
                 <div class="row justify-content-end">
                     <div class="col-md-6">
                         <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Tiền giờ:</span>
+                            <span class="text-muted">Tiền giờ phòng:</span>
                             <span class="fw-semibold" id="modalRoomTotal"></span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
@@ -408,7 +410,7 @@
                     const invoiceId = this.getAttribute('data-id');
                     
                     $.ajax({
-                        url: '/Manager/InvoiceDetails/' + invoiceId,
+                        url: '/Manager/InvoiceDetails?id=' + invoiceId,
                         type: 'GET',
                         success: function(response) {
                             if (response.success) {
@@ -426,6 +428,7 @@
                                 document.getElementById('modalCustomerName').innerText = data.customerName;
                                 document.getElementById('modalCustomerPhone').innerText = data.customerPhone;
                                 document.getElementById('modalCustomerTier').innerText = data.customerTier + ' (' + data.discountPercent + '% giảm giá)';
+                                document.getElementById('modalStaffNames').innerText = data.staffNames;
                                 document.getElementById('modalReceptionistName').innerText = data.receptionistName;
 
                                 // Set subtotals
@@ -482,19 +485,6 @@
                         }
                     });
                 });
-            });
-
-            // Date Range Filtering Action
-            const btnFilter = document.getElementById('btnFilter');
-            btnFilter.addEventListener('click', function() {
-                const from = document.getElementById('fromDate').value;
-                const to = document.getElementById('toDate').value;
-                
-                if (from && to) {
-                    window.location.href = `/Manager/Invoices?fromDate=${from}&toDate=${to}&page=1`;
-                } else {
-                    alert('Vui lòng chọn khoảng thời gian hợp lệ.');
-                }
             });
         });
     </script>

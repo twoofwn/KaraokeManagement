@@ -1,4 +1,4 @@
-﻿using KaraokeManagement.Controllers;
+using KaraokeManagement.Controllers;
 using KaraokeManagement.Models;
 using KaraokeManagement.ViewModel;
 using Microsoft.EntityFrameworkCore;
@@ -132,7 +132,11 @@ public class RoomBookingService
         room.Status = "InUse";
         await _context.SaveChangesAsync();
 
-        if (model.AssignedStaffIds != null && model.AssignedStaffIds.Any()) await AssignStaffToRoom(model.AssignedStaffIds, booking.RoomId);
+        if (model.AssignedStaffIds != null && model.AssignedStaffIds.Any())
+        {
+            booking.StaffId = model.AssignedStaffIds.First();
+            await _context.SaveChangesAsync();
+        }
 
         return true;
     }
@@ -147,25 +151,5 @@ public class RoomBookingService
             await _context.SaveChangesAsync();
         }
         return guest.CustomerId;
-    }
-
-    private async Task AssignStaffToRoom(List<int> staffIds, int roomId)
-    {
-        var todayDate = DateOnly.FromDateTime(DateTime.Today);
-        var curTime = DateTime.Now.TimeOfDay;
-        var activeShift = await _context.WorkShifts.FirstOrDefaultAsync(s => (s.StartTime <= curTime && s.EndTime >= curTime) || (s.StartTime > s.EndTime && (curTime >= s.StartTime || curTime <= s.EndTime)));
-        int activeShiftId = activeShift?.ShiftId ?? 1;
-
-        foreach (var staffId in staffIds)
-        {
-            var sched = await _context.EmployeeSchedules.FirstOrDefaultAsync(s => s.AccountId == staffId && s.WorkDate == todayDate && (s.ShiftId == activeShiftId || s.ShiftId == null))
-                        ?? new EmployeeSchedule { AccountId = staffId, ShiftId = activeShiftId, WorkDate = todayDate, Status = "Scheduled", IsActive = true };
-
-            if (sched.ScheduleId == 0) _context.EmployeeSchedules.Add(sched);
-            await _context.SaveChangesAsync();
-
-            _context.RoomAssignments.Add(new RoomAssignment { RoomId = roomId, ScheduleId = sched.ScheduleId, AssignedAt = DateTime.Now });
-        }
-        await _context.SaveChangesAsync();
     }
 }

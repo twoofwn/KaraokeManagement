@@ -32,11 +32,21 @@
 			</div>
 
 			<nav class="sidebar-nav">
-				<a href="/Staff/Dashboard"
-				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "dashboard" ? "active" : "")">
-					<i class="fa-solid fa-table-columns nav-icon"></i>
-					<span>Bảng điều khiển</span>
-				</a>
+				@if (roleName == "Receptionist")
+				{
+					<a href="/Receptionist/Index" class="nav-item">
+						<i class="fa-solid fa-arrow-left-long nav-icon"></i>
+						<span>Quay lại Lễ tân</span>
+					</a>
+				}
+				else
+				{
+					<a href="/Staff/Dashboard"
+					   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "dashboard" ? "active" : "")">
+						<i class="fa-solid fa-table-columns nav-icon"></i>
+						<span>Bảng điều khiển</span>
+					</a>
+				}
 
 				<a href="/Staff/Schedule"
 				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "schedule" ? "active" : "")">

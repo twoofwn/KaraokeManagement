@@ -1,101 +1,359 @@
 @model KaraokeManagement.Models.ScheduleListViewModel
 @{
-    ViewData["Title"] = "Phân Ca Làm Việc";
+    ViewData["Title"] = "Quản Lý Phân Ca Làm Việc";
     Layout = "~/Views/Manager/_ManagerLayout.cshtml";
+
+    var dayNames = new string[] { "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật" };
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">Phân Ca Làm Việc</h2>
-    <form class="d-flex" method="get" action="/HRM/Schedules">
-        <input type="date" class="form-control me-2" name="date" value="@Model.FilterDate.ToString("yyyy-MM-dd")" onchange="this.form.submit()" />
-    </form>
-</div>
+@section Styles {
+    <style>
+        /* Sticky Header Control Bar */
+        .sticky-control-bar {
+            position: sticky;
+            top: 60px;
+            z-index: 1020;
+            background: var(--brand-cream);
+            border-bottom: 2px solid var(--brand-light-pink);
+            padding: 12px 20px;
+            margin: -20px -20px 20px -20px;
+            box-shadow: 0 4px 12px rgba(67, 51, 76, 0.08);
+            border-radius: 0 0 12px 12px;
+            color: var(--brand-deep-purple);
+        }
 
-<div class="row">
-    <div class="col-md-4">
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-header bg-white">
-                <h5 class="card-title mb-0">Thêm Ca Mới</h5>
-            </div>
-            <div class="card-body">
-                <form id="scheduleForm">
-                    <input type="hidden" id="Date" name="Date" value="@Model.FilterDate.ToString("yyyy-MM-dd")" />
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Ngày làm việc</label>
-                        <input type="text" class="form-control" value="@Model.FilterDate.ToString("dd/MM/yyyy")" disabled />
-                    </div>
+        /* Shift Colors & Styling */
+        .shift-section {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid var(--brand-light-pink);
+            margin-bottom: 24px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s ease-in-out;
+        }
 
-                    <div class="mb-3">
-                        <label class="form-label">Ca làm việc *</label>
-                        <select class="form-select" id="ShiftId" required>
-                            <option value="">-- Chọn ca --</option>
-                            @foreach (var shift in Model.Shifts)
-                            {
-                                <option value="@shift.ShiftId">@shift.ShiftName (@shift.StartTime - @shift.EndTime)</option>
-                            }
-                        </select>
-                    </div>
+        .shift-header-morning {
+            background: linear-gradient(135deg, var(--brand-cream) 0%, var(--brand-light-pink) 100%);
+            border-bottom: 2px solid var(--brand-vibrant-pink);
+            color: var(--brand-deep-purple);
+        }
 
-                    <div class="mb-3">
-                        <label class="form-label">Nhân viên *</label>
-                        <select class="form-select" id="AccountId" required>
-                            <option value="">-- Chọn nhân viên --</option>
-                            @foreach (var staff in Model.StaffList)
-                            {
-                                <option value="@staff.AccountId">@staff.FullName (@staff.Username)</option>
-                            }
-                        </select>
-                    </div>
+        .shift-header-afternoon {
+            background: linear-gradient(135deg, #ffffff 0%, var(--brand-cream) 100%);
+            border-bottom: 2px solid var(--brand-light-pink);
+            color: var(--brand-deep-purple);
+        }
 
-                    <button type="button" class="btn btn-primary w-100" onclick="saveSchedule()">
-                        <i class="fa-solid fa-plus"></i> Thêm Phân Ca
-                    </button>
-                </form>
-            </div>
+        .shift-header-night {
+            background: linear-gradient(135deg, var(--brand-deep-purple) 0%, #5c4669 100%);
+            border-bottom: 2px solid var(--brand-vibrant-pink);
+            color: #ffffff;
+        }
+
+        .shift-header-default {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-bottom: 2px solid #adb5bd;
+            color: #343a40;
+        }
+
+        /* Schedule Grid Styling */
+        .schedule-grid-table th {
+            text-align: center;
+            vertical-align: middle;
+            font-weight: 600;
+            font-size: 0.875rem;
+            padding: 10px 4px;
+            border-color: var(--brand-light-pink);
+            background-color: var(--brand-cream);
+            color: var(--brand-deep-purple);
+        }
+
+        .schedule-grid-table td {
+            height: 110px;
+            width: 14.28%;
+            vertical-align: top;
+            padding: 6px;
+            position: relative;
+            background-color: #ffffff;
+            border: 1px solid var(--brand-light-pink);
+            transition: background-color 0.15s;
+        }
+
+        .schedule-grid-table td:hover {
+            background-color: var(--brand-cream);
+        }
+
+        .schedule-grid-table td.today-column {
+            background-color: #fff0f5; /* Light blush */
+        }
+
+        /* Staff Badges */
+        .staff-badge {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+            border: 1px solid var(--brand-light-pink);
+            border-left: 4px solid var(--brand-vibrant-pink);
+            border-radius: 6px;
+            padding: 5px 8px;
+            margin-bottom: 6px;
+            font-size: 0.8125rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            color: var(--brand-deep-purple);
+        }
+
+        .staff-badge:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .staff-badge.badge-added {
+            border-left-color: #10b981;
+            background-color: #ecfdf5;
+        }
+
+        .staff-badge.badge-updated {
+            border-left-color: var(--brand-light-pink);
+            background-color: var(--brand-cream);
+        }
+
+        .staff-badge.badge-deleted {
+            opacity: 0.45;
+            text-decoration: line-through;
+            background-color: #fef2f2;
+            border-left-color: #ef4444;
+        }
+
+        .staff-badge .btn-remove-badge {
+            color: #94a3b8;
+            border: none;
+            background: transparent;
+            font-size: 0.75rem;
+            padding: 0 2px;
+            line-height: 1;
+            border-radius: 50%;
+            transition: color 0.15s;
+        }
+
+        .staff-badge .btn-remove-badge:hover {
+            color: #ef4444;
+        }
+
+        .btn-add-staff-cell {
+            width: 100%;
+            border: 1px dashed var(--brand-light-pink);
+            background-color: #ffffff;
+            color: var(--brand-vibrant-pink);
+            font-size: 0.75rem;
+            padding: 3px 6px;
+            border-radius: 4px;
+            transition: all 0.15s;
+            font-weight: 500;
+        }
+
+        .btn-add-staff-cell:hover {
+            background-color: var(--brand-cream);
+            color: var(--brand-deep-purple);
+            border-color: var(--brand-light-pink);
+        }
+
+        .btn-save-batch {
+            background-color: var(--brand-vibrant-pink);
+            border-color: var(--brand-vibrant-pink);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(230, 60, 145, 0.25);
+            transition: all 0.2s;
+        }
+
+        .btn-save-batch:hover {
+            background-color: #d12c7b;
+            border-color: #d12c7b;
+            color: white;
+            box-shadow: 0 6px 12px rgba(230, 60, 145, 0.35);
+        }
+
+        .unsaved-badge {
+            background-color: var(--brand-deep-purple);
+            color: white;
+            border-radius: 50rem;
+            padding: 2px 7px;
+            font-size: 0.75rem;
+            margin-left: 6px;
+        }
+
+        /* Custom Tab Navigation Styles */
+        #shiftTabs .nav-link {
+            color: var(--brand-deep-purple) !important;
+            background-color: #ffffff;
+            border: 1px solid var(--brand-light-pink) !important;
+            transition: all 0.2s ease-in-out;
+        }
+        #shiftTabs .nav-link:hover {
+            background-color: var(--brand-cream) !important;
+            color: var(--brand-vibrant-pink) !important;
+        }
+        #shiftTabs .nav-link.active {
+            background-color: var(--brand-vibrant-pink) !important;
+            color: #ffffff !important;
+            border-color: var(--brand-vibrant-pink) !important;
+        }
+    </style>
+}
+
+<!-- Sticky Header & Consolidated Controls -->
+<div class="sticky-control-bar d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <!-- 1. Week/Date Navigation Group -->
+    <div class="d-flex align-items-center gap-2">
+        <h4 class="mb-0 fw-bold me-2 text-dark">
+            <i class="fa-solid fa-calendar-days text-primary me-2"></i>Phân Ca Làm Việc
+        </h4>
+        <div class="btn-group shadow-sm" role="group">
+            <a href="/HRM/Schedules?date=@Model.StartDate.AddDays(-7).ToString("yyyy-MM-dd")" class="btn btn-outline-secondary btn-sm" title="Tuần trước">
+                <i class="fa-solid fa-chevron-left"></i>
+            </a>
+            <input type="date" class="form-control form-control-sm fw-semibold text-center border-secondary" 
+                   style="width: 140px;" value="@Model.FilterDate.ToString("yyyy-MM-dd")" 
+                   onchange="window.location.href='/HRM/Schedules?date='+this.value" title="Chọn ngày làm việc" />
+            <a href="/HRM/Schedules?date=@Model.StartDate.AddDays(7).ToString("yyyy-MM-dd")" class="btn btn-outline-secondary btn-sm" title="Tuần sau">
+                <i class="fa-solid fa-chevron-right"></i>
+            </a>
         </div>
+        <span class="badge bg-light text-dark border ms-1 py-2 px-3 fw-medium">
+            Tuần: @Model.StartDate.ToString("dd/MM") - @Model.EndDate.ToString("dd/MM/yyyy")
+        </span>
     </div>
 
-    <div class="col-md-8">
-        <div class="card shadow-sm border-0">
-            <div class="card-body">
-                <h5 class="card-title mb-3">Lịch làm việc ngày @Model.FilterDate.ToString("dd/MM/yyyy")</h5>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Ca làm</th>
-                                <th>Thời gian</th>
-                                <th>Nhân viên</th>
-                                <th>Trạng thái</th>
-                                <th class="text-end">Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if(!Model.Schedules.Any())
-                            {
-                                <tr><td colspan="5" class="text-center text-muted">Chưa có dữ liệu phân ca</td></tr>
-                            }
-                            @foreach (var s in Model.Schedules.OrderBy(x => x.Shift.StartTime))
-                            {
-                                <tr>
-                                    <td class="fw-bold">@s.Shift.ShiftName</td>
-                                    <td>@s.Shift.StartTime.ToString(@"hh\:mm") - @s.Shift.EndTime.ToString(@"hh\:mm")</td>
-                                    <td>
-                                        <div>@s.Account.FullName</div>
-                                        <div class="text-muted small">@s.Account.Username</div>
-                                    </td>
-                                    <td><span class="badge bg-secondary">@s.Status</span></td>
-                                    <td class="text-end">
-                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteSchedule(@s.ScheduleId)">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+    <!-- 2 & 3. Secondary & Primary Action Buttons -->
+    <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-primary btn-sm fw-medium shadow-sm" onclick="generateAutoSchedule('@Model.StartDate.ToString("yyyy-MM-dd")')">
+            <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Tự Động Xếp Lịch
+        </button>
+        <button class="btn btn-save-batch btn-sm px-3 shadow-sm" id="btnSaveAll" onclick="saveAllChanges()">
+            <i class="fa-solid fa-floppy-disk me-1"></i> Lưu Tất Cả Thay Đổi
+            <span class="unsaved-badge d-none" id="unsavedCount">0</span>
+        </button>
+    </div>
+</div>
+
+<!-- The Unified Schedule Grid -->
+<div class="shadow-sm overflow-hidden p-1 bg-white border rounded mb-4">
+    <div class="table-responsive rounded">
+        <table class="table table-bordered mb-0 align-middle">
+            <thead>
+                <tr class="text-center">
+                    <th style="width: 14%;" class="py-3 schedule-table-header-pink">Ca làm việc</th>
+                    @for (int i = 0; i < 7; i++)
+                    {
+                        var dayDate = Model.WeekDays[i];
+                        <th style="width: 12.2%;" class="py-3 schedule-table-header-pink">@dayNames[i] @dayDate.Day/@dayDate.Month</th>
+                    }
+                </tr>
+            </thead>
+            <tbody style="background-color: #FFFFFF;">
+                @foreach (var shift in Model.Shifts)
+                {
+                    <tr>
+                        <td class="align-middle text-center fw-bold schedule-cell-white text-brand-deep-purple">
+                            <div>@shift.ShiftName</div>
+                            <div class="text-muted small fw-normal mt-1">@shift.StartTime.ToString(@"hh\:mm") - @shift.EndTime.ToString(@"hh\:mm")</div>
+                        </td>
+                        @for (int i = 0; i < 7; i++)
+                        {
+                            var dayDate = Model.WeekDays[i];
+                            var dateStr = dayDate.ToString("yyyy-MM-dd");
+                            var cellSchedules = Model.Schedules
+                                .Where(s => s.ShiftId == shift.ShiftId && s.WorkDate == dayDate)
+                                .ToList();
+                            var isToday = dayDate == DateOnly.FromDateTime(DateTime.Now);
+                            var isPast = dayDate < DateOnly.FromDateTime(DateTime.Today);
+
+                            <td class="schedule-cell-white align-top @(isToday ? "today-column" : "")" 
+                                data-cell-shift="@shift.ShiftId" 
+                                data-cell-date="@dateStr"
+                                style="@(isToday ? "background-color: #fff0f5 !important;" : "") @(isPast ? "opacity: 0.7; pointer-events: none;" : "")">
+
+                                <!-- Badge Container for Staff -->
+                                <div class="badge-container">
+                                    @foreach (var s in cellSchedules)
+                                    {
+                                        <div class="staff-badge" id="badge-db-@s.ScheduleId" 
+                                             @(isPast ? "" : Html.Raw($"onclick=\"openEditStaffModal({s.ScheduleId}, 0, {shift.ShiftId}, '{dateStr}', {s.AccountId}, '{shift.ShiftName}')\""))>
+                                            <div class="text-truncate me-1">
+                                                <i class="fa-solid fa-user-check text-brand-vibrant-pink me-1" style="font-size: 0.75rem;"></i>
+                                                <span class="fw-semibold">@s.Account.FullName</span>
+                                                @if (s.Account.Role != null)
+                                                {
+                                                    <span class="text-muted small ms-1" style="font-size: 0.7rem;">(@s.Account.Role.RoleName)</span>
+                                                }
+                                            </div>
+                                            @if (!isPast)
+                                            {
+                                                <button type="button" class="btn-remove-badge" title="Đánh dấu xóa" 
+                                                        onclick="event.stopPropagation(); deleteStaffBadge(@s.ScheduleId, 0)">
+                                                    <i class="fa-solid fa-xmark"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- [+] Add Staff Button inside Cell -->
+                                @if (!isPast)
+                                {
+                                    <button type="button" class="btn-add-staff-cell mt-1" 
+                                            onclick="openAddStaffModal(@shift.ShiftId, '@dateStr', '@shift.ShiftName')">
+                                        <i class="fa-solid fa-plus me-1"></i>Thêm NV
+                                    </button>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: Assign / Edit Staff -->
+<div class="modal fade" id="staffAssignmentModal" tabindex="-1" aria-labelledby="staffModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold" id="staffModalTitle">Phân Công Nhân Viên</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalTargetShiftId" />
+                <input type="hidden" id="modalTargetWorkDate" />
+                <input type="hidden" id="modalTargetScheduleId" />
+                <input type="hidden" id="modalTempRecordId" />
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Ca làm việc & Ngày:</label>
+                    <div id="modalCellInfo" class="form-control-plaintext fw-medium text-primary"></div>
                 </div>
+
+                <div class="mb-3">
+                    <label for="modalStaffSelect" class="form-label fw-semibold">Chọn Nhân Viên *</label>
+                    <select class="form-select" id="modalStaffSelect">
+                        <option value="">-- Chọn nhân viên --</option>
+                        @foreach (var staff in Model.StaffList)
+                        {
+                            <option value="@staff.AccountId">@staff.FullName (@(staff.Role?.RoleName ?? "NV"))</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary btn-sm px-3" onclick="confirmStaffAssignment()">
+                    <i class="fa-solid fa-check me-1"></i> Xác Nhận
+                </button>
             </div>
         </div>
     </div>
@@ -103,30 +361,346 @@
 
 @section Scripts {
     <script>
-        function saveSchedule() {
-            const shiftId = document.getElementById('ShiftId').value;
-            const accountId = document.getElementById('AccountId').value;
-            const date = document.getElementById('Date').value;
+        // Client-side Batch State Tracker
+        const batchTracker = {
+            addedRecords: [],    // [{ tempId, accountId, shiftId, workDate, accountName }]
+            updatedRecords: [],  // [{ scheduleId, accountId, shiftId, workDate, accountName }]
+            deletedRecordIds: [] // [ scheduleId1, scheduleId2 ]
+        };
 
-            if(!shiftId || !accountId) {
-                alert('Vui lòng chọn ca làm việc và nhân viên!');
+        let tempIdCounter = 1;
+        const staffListJson = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StaffList.Select(s => new { s.AccountId, s.FullName, RoleName = s.Role?.RoleName })));
+        const staffMap = new Map(staffListJson.map(s => [s.AccountId, s]));
+
+        function updateUnsavedBadge() {
+            const count = batchTracker.addedRecords.length + batchTracker.updatedRecords.length + batchTracker.deletedRecordIds.length;
+            const badgeEl = document.getElementById('unsavedCount');
+            const btnSave = document.getElementById('btnSaveAll');
+
+            if (count > 0) {
+                badgeEl.textContent = count;
+                badgeEl.classList.remove('d-none');
+                btnSave.classList.add('pulse');
+            } else {
+                badgeEl.classList.add('d-none');
+                btnSave.classList.remove('pulse');
+            }
+        }
+
+        // Open Modal to Add Staff
+        function openAddStaffModal(shiftId, workDateStr, shiftName) {
+            document.getElementById('modalTargetShiftId').value = shiftId;
+            document.getElementById('modalTargetWorkDate').value = workDateStr;
+            document.getElementById('modalTargetScheduleId').value = '0';
+            document.getElementById('modalTempRecordId').value = '0';
+            document.getElementById('modalStaffSelect').value = '';
+
+            const dateParts = workDateStr.split('-');
+            const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+            document.getElementById('modalCellInfo').textContent = `${shiftName} - Ngày ${formattedDate}`;
+
+            const modal = new bootstrap.Modal(document.getElementById('staffAssignmentModal'));
+            modal.show();
+        }
+
+        // Open Modal to Edit Existing Staff Badge
+        function openEditStaffModal(scheduleId, tempId, shiftId, workDateStr, currentAccountId, shiftName) {
+            document.getElementById('modalTargetShiftId').value = shiftId;
+            document.getElementById('modalTargetWorkDate').value = workDateStr;
+            document.getElementById('modalTargetScheduleId').value = scheduleId;
+            document.getElementById('modalTempRecordId').value = tempId;
+            document.getElementById('modalStaffSelect').value = currentAccountId;
+
+            const dateParts = workDateStr.split('-');
+            const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+            document.getElementById('modalCellInfo').textContent = `Đổi nhân viên ca ${shiftName} - Ngày ${formattedDate}`;
+
+            const modal = new bootstrap.Modal(document.getElementById('staffAssignmentModal'));
+            modal.show();
+        }
+
+        // Confirm Modal Action
+        function confirmStaffAssignment() {
+            const shiftId = parseInt(document.getElementById('modalTargetShiftId').value);
+            const workDate = document.getElementById('modalTargetWorkDate').value;
+            const scheduleId = parseInt(document.getElementById('modalTargetScheduleId').value);
+            const tempId = parseInt(document.getElementById('modalTempRecordId').value);
+            const accountId = parseInt(document.getElementById('modalStaffSelect').value);
+
+            if (!accountId) {
+                alert('Vui lòng chọn nhân viên!');
                 return;
             }
 
-            $.post('/HRM/SaveSchedule', { accountId: accountId, shiftId: shiftId, date: date }, function() {
-                location.reload();
-            }).fail(function(err) {
-                alert(err.responseText || 'Đã xảy ra lỗi.');
+            const staffInfo = staffMap.get(accountId);
+            const staffName = staffInfo ? staffInfo.FullName : 'Nhân viên';
+
+            if (tempId > 0) {
+                // Editing a newly added unsaved record
+                const rec = batchTracker.addedRecords.find(r => r.tempId === tempId);
+                if (rec) {
+                    rec.accountId = accountId;
+                    rec.accountName = staffName;
+                    updateBadgeDOM(null, tempId, accountId, staffName);
+                }
+            } else if (scheduleId > 0) {
+                // Editing an existing database record
+                const existingUpdate = batchTracker.updatedRecords.find(r => r.scheduleId === scheduleId);
+                if (existingUpdate) {
+                    existingUpdate.accountId = accountId;
+                    existingUpdate.accountName = staffName;
+                } else {
+                    batchTracker.updatedRecords.push({
+                        scheduleId: scheduleId,
+                        accountId: accountId,
+                        shiftId: shiftId,
+                        workDate: workDate,
+                        accountName: staffName
+                    });
+                }
+                updateBadgeDOM(scheduleId, 0, accountId, staffName);
+            } else {
+                // Adding a new record
+                const newTempId = tempIdCounter++;
+                const newRecord = {
+                    tempId: newTempId,
+                    accountId: accountId,
+                    shiftId: shiftId,
+                    workDate: workDate,
+                    accountName: staffName
+                };
+                batchTracker.addedRecords.push(newRecord);
+                renderNewBadgeDOM(newRecord);
+            }
+
+            updateUnsavedBadge();
+            const modalEl = document.getElementById('staffAssignmentModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+        }
+
+        // Render newly added badge in all corresponding shift cells
+        function renderNewBadgeDOM(record) {
+            const targetCells = document.querySelectorAll(`[data-cell-shift="${record.shiftId}"][data-cell-date="${record.workDate}"]`);
+            targetCells.forEach(cell => {
+                const badgeContainer = cell.querySelector('.badge-container');
+                const badgeHtml = `
+                    <div class="staff-badge badge-added" id="badge-temp-${record.tempId}" 
+                         onclick="openEditStaffModal(0, ${record.tempId}, ${record.shiftId}, '${record.workDate}', ${record.accountId}, '')">
+                        <div>
+                            <i class="fa-solid fa-user-plus text-success me-1"></i>
+                            <span class="fw-semibold">${record.accountName}</span>
+                            <span class="badge bg-success ms-1 style="font-size:0.65rem;">Mới</span>
+                        </div>
+                        <button type="button" class="btn-remove-badge" title="Xóa" onclick="event.stopPropagation(); deleteStaffBadge(0, ${record.tempId})">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                `;
+                badgeContainer.insertAdjacentHTML('beforeend', badgeHtml);
             });
         }
 
-        function deleteSchedule(id) {
-            if(confirm('Bạn có chắc chắn muốn xóa phân ca này?')) {
-                $.post('/HRM/DeleteSchedule/' + id, function() {
-                    location.reload();
-                }).fail(function(err) {
-                    alert('Lỗi khi xóa.');
+        // Update badge DOM visually
+        function updateBadgeDOM(scheduleId, tempId, accountId, accountName) {
+            const selector = scheduleId > 0 ? `#badge-db-${scheduleId}` : `#badge-temp-${tempId}`;
+            const badges = document.querySelectorAll(selector);
+
+            badges.forEach(badge => {
+                badge.classList.add('badge-updated');
+                const nameSpan = badge.querySelector('.fw-semibold');
+                if (nameSpan) nameSpan.textContent = accountName;
+            });
+        }
+
+        // Delete/Remove Badge Action
+        function deleteStaffBadge(scheduleId, tempId) {
+            let cell = null;
+            let badgeEl = null;
+
+            if (tempId > 0) {
+                badgeEl = document.querySelector(`#badge-temp-${tempId}`);
+            } else if (scheduleId > 0) {
+                badgeEl = document.querySelector(`#badge-db-${scheduleId}`);
+            }
+
+            if (badgeEl) {
+                cell = badgeEl.closest('td');
+            }
+
+            if (cell) {
+                let receptionistCount = 0;
+                let serviceStaffCount = 0;
+
+                const allBadges = cell.querySelectorAll('.staff-badge');
+                allBadges.forEach(badge => {
+                    if (tempId > 0 && badge.id === `badge-temp-${tempId}`) return;
+                    if (scheduleId > 0 && badge.id === `badge-db-${scheduleId}`) return;
+
+                    if (badge.classList.contains('badge-deleted')) return;
+
+                    let roleName = "";
+                    if (badge.id.startsWith('badge-db-')) {
+                        const text = badge.textContent || "";
+                        if (text.includes('Lễ tân') || text.includes('Receptionist')) {
+                            roleName = "Receptionist";
+                        } else if (text.includes('Phục vụ') || text.includes('Service Staff')) {
+                            roleName = "Service Staff";
+                        }
+                    } else if (badge.id.startsWith('badge-temp-')) {
+                        const badgeTempId = parseInt(badge.id.replace('badge-temp-', ''));
+                        const addedRec = batchTracker.addedRecords.find(r => r.tempId === badgeTempId);
+                        if (addedRec) {
+                            const staffInfo = staffMap.get(addedRec.accountId);
+                            if (staffInfo) {
+                                const rName = staffInfo.RoleName || "";
+                                if (rName.includes('Receptionist') || rName.includes('Lễ tân')) {
+                                    roleName = "Receptionist";
+                                } else if (rName.includes('Service Staff') || rName.includes('Phục vụ')) {
+                                    roleName = "Service Staff";
+                                }
+                            }
+                        }
+                    }
+
+                    if (roleName === "Receptionist") receptionistCount++;
+                    if (roleName === "Service Staff") serviceStaffCount++;
                 });
+
+                let deletingRole = "";
+                if (tempId > 0) {
+                    const addedRec = batchTracker.addedRecords.find(r => r.tempId === tempId);
+                    if (addedRec) {
+                        const staffInfo = staffMap.get(addedRec.accountId);
+                        if (staffInfo) {
+                            const rName = staffInfo.RoleName || "";
+                            if (rName.includes('Receptionist') || rName.includes('Lễ tân')) deletingRole = "Receptionist";
+                            else if (rName.includes('Service Staff') || rName.includes('Phục vụ')) deletingRole = "Service Staff";
+                        }
+                    }
+                } else if (scheduleId > 0) {
+                    const text = badgeEl.textContent || "";
+                    if (text.includes('Lễ tân') || text.includes('Receptionist')) deletingRole = "Receptionist";
+                    else if (text.includes('Phục vụ') || text.includes('Service Staff')) deletingRole = "Service Staff";
+                }
+
+                let isPerformingDeletion = true;
+                if (scheduleId > 0) {
+                    const index = batchTracker.deletedRecordIds.indexOf(scheduleId);
+                    if (index > -1) {
+                        isPerformingDeletion = false; 
+                    }
+                }
+
+                if (isPerformingDeletion) {
+                    if ((deletingRole === "Receptionist" && receptionistCount === 0) || (deletingRole === "Service Staff" && serviceStaffCount === 0)) {
+                        if (!confirm("Cảnh báo: Ca làm việc này sắp dưới mức tối thiểu (1 Lễ tân + 1 Phục vụ). Bạn có chắc chắn muốn xóa nhân viên này không?")) {
+                            return; 
+                        }
+                    }
+                }
+            }
+
+            if (tempId > 0) {
+                // Remove from addedRecords
+                batchTracker.addedRecords = batchTracker.addedRecords.filter(r => r.tempId !== tempId);
+                const badges = document.querySelectorAll(`#badge-temp-${tempId}`);
+                badges.forEach(b => b.remove());
+            } else if (scheduleId > 0) {
+                // Toggle deletion status for DB record
+                const index = batchTracker.deletedRecordIds.indexOf(scheduleId);
+                const badges = document.querySelectorAll(`#badge-db-${scheduleId}`);
+
+                if (index > -1) {
+                    // Undo deletion
+                    batchTracker.deletedRecordIds.splice(index, 1);
+                    badges.forEach(b => b.classList.remove('badge-deleted'));
+                } else {
+                    // Mark for deletion
+                    batchTracker.deletedRecordIds.push(scheduleId);
+                    badges.forEach(b => b.classList.add('badge-deleted'));
+                }
+            }
+            updateUnsavedBadge();
+        }
+
+        // Save All Changes (AJAX Batch Post)
+        function saveAllChanges() {
+            const count = batchTracker.addedRecords.length + batchTracker.updatedRecords.length + batchTracker.deletedRecordIds.length;
+            if (count === 0) {
+                alert('Không có thay đổi nào cần lưu!');
+                return;
+            }
+
+            if (!confirm(`Bạn có chắc chắn muốn lưu tất cả ${count} thay đổi phân ca?`)) {
+                return;
+            }
+
+            const btnSave = document.getElementById('btnSaveAll');
+            btnSave.disabled = true;
+            btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Đang lưu...';
+
+            const payload = {
+                addedRecords: batchTracker.addedRecords.map(r => ({
+                    accountId: r.accountId,
+                    shiftId: r.shiftId,
+                    workDate: r.workDate,
+                    status: 'Scheduled'
+                })),
+                updatedRecords: batchTracker.updatedRecords.map(r => ({
+                    scheduleId: r.scheduleId,
+                    accountId: r.accountId,
+                    shiftId: r.shiftId,
+                    workDate: r.workDate
+                })),
+                deletedRecordIds: batchTracker.deletedRecordIds
+            };
+
+            fetch('/HRM/BatchUpdateSchedules', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(async response => {
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(data.message || 'Đã lưu tất cả thay đổi thành công!');
+                    window.location.reload();
+                } else {
+                    const errorText = await response.text();
+                    alert('Lỗi khi lưu: ' + errorText);
+                    btnSave.disabled = false;
+                    btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Lưu Tất Cả Thay Đổi';
+                }
+            })
+            .catch(err => {
+                alert('Đã xảy ra lỗi kết nối: ' + err.message);
+                btnSave.disabled = false;
+                btnSave.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Lưu Tất Cả Thay Đổi';
+            });
+        }
+
+        // Run Auto-Schedule Algorithm
+        function generateAutoSchedule(startDateStr) {
+            if (confirm('Tự động xếp lịch sẽ tạo phân ca mặc định cho nhân viên chưa được xếp lịch trong tuần. Bạn có muốn tiếp tục?')) {
+                fetch('/ScheduleManagement/GenerateSchedule', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `startDate=${encodeURIComponent(startDateStr)}`
+                })
+                .then(async res => {
+                    if (res.ok) {
+                        const data = await res.json();
+                        alert(data.message || 'Đã tự động xếp lịch thành công!');
+                        window.location.reload();
+                    } else {
+                        const err = await res.text();
+                        alert('Không thể tự động xếp lịch: ' + err);
+                    }
+                })
+                .catch(err => alert('Lỗi kết nối: ' + err.message));
             }
         }
     </script>

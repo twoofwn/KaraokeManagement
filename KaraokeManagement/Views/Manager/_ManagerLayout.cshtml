@@ -58,7 +58,7 @@
 				<a href="/Manager/Expenses"
 				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "expenses" ? "active" : "")">
 					<i class="fa-solid fa-money-bill-wave nav-icon"></i>
-					<span>Chi phí</span>
+					<span>Chi phí cố định</span>
 				</a>
 
 				<a href="/Manager/DynamicPricing"
@@ -73,18 +73,6 @@
 					<span>Hóa đơn</span>
 				</a>
 
-				<a href="/Manager/RevenueReport"
-				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "revenuereport" ? "active" : "")">
-					<i class="fa-solid fa-sack-dollar nav-icon"></i>
-					<span>Báo cáo doanh thu</span>
-				</a>
-
-				<a href="/Manager/ProfitReport"
-				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "profitreport" ? "active" : "")">
-					<i class="fa-solid fa-coins nav-icon"></i>
-					<span>Báo cáo lợi nhuận</span>
-				</a>
-
                 <!-- HRM MODULE -->
                 <div class="mt-3 mb-1 px-3 text-uppercase text-muted" style="font-size: 0.75rem; font-weight: 600;">HRM</div>
 
@@ -94,11 +82,7 @@
 					<span>Hồ sơ Nhân sự</span>
 				</a>
 
-				<a href="/HRM/Schedules"
-				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "hrm_schedules" ? "active" : "")">
-					<i class="fa-solid fa-calendar-days nav-icon"></i>
-					<span>Phân ca làm việc</span>
-				</a>
+
 
 				<a href="/ScheduleManagement/LeaveApprovals"
 				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "leave_approvals" ? "active" : "")">
@@ -109,7 +93,7 @@
 				<a href="/ScheduleManagement/WeeklyGrid"
 				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "weekly_grid" ? "active" : "")">
 					<i class="fa-solid fa-calendar-week nav-icon"></i>
-					<span>Lịch Lưới (Weekly Grid)</span>
+					<span>Phân ca làm việc</span>
 				</a>
 
 				<a href="/HRM/Attendance"

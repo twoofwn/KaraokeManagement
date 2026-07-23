@@ -101,6 +101,64 @@ namespace KaraokeManagement.Controllers
                 expensesList.Add(exp + poAmt);
             }
 
+            // --- REVENUE REPORT CONSOLIDATION ---
+            decimal totalRoom = await _context.Invoices
+                .Where(i => i.Status == "Paid")
+                .SumAsync(i => i.RoomTotal ?? 0);
+
+            decimal totalService = await _context.Invoices
+                .Where(i => i.Status == "Paid")
+                .SumAsync(i => i.ServiceTotal ?? 0);
+
+            var roomTypeRevenue = await _context.Invoices
+                .Where(i => i.Status == "Paid")
+                .Include(i => i.Room).ThenInclude(r => r.RoomType)
+                .GroupBy(i => i.Room.RoomType.TypeName)
+                .Select(g => new { TypeName = g.Key, Amount = g.Sum(i => i.RoomTotal ?? 0) })
+                .ToListAsync();
+
+            var categoryRevenue = await _context.InvoiceDetails
+                .Include(id => id.Invoice)
+                .Include(id => id.Service).ThenInclude(s => s.Category)
+                .Where(id => id.Invoice.Status == "Paid")
+                .GroupBy(id => id.Service.Category.CategoryName)
+                .Select(g => new { CategoryName = g.Key, Amount = g.Sum(id => id.Quantity * id.UnitPrice) })
+                .ToListAsync();
+
+            // --- PROFIT REPORT CONSOLIDATION ---
+            var profitItems = new List<MonthlyProfitReportItem>();
+            for (int i = 11; i >= 0; i--)
+            {
+                var targetMonth = now.AddMonths(-i);
+                var monthStart = new DateTime(targetMonth.Year, targetMonth.Month, 1);
+                var monthEnd = monthStart.AddMonths(1).AddTicks(-1);
+
+                decimal rev = await _context.Invoices
+                    .Where(i => i.Status == "Paid" && i.CheckOutTime >= monthStart && i.CheckOutTime <= monthEnd)
+                    .SumAsync(i => i.GrandTotal ?? 0);
+
+                decimal exp = await _context.Expenses
+                    .Where(e => e.ExpenseDate >= monthStart && e.ExpenseDate <= monthEnd)
+                    .SumAsync(e => e.Amount);
+
+                decimal poAmt = await _context.PurchaseOrders
+                    .Where(po => po.OrderDate >= monthStart && po.OrderDate <= monthEnd)
+                    .SumAsync(po => po.TotalAmount ?? 0);
+
+                decimal totalExp = exp + poAmt;
+                decimal net = rev - totalExp;
+                double margin = rev > 0 ? (double)(net / rev) * 100 : 0;
+
+                profitItems.Add(new MonthlyProfitReportItem
+                {
+                    MonthLabel = $"Tháng {targetMonth.Month}/{targetMonth.Year}",
+                    Revenue = rev,
+                    Expenses = totalExp,
+                    NetProfit = net,
+                    Margin = margin
+                });
+            }
+
             var viewModel = new FinancialDashboardViewModel
             {
                 CustomersToday = customersToday,
@@ -114,7 +172,15 @@ namespace KaraokeManagement.Controllers
                 ProfitMargin = profitMargin,
                 MonthlyLabels = labels,
                 MonthlyRevenues = revenues,
-                MonthlyExpenses = expensesList
+                MonthlyExpenses = expensesList,
+
+                TotalRoomRevenue = totalRoom,
+                TotalServiceRevenue = totalService,
+                RoomTypeLabels = roomTypeRevenue.Select(r => r.TypeName).ToList(),
+                RoomTypeRevenues = roomTypeRevenue.Select(r => r.Amount).ToList(),
+                CategoryLabels = categoryRevenue.Select(c => c.CategoryName).ToList(),
+                CategoryRevenues = categoryRevenue.Select(c => c.Amount).ToList(),
+                ProfitItems = profitItems
             };
 
             return View(viewModel);
@@ -514,6 +580,7 @@ namespace KaraokeManagement.Controllers
             var endOfLastMonth = startOfCurrentMonth.AddDays(-1);
 
             var currentMonthExpenses = await _context.Expenses
+                .Include(e => e.ExpenseCategory)
                 .Where(e => e.ExpenseDate >= startOfCurrentMonth && e.ExpenseDate <= endOfCurrentMonth)
                 .ToListAsync();
 
@@ -532,8 +599,8 @@ namespace KaraokeManagement.Controllers
 
             // Find highest category in current month
             var categoryGroup = currentMonthExpenses
-                .GroupBy(e => e.Category)
-                .Select(g => new { Category = g.Key, Amount = g.Sum(e => e.Amount) })
+                .GroupBy(e => e.ExpenseCategory.CategoryName)
+                .Select(g => new { CategoryName = g.Key, Amount = g.Sum(e => e.Amount) })
                 .OrderByDescending(g => g.Amount)
                 .FirstOrDefault();
 
@@ -543,7 +610,7 @@ namespace KaraokeManagement.Controllers
 
             if (categoryGroup != null)
             {
-                highestCatName = ExpensesViewModel.GetCategoryDisplayName(categoryGroup.Category);
+                highestCatName = categoryGroup.CategoryName;
                 highestCatAmount = categoryGroup.Amount;
                 if (totalCurrentMonth > 0)
                 {
@@ -552,8 +619,13 @@ namespace KaraokeManagement.Controllers
             }
 
             var allExpenses = await _context.Expenses
+                .Include(e => e.ExpenseCategory)
                 .OrderByDescending(e => e.ExpenseDate)
                 .ThenByDescending(e => e.CreatedAt)
+                .ToListAsync();
+
+            var categories = await _context.ExpenseCategories
+                .OrderBy(c => c.CategoryName)
                 .ToListAsync();
 
             var viewModel = new ExpensesViewModel
@@ -563,16 +635,17 @@ namespace KaraokeManagement.Controllers
                 HighestCategoryName = highestCatName,
                 HighestCategoryAmount = highestCatAmount,
                 HighestCategoryPercent = highestCatPercent,
-                RecentExpenses = allExpenses
+                RecentExpenses = allExpenses,
+                Categories = categories
             };
 
             return View(viewModel);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddExpense(string category, string dateStr, decimal amount, string? note)
+        public async Task<IActionResult> AddExpense(int categoryId, string dateStr, decimal amount, string? note)
         {
-            if (string.IsNullOrEmpty(category) || amount <= 0)
+            if (categoryId <= 0 || amount <= 0)
             {
                 return Json(new { success = false, message = "Vui lòng nhập đầy đủ thông tin loại chi phí và số tiền lớn hơn 0." });
             }
@@ -593,7 +666,7 @@ namespace KaraokeManagement.Controllers
 
             var newExpense = new Expense
             {
-                Category = category,
+                CategoryId = categoryId,
                 ExpenseDate = expenseDate,
                 Amount = amount,
                 Note = note,
@@ -606,19 +679,72 @@ namespace KaraokeManagement.Controllers
             return Json(new { success = true, message = "Đã lưu chi phí thành công!" });
         }
 
+
+
+        [HttpPost]
+        public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryModel payload)
+        {
+            if (payload == null || string.IsNullOrWhiteSpace(payload.CategoryName))
+            {
+                return Json(new { success = false, message = "Tên danh mục không hợp lệ." });
+            }
+
+            var nameTrimmed = payload.CategoryName.Trim();
+            var exists = await _context.ExpenseCategories.AnyAsync(c => c.CategoryName.ToLower() == nameTrimmed.ToLower());
+            if (exists)
+            {
+                return Json(new { success = false, message = "Danh mục này đã tồn tại." });
+            }
+
+            var newCategory = new ExpenseCategory
+            {
+                CategoryName = nameTrimmed
+            };
+
+            _context.ExpenseCategories.Add(newCategory);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, categoryId = newCategory.CategoryId, categoryName = newCategory.CategoryName });
+        }
+
         [HttpGet]
-        public async Task<IActionResult> Invoices(DateTime? fromDate, DateTime? toDate, int page = 1)
+        public async Task<IActionResult> Invoices(string? searchInvoiceId, DateTime? searchDate, int? roomId, DateTime? fromDate, DateTime? toDate, int page = 1)
         {
             var now = DateTime.Now;
             var end = toDate ?? new DateTime(now.Year, now.Month, now.Day, 23, 59, 59);
             var start = fromDate ?? new DateTime(now.Year, now.Month, 1).AddMonths(-1); // Default to show more data initially
 
-            var searchStart = start.Date;
-            var searchEnd = end.Date.AddDays(1).AddTicks(-1);
-
             var query = _context.Invoices
                 .Include(i => i.Room)
-                .Where(i => i.Status == "Paid" && i.CheckOutTime >= searchStart && i.CheckOutTime <= searchEnd);
+                .Include(i => i.Booking)
+                    .ThenInclude(b => b!.Customer)
+                .AsQueryable();
+
+            // 1. Search by exact or partial Invoice ID
+            if (!string.IsNullOrWhiteSpace(searchInvoiceId))
+            {
+                var cleanSearch = searchInvoiceId.Replace("#", "").Replace("INV-", "").Replace("inv-", "").Trim();
+                query = query.Where(i => i.InvoiceId.ToString().Contains(cleanSearch));
+            }
+
+            // 2. Room filter
+            if (roomId.HasValue && roomId.Value > 0)
+            {
+                query = query.Where(i => i.RoomId == roomId.Value);
+            }
+
+            // 3. Date or Date Range filter
+            if (searchDate.HasValue)
+            {
+                var targetDate = searchDate.Value.Date;
+                query = query.Where(i => i.CheckInTime.Date == targetDate);
+            }
+            else
+            {
+                var searchStart = start.Date;
+                var searchEnd = end.Date.AddDays(1).AddTicks(-1);
+                query = query.Where(i => i.CheckInTime >= searchStart && i.CheckInTime <= searchEnd);
+            }
 
             int totalCount = await query.CountAsync();
             int pageSize = 10;
@@ -629,7 +755,7 @@ namespace KaraokeManagement.Controllers
             if (page > totalPages) page = totalPages;
 
             var invoices = await query
-                .OrderByDescending(i => i.CheckOutTime)
+                .OrderByDescending(i => i.CheckInTime)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -637,11 +763,19 @@ namespace KaraokeManagement.Controllers
             int startEntry = totalCount == 0 ? 0 : (page - 1) * pageSize + 1;
             int endEntry = Math.Min(page * pageSize, totalCount);
 
+            var roomsList = await _context.Rooms
+                .OrderBy(r => r.RoomName)
+                .ToListAsync();
+
             var viewModel = new ManagerInvoicesViewModel
             {
                 Invoices = invoices,
                 FromDate = start,
                 ToDate = end,
+                SearchInvoiceId = searchInvoiceId,
+                SearchDate = searchDate,
+                SelectedRoomId = roomId,
+                Rooms = roomsList,
                 CurrentPage = page,
                 TotalPages = totalPages,
                 TotalCount = totalCount,
@@ -655,64 +789,77 @@ namespace KaraokeManagement.Controllers
         [HttpGet]
         public async Task<IActionResult> InvoiceDetails(int id)
         {
-            var invoice = await _context.Invoices
-                .Include(i => i.Room)
-                .ThenInclude(r => r.RoomType)
-                .Include(i => i.Receptionist)
-                .Include(i => i.Booking)
-                .ThenInclude(b => b!.Customer)
-                .ThenInclude(c => c.Tier)
-                .Include(i => i.InvoiceDetails)
-                .ThenInclude(d => d.Service)
-                .Include(i => i.PaymentTransactions)
-                .ThenInclude(t => t.Method)
-                .FirstOrDefaultAsync(i => i.InvoiceId == id);
-
-            if (invoice == null)
+            try
             {
-                return Json(new { success = false, message = "Không tìm thấy hóa đơn." });
+                var invoice = await _context.Invoices
+                    .Include(i => i.Room)
+                    .ThenInclude(r => r.RoomType)
+                    .Include(i => i.Receptionist)
+                    .Include(i => i.Booking)
+                        .ThenInclude(b => b!.Customer)
+                            .ThenInclude(c => c.Tier)
+                    .Include(i => i.Booking)
+                        .ThenInclude(b => b!.Staff)
+                    .Include(i => i.InvoiceDetails)
+                    .ThenInclude(d => d.Service)
+                    .Include(i => i.PaymentTransactions)
+                    .ThenInclude(t => t.Method)
+                    .FirstOrDefaultAsync(i => i.InvoiceId == id);
+
+                if (invoice == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy hóa đơn." });
+                }
+
+                var duration = (invoice.CheckOutTime ?? DateTime.Now) - invoice.CheckInTime;
+                string durationText = $"{(int)duration.TotalHours} giờ {duration.Minutes} phút";
+
+                // Fetch assigned service staff names from Booking.Staff
+                var staffNamesText = invoice.Booking?.Staff?.FullName ?? "Chưa phân công";
+
+                var details = new
+                {
+                    invoiceId = invoice.InvoiceId,
+                    roomName = invoice.Room?.RoomName ?? "Chưa rõ",
+                    roomTypeName = invoice.Room?.RoomType?.TypeName ?? "Chưa rõ",
+                    pricePerHour = invoice.Room?.RoomType?.PricePerHour ?? 0,
+                    checkInTime = invoice.CheckInTime.ToString("dd/MM/yyyy HH:mm"),
+                    checkOutTime = invoice.CheckOutTime?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa checkout",
+                    durationText = durationText,
+                    customerName = invoice.Booking?.Customer?.FullName ?? "Khách lẻ",
+                    customerPhone = invoice.Booking?.Customer?.Phone ?? "N/A",
+                    customerTier = invoice.Booking?.Customer?.Tier?.TierName ?? "Thường",
+                    discountPercent = invoice.Booking?.Customer?.Tier?.DiscountPercent ?? 0,
+                    staffNames = staffNamesText,
+                    receptionistName = invoice.Receptionist?.FullName ?? "N/A",
+                    roomTotal = invoice.RoomTotal ?? 0,
+                    serviceTotal = invoice.ServiceTotal ?? 0,
+                    discountAmount = invoice.DiscountAmount ?? 0,
+                    grandTotal = invoice.GrandTotal ?? 0,
+                    status = invoice.Status,
+                    items = invoice.InvoiceDetails.Select(d => new
+                    {
+                        serviceName = d.Service?.ServiceName ?? "Dịch vụ không tồn tại",
+                        quantity = d.Quantity,
+                        unitPrice = d.UnitPrice,
+                        total = d.Quantity * d.UnitPrice,
+                        unit = d.Service?.Unit ?? "Cái"
+                    }).ToList(),
+                    payments = invoice.PaymentTransactions.Select(t => new
+                    {
+                        methodName = t.Method?.MethodName ?? "Chưa rõ",
+                        amount = t.Amount,
+                        date = t.TransactionDate?.ToString("dd/MM/yyyy HH:mm") ?? "",
+                        refCode = t.ReferenceCode ?? ""
+                    }).ToList()
+                };
+
+                return Json(new { success = true, data = details });
             }
-
-            var duration = (invoice.CheckOutTime ?? DateTime.Now) - invoice.CheckInTime;
-            string durationText = $"{(int)duration.TotalHours} giờ {duration.Minutes} phút";
-
-            var details = new
+            catch (Exception ex)
             {
-                invoiceId = invoice.InvoiceId,
-                roomName = invoice.Room.RoomName,
-                roomTypeName = invoice.Room.RoomType.TypeName,
-                pricePerHour = invoice.Room.RoomType.PricePerHour,
-                checkInTime = invoice.CheckInTime.ToString("dd/MM/yyyy HH:mm"),
-                checkOutTime = invoice.CheckOutTime?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa checkout",
-                durationText = durationText,
-                customerName = invoice.Booking?.Customer?.FullName ?? "Khách vãng lai",
-                customerPhone = invoice.Booking?.Customer?.Phone ?? "N/A",
-                customerTier = invoice.Booking?.Customer?.Tier?.TierName ?? "Thường",
-                discountPercent = invoice.Booking?.Customer?.Tier?.DiscountPercent ?? 0,
-                receptionistName = invoice.Receptionist?.FullName ?? "N/A",
-                roomTotal = invoice.RoomTotal ?? 0,
-                serviceTotal = invoice.ServiceTotal ?? 0,
-                discountAmount = invoice.DiscountAmount ?? 0,
-                grandTotal = invoice.GrandTotal ?? 0,
-                status = invoice.Status,
-                items = invoice.InvoiceDetails.Select(d => new
-                {
-                    serviceName = d.Service.ServiceName,
-                    quantity = d.Quantity,
-                    unitPrice = d.UnitPrice,
-                    total = d.Quantity * d.UnitPrice,
-                    unit = d.Service.Unit
-                }).ToList(),
-                payments = invoice.PaymentTransactions.Select(t => new
-                {
-                    methodName = t.Method.MethodName,
-                    amount = t.Amount,
-                    date = t.TransactionDate?.ToString("dd/MM/yyyy HH:mm") ?? "",
-                    refCode = t.ReferenceCode ?? ""
-                }).ToList()
-            };
-
-            return Json(new { success = true, data = details });
+                return Json(new { success = false, message = "Lỗi hệ thống: " + ex.Message + "\n" + ex.StackTrace });
+            }
         }
 
         [HttpGet]

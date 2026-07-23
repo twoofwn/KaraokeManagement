@@ -10,18 +10,8 @@
 }
 
 <style>
-    .bg-orange {
-        background-color: #fd7e14 !important;
-        color: #ffffff !important;
-    }
-    .btn-orange {
-        background-color: #fd7e14 !important;
-        border-color: #fd7e14 !important;
-        color: #ffffff !important;
-        font-weight: 500;
-    }
-    .btn-orange:hover {
-        background-color: #e66a00 !important;
+    .bg-brand-header {
+        background-color: var(--brand-deep-purple) !important;
         color: #ffffff !important;
     }
     .badge-receptionist {
@@ -44,9 +34,10 @@
         min-height: 120px;
         cursor: pointer;
         transition: background-color 0.2s;
+        border-color: var(--brand-light-pink) !important;
     }
     .grid-cell:hover {
-        background-color: #f8f9fa;
+        background-color: var(--brand-cream) !important;
     }
     .btn-add-cell {
         position: absolute;
@@ -60,55 +51,122 @@
         justify-content: center;
         font-size: 0.75rem;
         border-radius: 4px;
+        border-color: var(--brand-light-pink);
+        color: var(--brand-deep-purple);
+    }
+    .btn-add-cell:hover {
+        background-color: var(--brand-light-pink);
+        color: var(--brand-deep-purple);
     }
 </style>
 
 <!-- Header & Controls -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold mb-0">Schedule Management</h2>
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <h2 class="fw-bold mb-0 text-brand-deep-purple">Lịch Làm Việc Tuần</h2>
     
     <!-- Left Controls -->
-    <div class="d-flex align-items-center gap-2">
-        <a href="/ScheduleManagement/WeeklyGrid?startDate=@startOfWeek.AddDays(-7).ToString("yyyy-MM-dd")" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-chevron-left"></i></a>
-        <select class="form-select form-select-sm fw-medium" style="width: auto;" onchange="window.location.href='/ScheduleManagement/WeeklyGrid?startDate='+this.value">
-            <option value="@startOfWeek.ToString("yyyy-MM-dd")" selected>@startOfWeek.ToString("dd-M-yyyy") -> @endOfWeek.ToString("dd-M-yyyy") (Current)</option>
-            <option value="@startOfWeek.AddDays(-7).ToString("yyyy-MM-dd")">@startOfWeek.AddDays(-7).ToString("dd-M-yyyy") -> @startOfWeek.AddDays(-1).ToString("dd-M-yyyy")</option>
-            <option value="@startOfWeek.AddDays(7).ToString("yyyy-MM-dd")">@startOfWeek.AddDays(7).ToString("dd-M-yyyy") -> @startOfWeek.AddDays(13).ToString("dd-M-yyyy")</option>
+    <div class="d-flex align-items-center gap-2 shadow-sm p-1 bg-white rounded border">
+        <a href="/ScheduleManagement/WeeklyGrid?startDate=@startOfWeek.AddDays(-7).ToString("yyyy-MM-dd")" class="btn btn-outline-secondary btn-sm border-0"><i class="fa-solid fa-chevron-left"></i></a>
+        <select class="form-select form-select-sm fw-medium border-0" style="width: auto; background-color: transparent;" onchange="window.location.href='/ScheduleManagement/WeeklyGrid?startDate='+this.value">
+            <option value="@startOfWeek.ToString("yyyy-MM-dd")" selected>@startOfWeek.ToString("dd/MM/yyyy") -> @endOfWeek.ToString("dd/MM/yyyy") (Tuần này)</option>
+            <option value="@startOfWeek.AddDays(-7).ToString("yyyy-MM-dd")">@startOfWeek.AddDays(-7).ToString("dd/MM/yyyy") -> @startOfWeek.AddDays(-1).ToString("dd/MM/yyyy")</option>
+            <option value="@startOfWeek.AddDays(7).ToString("yyyy-MM-dd")">@startOfWeek.AddDays(7).ToString("dd/MM/yyyy") -> @startOfWeek.AddDays(13).ToString("dd/MM/yyyy")</option>
         </select>
-        <a href="/ScheduleManagement/WeeklyGrid?startDate=@startOfWeek.AddDays(7).ToString("yyyy-MM-dd")" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-chevron-right"></i></a>
+        <a href="/ScheduleManagement/WeeklyGrid?startDate=@startOfWeek.AddDays(7).ToString("yyyy-MM-dd")" class="btn btn-outline-secondary btn-sm border-0"><i class="fa-solid fa-chevron-right"></i></a>
     </div>
 
     <!-- Right Controls -->
     <div class="d-flex gap-2">
-        <button class="btn btn-primary fw-bold text-nowrap text-white" onclick="runAutoSchedule('@startOfWeek.ToString("yyyy-MM-dd")')" 
-                style="background-color: #0d6efd; border-color: #0d6efd; box-shadow: 0 4px 6px rgba(13, 110, 253, 0.15); border-radius: 6px;">
+        <button class="btn btn-brand-secondary text-nowrap" onclick="runAutoSchedule('@startOfWeek.ToString("yyyy-MM-dd")')">
             <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Tự Động Xếp Lịch
         </button>
-        <a href="/ScheduleManagement/LeaveApprovals" class="btn btn-orange">
-            <i class="fa-solid fa-user-xmark me-1"></i> Duyệt Nghỉ Phép
+        <a href="/HRM/Schedules?date=@startOfWeek.ToString("yyyy-MM-dd")" class="btn btn-brand-primary text-nowrap">
+            <i class="fa-solid fa-pen-to-square me-1"></i> Chỉnh sửa lịch làm
         </a>
     </div>
 </div>
 
 <!-- The Schedule Grid -->
-<div class="card border-0 shadow-sm overflow-hidden">
-    <div class="table-responsive">
+<div class="shadow-sm overflow-hidden p-1 bg-white border rounded">
+    <div class="table-responsive rounded">
         <table class="table table-bordered mb-0 align-middle">
             <thead>
-                <tr class="bg-orange text-center">
-                    <th style="width: 14%;" class="py-3">Shifts</th>
+                <tr class="text-center">
+                    <th style="width: 14%;" class="py-3 schedule-table-header-pink">Ca làm việc</th>
                     @for (int i = 0; i < 7; i++)
                     {
                         var dayDate = startOfWeek.AddDays(i);
-                        string[] dayNames = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
-                        <th style="width: 12.2%;" class="py-3">@dayNames[i] @dayDate.Day</th>
+                        string[] dayNames = { "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật" };
+                        <th style="width: 12.2%;" class="py-3 schedule-table-header-pink">@dayNames[i] @dayDate.Day/@dayDate.Month</th>
                     }
                 </tr>
             </thead>
-            <tbody id="gridTbody">
+            <tbody id="gridTbody" style="background-color: #FFFFFF;">
                 <!-- JavaScript renders real database schedules -->
             </tbody>
         </table>
+    </div>
+</div>
+
+<!-- SHIFT DETAILS MODAL -->
+<div class="modal fade" id="shiftDetailsModal" tabindex="-1" aria-labelledby="shiftDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <div class="modal-header text-white" style="background-color: var(--brand-pink); padding: 1.2rem 1.5rem;">
+                <h5 class="modal-title fw-bold" id="shiftDetailsModalLabel">Chi tiết Ca làm việc</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem 2rem;">
+                <!-- Header Info -->
+                <div class="d-flex justify-content-between align-items-center mb-4 p-3 rounded" style="background-color: var(--bg-light-grey); border: 1px solid var(--border-color);">
+                    <div>
+                        <h6 class="fw-bold mb-1 text-pink fs-5" id="modalShiftName">Ca làm việc</h6>
+                        <div class="text-muted small"><i class="fa-regular fa-clock me-1"></i> Giờ làm: <span id="modalShiftTime">00:00 - 00:00</span></div>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge text-white fw-bold px-3 py-2" id="modalShiftDate" style="background-color: var(--brand-pink); border-radius: 30px; font-size: 0.9rem;">01/01/2026</span>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="row g-2 mb-3">
+                    <div class="col-md-4">
+                        <select class="form-select form-select-sm" id="modalRoleFilter" style="border-radius: 6px;">
+                            <option value="All">Tất cả chức vụ</option>
+                            <option value="Receptionist">Receptionist</option>
+                            <option value="Manager">Manager</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Staff">Staff</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control form-control-sm" id="modalSearchInput" placeholder="Tìm tên hoặc email nhân viên..." style="border-radius: 6px;">
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="table-responsive rounded border">
+                    <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem;">
+                        <thead class="text-white" style="background-color: var(--brand-pink);">
+                            <tr>
+                                <th class="py-2 px-3" style="font-weight: 500;">Nhân viên</th>
+                                <th class="py-2" style="font-weight: 500;">CCCD</th>
+                                <th class="py-2" style="font-weight: 500;">Số điện thoại</th>
+                                <th class="py-2" style="font-weight: 500;">Chức vụ</th>
+                                <th class="py-2 text-center" style="font-weight: 500;">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalStaffTableBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer" style="background-color: var(--bg-light-grey); border-top: 1px solid var(--border-color);">
+                <button type="button" class="btn btn-secondary px-4 btn-sm" style="border-radius: 6px;" data-bs-dismiss="modal">Đóng</button>
+                <a href="/HRM/Schedules" id="modalEditScheduleBtn" class="btn btn-brand-primary px-4 btn-sm" style="border-radius: 6px;"><i class="fa-solid fa-pen-to-square me-1"></i>Chỉnh sửa lịch</a>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -144,6 +202,92 @@
             return "bg-light text-dark border";
         }
 
+        let activeShiftStaffData = [];
+
+        function showShiftDetails(shiftId, dateStr) {
+            $.ajax({
+                url: `/ScheduleManagement/ShiftDetails?shiftId=${shiftId}&date=${dateStr}`,
+                type: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        // Set basic info
+                        document.getElementById('modalShiftName').innerText = response.shiftName;
+                        document.getElementById('modalShiftTime').innerText = response.startTime + ' - ' + response.endTime;
+                        document.getElementById('modalShiftDate').innerText = response.date;
+
+                        // Set the edit link to pass date parameter so they modify this specific day
+                        document.getElementById('modalEditScheduleBtn').href = `/HRM/Schedules?date=${dateStr}`;
+
+                        activeShiftStaffData = response.staff;
+                        
+                        // Reset filters
+                        document.getElementById('modalRoleFilter').value = 'All';
+                        document.getElementById('modalSearchInput').value = '';
+
+                        // Render table
+                        renderModalStaffTable(activeShiftStaffData);
+
+                        // Show modal
+                        const myModal = new bootstrap.Modal(document.getElementById('shiftDetailsModal'));
+                        myModal.show();
+                    } else {
+                        alert(response.message || 'Lỗi khi lấy chi tiết ca.');
+                    }
+                },
+                error: function() {
+                    alert('Không thể kết nối tới hệ thống để lấy dữ liệu.');
+                }
+            });
+        }
+
+        function renderModalStaffTable(data) {
+            const tbody = document.getElementById('modalStaffTableBody');
+            tbody.innerHTML = '';
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3 text-muted">Chưa có nhân sự nào được phân vào ca này.</td></tr>';
+                return;
+            }
+
+            data.forEach(staff => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-3 py-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="avatar-circle" style="width: 28px; height: 28px; font-size: 0.9rem; border-radius: 50%; background-color: #e9ecef; color: #495057; display: flex; align-items: center; justify-content: center;">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark" style="font-size: 0.85rem;">${staff.name}</div>
+                                <div class="text-muted small" style="font-size: 0.75rem;">${staff.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-2 text-secondary font-monospace" style="font-size: 0.8rem;">${staff.citizenId}</td>
+                    <td class="py-2 text-secondary" style="font-size: 0.8rem;">${staff.phone}</td>
+                    <td class="py-2"><span class="badge bg-light text-dark border px-2 py-0.5" style="font-size: 0.75rem;">${staff.role}</span></td>
+                    <td class="py-2 text-center"><span class="badge bg-success bg-opacity-10 text-success border border-success px-2 py-0.5" style="font-size: 0.75rem;">${staff.status}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Apply filters on role change or search input
+        document.getElementById('modalRoleFilter').addEventListener('change', filterModalStaff);
+        document.getElementById('modalSearchInput').addEventListener('input', filterModalStaff);
+
+        function filterModalStaff() {
+            const role = document.getElementById('modalRoleFilter').value;
+            const search = document.getElementById('modalSearchInput').value.toLowerCase().trim();
+
+            const filtered = activeShiftStaffData.filter(s => {
+                const matchRole = (role === 'All' || s.role === role);
+                const matchSearch = s.name.toLowerCase().includes(search) || s.email.toLowerCase().includes(search);
+                return matchRole && matchSearch;
+            });
+
+            renderModalStaffTable(filtered);
+        }
+
         function renderGrid() {
             const tbody = document.getElementById("gridTbody");
             tbody.innerHTML = "";
@@ -158,7 +302,7 @@
 
                 // Shift Column
                 const tdShift = document.createElement("td");
-                tdShift.className = "bg-light align-middle text-center fw-bold";
+                tdShift.className = "align-middle text-center fw-bold schedule-cell-white text-brand-deep-purple";
                 tdShift.innerHTML = `
                     <div>${shift.name}</div>
                     <div class="text-muted small fw-normal mt-1">${shift.timeRange}</div>
@@ -166,11 +310,21 @@
                 tr.appendChild(tdShift);
 
                 // Day Columns
+                const localToday = new Date();
+                const year = localToday.getFullYear();
+                const month = String(localToday.getMonth() + 1).padStart(2, '0');
+                const dateVal = String(localToday.getDate()).padStart(2, '0');
+                const todayStr = `${year}-${month}-${dateVal}`;
+
                 days.forEach(dayStr => {
                     const td = document.createElement("td");
-                    td.className = "grid-cell p-2 align-top";
+                    const isPast = dayStr < todayStr;
+                    td.className = "grid-cell schedule-cell-white p-2 align-top";
+                    if (isPast) {
+                        td.style.opacity = "0.7";
+                    }
                     td.onclick = function() {
-                        window.location.href = `/ScheduleManagement/ShiftDetails?shiftId=${shift.id}&date=${dayStr}`;
+                        showShiftDetails(shift.id, dayStr);
                     };
 
                     // Check DB schedules for this cell
@@ -197,7 +351,10 @@
                         `;
                     });
                     innerHtml += `</div>`;
-                    innerHtml += `<button class="btn btn-sm btn-outline-secondary btn-add-cell" title="Add Staff" onclick="event.stopPropagation(); window.location.href='/ScheduleManagement/ShiftDetails?shiftId=${shift.id}&date=${dayStr}';"><i class="fa-solid fa-plus"></i></button>`;
+                    
+                    if (!isPast) {
+                        innerHtml += `<button class="btn btn-sm btn-outline-secondary btn-add-cell" title="Thêm nhân sự" onclick="event.stopPropagation(); window.location.href='/HRM/Schedules?date=${dayStr}';"><i class="fa-solid fa-plus"></i></button>`;
+                    }
 
                     td.innerHTML = innerHtml;
                     tr.appendChild(td);

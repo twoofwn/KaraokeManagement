@@ -145,18 +145,52 @@ namespace KaraokeManagement.Controllers
         // --- SCHEDULES ---
         public async Task<IActionResult> Schedules(string? date)
         {
-            DateOnly filterDate = string.IsNullOrEmpty(date) ? DateOnly.FromDateTime(DateTime.Now) : DateOnly.Parse(date);
-            
+            DateTime selectedDate = string.IsNullOrEmpty(date) ? DateTime.Today : DateTime.Parse(date);
+            int diff = (7 + (selectedDate.DayOfWeek - DayOfWeek.Monday)) % 7;
+            DateTime monday = selectedDate.AddDays(-1 * diff).Date;
+            DateTime sunday = monday.AddDays(6).Date;
+
+            DateOnly startDate = DateOnly.FromDateTime(monday);
+            DateOnly endDate = DateOnly.FromDateTime(sunday);
+
+            var weekDays = Enumerable.Range(0, 7)
+                .Select(i => startDate.AddDays(i))
+                .ToList();
+
+            var rawShifts = await _context.WorkShifts.ToListAsync();
+            var shifts = rawShifts.OrderBy(s => {
+                var name = s.ShiftName.ToLower();
+                if (name.Contains("khuya") || name.Contains("tối") || name.Contains("đêm") || name.Contains("night"))
+                    return 3;
+                
+                var startHour = s.StartTime.Hours;
+                if (startHour >= 18 || startHour < 6)
+                    return 3;
+                if (startHour >= 12 && startHour < 18)
+                    return 2;
+                return 1;
+            }).ThenBy(s => s.StartTime).ToList();
+            var staffList = await _context.Accounts
+                .Include(a => a.Role)
+                .Where(a => a.Role != null && a.Role.RoleName != "Customer")
+                .OrderBy(a => a.FullName)
+                .ToListAsync();
+
+            var schedules = await _context.EmployeeSchedules
+                .Include(s => s.Account).ThenInclude(a => a.Role)
+                .Include(s => s.Shift)
+                .Where(s => s.WorkDate >= startDate && s.WorkDate <= endDate)
+                .ToListAsync();
+
             var viewModel = new ScheduleListViewModel
             {
-                FilterDate = filterDate,
-                Shifts = await _context.WorkShifts.ToListAsync(),
-                StaffList = await _context.Accounts.Where(a => a.Role.RoleName != "Customer").ToListAsync(),
-                Schedules = await _context.EmployeeSchedules
-                    .Include(s => s.Account)
-                    .Include(s => s.Shift)
-                    .Where(s => s.WorkDate == filterDate)
-                    .ToListAsync()
+                FilterDate = DateOnly.FromDateTime(selectedDate),
+                StartDate = startDate,
+                EndDate = endDate,
+                WeekDays = weekDays,
+                Shifts = shifts,
+                StaffList = staffList,
+                Schedules = schedules
             };
 
             ViewData["ActiveNav"] = "hrm_schedules";
@@ -164,33 +198,106 @@ namespace KaraokeManagement.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SaveSchedule(int accountId, int shiftId, string date)
+        public async Task<IActionResult> BatchUpdateSchedules([FromBody] BatchSchedulePayload payload)
         {
-            DateOnly workDate = DateOnly.Parse(date);
-            var exists = await _context.EmployeeSchedules.AnyAsync(s => s.AccountId == accountId && s.WorkDate == workDate && s.ShiftId == shiftId);
-            if (exists) return BadRequest("Nhân viên đã được phân vào ca này trong ngày.");
-
-            var schedule = new EmployeeSchedule {
-                AccountId = accountId,
-                ShiftId = shiftId,
-                WorkDate = workDate,
-                Status = "Scheduled"
-            };
-            _context.EmployeeSchedules.Add(schedule);
-            await _context.SaveChangesAsync();
-            return Ok();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> DeleteSchedule(int id)
-        {
-            var s = await _context.EmployeeSchedules.FindAsync(id);
-            if (s != null)
+            if (payload == null)
             {
-                _context.EmployeeSchedules.Remove(s);
-                await _context.SaveChangesAsync();
+                return BadRequest("Dữ liệu gửi lên không hợp lệ.");
             }
-            return Ok();
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var today = DateOnly.FromDateTime(DateTime.Today);
+
+                // Validation check for AddedRecords
+                if (payload.AddedRecords != null && payload.AddedRecords.Any(r => r.WorkDate < today))
+                {
+                    return BadRequest("Không thể chỉnh sửa hoặc đổi ca cho các ngày trong quá khứ.");
+                }
+
+                // Validation check for UpdatedRecords
+                if (payload.UpdatedRecords != null && payload.UpdatedRecords.Any(r => r.WorkDate < today))
+                {
+                    return BadRequest("Không thể chỉnh sửa hoặc đổi ca cho các ngày trong quá khứ.");
+                }
+
+                // Validation check for DeletedRecordIds
+                if (payload.DeletedRecordIds != null && payload.DeletedRecordIds.Any())
+                {
+                    bool hasPastDelete = await _context.EmployeeSchedules
+                        .AnyAsync(s => payload.DeletedRecordIds.Contains(s.ScheduleId) && s.WorkDate < today);
+                    if (hasPastDelete)
+                    {
+                        return BadRequest("Không thể chỉnh sửa hoặc đổi ca cho các ngày trong quá khứ.");
+                    }
+                }
+
+                // 1. Execute all Insert operations for payload.AddedRecords
+                if (payload.AddedRecords != null && payload.AddedRecords.Any())
+                {
+                    foreach (var item in payload.AddedRecords)
+                    {
+                        if (item.AccountId <= 0 || item.ShiftId <= 0) continue;
+
+                        bool exists = await _context.EmployeeSchedules.AnyAsync(s =>
+                            s.AccountId == item.AccountId &&
+                            s.ShiftId == item.ShiftId &&
+                            s.WorkDate == item.WorkDate);
+
+                        if (!exists)
+                        {
+                            var newSchedule = new EmployeeSchedule
+                            {
+                                AccountId = item.AccountId,
+                                ShiftId = item.ShiftId,
+                                WorkDate = item.WorkDate,
+                                Status = string.IsNullOrWhiteSpace(item.Status) ? "Scheduled" : item.Status,
+                                IsActive = true
+                            };
+                            _context.EmployeeSchedules.Add(newSchedule);
+                        }
+                    }
+                }
+
+                // 2. Execute all Update operations for payload.UpdatedRecords
+                if (payload.UpdatedRecords != null && payload.UpdatedRecords.Any())
+                {
+                    foreach (var item in payload.UpdatedRecords)
+                    {
+                        var schedule = await _context.EmployeeSchedules.FindAsync(item.ScheduleId);
+                        if (schedule != null)
+                        {
+                            schedule.AccountId = item.AccountId;
+                            schedule.ShiftId = item.ShiftId;
+                            schedule.WorkDate = item.WorkDate;
+                        }
+                    }
+                }
+
+                // 3. Execute all Delete operations for payload.DeletedRecordIds
+                if (payload.DeletedRecordIds != null && payload.DeletedRecordIds.Any())
+                {
+                    var toDelete = await _context.EmployeeSchedules
+                        .Where(s => payload.DeletedRecordIds.Contains(s.ScheduleId))
+                        .ToListAsync();
+
+                    if (toDelete.Any())
+                    {
+                        _context.EmployeeSchedules.RemoveRange(toDelete);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(new { success = true, message = "Đã cập nhật tất cả thay đổi thành công!" });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return BadRequest("Lỗi xử lý giao dịch: " + ex.Message);
+            }
         }
 
         // --- ATTENDANCE ---
