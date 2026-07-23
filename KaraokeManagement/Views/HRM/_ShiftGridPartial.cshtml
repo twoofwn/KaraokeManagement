@@ -47,7 +47,7 @@
                     {
                         var dayDate = Model.Model.WeekDays[i];
                         var isToday = dayDate == DateOnly.FromDateTime(DateTime.Now);
-                        <th class="@(isToday ? "table-primary text-primary" : "")">
+                        <th class="@(isToday ? "text-brand-vibrant-pink border-brand-vibrant-pink fw-bold" : "")">
                             <div>@Model.DayNames[i]</div>
                             <div class="small fw-normal text-muted">@dayDate.ToString("dd/MM")</div>
                         </th>
@@ -76,7 +76,7 @@
                                     <div class="staff-badge" id="badge-db-@s.ScheduleId" 
                                          onclick="openEditStaffModal(@s.ScheduleId, 0, @shift.ShiftId, '@dateStr', @s.AccountId, '@shift.ShiftName')">
                                         <div class="text-truncate me-1">
-                                            <i class="fa-solid fa-user-check text-primary me-1" style="font-size: 0.75rem;"></i>
+                                            <i class="fa-solid fa-user-check text-brand-vibrant-pink me-1" style="font-size: 0.75rem;"></i>
                                             <span class="fw-semibold">@s.Account.FullName</span>
                                             @if (s.Account.Role != null)
                                             {

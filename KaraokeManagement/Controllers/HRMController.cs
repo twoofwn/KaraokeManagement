@@ -157,7 +157,19 @@ namespace KaraokeManagement.Controllers
                 .Select(i => startDate.AddDays(i))
                 .ToList();
 
-            var shifts = await _context.WorkShifts.OrderBy(s => s.StartTime).ToListAsync();
+            var rawShifts = await _context.WorkShifts.ToListAsync();
+            var shifts = rawShifts.OrderBy(s => {
+                var name = s.ShiftName.ToLower();
+                if (name.Contains("khuya") || name.Contains("tối") || name.Contains("đêm") || name.Contains("night"))
+                    return 3;
+                
+                var startHour = s.StartTime.Hours;
+                if (startHour >= 18 || startHour < 6)
+                    return 3;
+                if (startHour >= 12 && startHour < 18)
+                    return 2;
+                return 1;
+            }).ThenBy(s => s.StartTime).ToList();
             var staffList = await _context.Accounts
                 .Include(a => a.Role)
                 .Where(a => a.Role != null && a.Role.RoleName != "Customer")

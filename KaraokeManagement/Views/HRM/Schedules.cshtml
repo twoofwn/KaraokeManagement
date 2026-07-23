@@ -13,19 +13,20 @@
             position: sticky;
             top: 60px;
             z-index: 1020;
-            background: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
+            background: var(--brand-cream);
+            border-bottom: 2px solid var(--brand-light-pink);
             padding: 12px 20px;
             margin: -20px -20px 20px -20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 12px rgba(67, 51, 76, 0.08);
             border-radius: 0 0 12px 12px;
+            color: var(--brand-deep-purple);
         }
 
         /* Shift Colors & Styling */
         .shift-section {
             background: #ffffff;
             border-radius: 12px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--brand-light-pink);
             margin-bottom: 24px;
             overflow: hidden;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
@@ -33,21 +34,21 @@
         }
 
         .shift-header-morning {
-            background: linear-gradient(135deg, #fff9db 0%, #fff3bf 100%);
-            border-bottom: 2px solid #fab005;
-            color: #744210;
+            background: linear-gradient(135deg, var(--brand-cream) 0%, var(--brand-light-pink) 100%);
+            border-bottom: 2px solid var(--brand-vibrant-pink);
+            color: var(--brand-deep-purple);
         }
 
         .shift-header-afternoon {
-            background: linear-gradient(135deg, #e7f5ff 0%, #d0ebff 100%);
-            border-bottom: 2px solid #339af0;
-            color: #1864ab;
+            background: linear-gradient(135deg, #ffffff 0%, var(--brand-cream) 100%);
+            border-bottom: 2px solid var(--brand-light-pink);
+            color: var(--brand-deep-purple);
         }
 
         .shift-header-night {
-            background: linear-gradient(135deg, #f3d9fa 0%, #eebefa 100%);
-            border-bottom: 2px solid #cc5de8;
-            color: #6b21a8;
+            background: linear-gradient(135deg, var(--brand-deep-purple) 0%, #5c4669 100%);
+            border-bottom: 2px solid var(--brand-vibrant-pink);
+            color: #ffffff;
         }
 
         .shift-header-default {
@@ -63,7 +64,9 @@
             font-weight: 600;
             font-size: 0.875rem;
             padding: 10px 4px;
-            border-color: #dee2e6;
+            border-color: var(--brand-light-pink);
+            background-color: var(--brand-cream);
+            color: var(--brand-deep-purple);
         }
 
         .schedule-grid-table td {
@@ -73,16 +76,16 @@
             padding: 6px;
             position: relative;
             background-color: #ffffff;
-            border: 1px solid #edf2f7;
+            border: 1px solid var(--brand-light-pink);
             transition: background-color 0.15s;
         }
 
         .schedule-grid-table td:hover {
-            background-color: #f8fafc;
+            background-color: var(--brand-cream);
         }
 
         .schedule-grid-table td.today-column {
-            background-color: #f0f9ff;
+            background-color: #fff0f5; /* Light blush */
         }
 
         /* Staff Badges */
@@ -91,8 +94,8 @@
             align-items: center;
             justify-content: space-between;
             background: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-left: 4px solid #3b82f6;
+            border: 1px solid var(--brand-light-pink);
+            border-left: 4px solid var(--brand-vibrant-pink);
             border-radius: 6px;
             padding: 5px 8px;
             margin-bottom: 6px;
@@ -100,6 +103,7 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
             transition: all 0.2s ease;
             cursor: pointer;
+            color: var(--brand-deep-purple);
         }
 
         .staff-badge:hover {
@@ -113,8 +117,8 @@
         }
 
         .staff-badge.badge-updated {
-            border-left-color: #f59e0b;
-            background-color: #fffbeb;
+            border-left-color: var(--brand-light-pink);
+            background-color: var(--brand-cream);
         }
 
         .staff-badge.badge-deleted {
@@ -141,44 +145,62 @@
 
         .btn-add-staff-cell {
             width: 100%;
-            border: 1px dashed #cbd5e1;
-            background-color: #f8fafc;
-            color: #64748b;
+            border: 1px dashed var(--brand-light-pink);
+            background-color: #ffffff;
+            color: var(--brand-vibrant-pink);
             font-size: 0.75rem;
             padding: 3px 6px;
             border-radius: 4px;
             transition: all 0.15s;
+            font-weight: 500;
         }
 
         .btn-add-staff-cell:hover {
-            background-color: #e2e8f0;
-            color: #1e293b;
-            border-color: #94a3b8;
+            background-color: var(--brand-cream);
+            color: var(--brand-deep-purple);
+            border-color: var(--brand-light-pink);
         }
 
         .btn-save-batch {
-            background-color: #10b981;
-            border-color: #10b981;
+            background-color: var(--brand-vibrant-pink);
+            border-color: var(--brand-vibrant-pink);
             color: white;
             font-weight: 600;
-            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25);
+            box-shadow: 0 4px 6px rgba(230, 60, 145, 0.25);
             transition: all 0.2s;
         }
 
         .btn-save-batch:hover {
-            background-color: #059669;
-            border-color: #059669;
+            background-color: #d12c7b;
+            border-color: #d12c7b;
             color: white;
-            box-shadow: 0 6px 12px rgba(16, 185, 129, 0.35);
+            box-shadow: 0 6px 12px rgba(230, 60, 145, 0.35);
         }
 
         .unsaved-badge {
-            background-color: #ef4444;
+            background-color: var(--brand-deep-purple);
             color: white;
             border-radius: 50rem;
             padding: 2px 7px;
             font-size: 0.75rem;
             margin-left: 6px;
+        }
+
+        /* Custom Tab Navigation Styles */
+        #shiftTabs .nav-link {
+            color: var(--brand-deep-purple) !important;
+            background-color: #ffffff;
+            border: 1px solid var(--brand-light-pink) !important;
+            transition: all 0.2s ease-in-out;
+        }
+        #shiftTabs .nav-link:hover {
+            background-color: var(--brand-cream) !important;
+            color: var(--brand-vibrant-pink) !important;
+        }
+        #shiftTabs .nav-link.active {
+            background-color: var(--brand-vibrant-pink) !important;
+            color: #ffffff !important;
+            border-color: var(--brand-vibrant-pink) !important;
         }
     </style>
 }
@@ -218,43 +240,76 @@
     </div>
 </div>
 
-<!-- Bootstrap Shift Tabs Navigation -->
-<ul class="nav nav-pills mb-3 gap-2" id="shiftTabs" role="tablist">
-    <li class="nav-item" role="presentation">
-        <button class="nav-item nav-link active fw-bold shadow-sm" id="tab-all" data-bs-toggle="pill" data-bs-target="#content-all" type="button" role="tab">
-            <i class="fa-solid fa-layer-group me-1"></i> tất cả ca
-        </button>
-    </li>
-    @for (int sIndex = 0; sIndex < Model.Shifts.Count; sIndex++)
-    {
-        var shift = Model.Shifts[sIndex];
-        var icon = sIndex == 0 ? "fa-sun text-warning" : (sIndex == 1 ? "fa-cloud-sun text-info" : "fa-moon text-primary");
-        <li class="nav-item" role="presentation">
-            <button class="nav-item nav-link fw-semibold border shadow-sm" id="tab-shift-@shift.ShiftId" data-bs-toggle="pill" data-bs-target="#content-shift-@shift.ShiftId" type="button" role="tab">
-                <i class="fa-solid @icon me-1"></i> @shift.ShiftName (@shift.StartTime.ToString(@"hh\:mm") - @shift.EndTime.ToString(@"hh\:mm"))
-            </button>
-        </li>
-    }
-</ul>
+<!-- The Unified Schedule Grid -->
+<div class="shadow-sm overflow-hidden p-1 bg-white border rounded mb-4">
+    <div class="table-responsive rounded">
+        <table class="table table-bordered mb-0 align-middle">
+            <thead>
+                <tr class="text-center">
+                    <th style="width: 14%;" class="py-3 schedule-table-header-pink">Ca làm việc</th>
+                    @for (int i = 0; i < 7; i++)
+                    {
+                        var dayDate = Model.WeekDays[i];
+                        <th style="width: 12.2%;" class="py-3 schedule-table-header-pink">@dayNames[i] @dayDate.Day/@dayDate.Month</th>
+                    }
+                </tr>
+            </thead>
+            <tbody style="background-color: #FFFFFF;">
+                @foreach (var shift in Model.Shifts)
+                {
+                    <tr>
+                        <td class="align-middle text-center fw-bold schedule-cell-white text-brand-deep-purple">
+                            <div>@shift.ShiftName</div>
+                            <div class="text-muted small fw-normal mt-1">@shift.StartTime.ToString(@"hh\:mm") - @shift.EndTime.ToString(@"hh\:mm")</div>
+                        </td>
+                        @for (int i = 0; i < 7; i++)
+                        {
+                            var dayDate = Model.WeekDays[i];
+                            var dateStr = dayDate.ToString("yyyy-MM-dd");
+                            var cellSchedules = Model.Schedules
+                                .Where(s => s.ShiftId == shift.ShiftId && s.WorkDate == dayDate)
+                                .ToList();
+                            var isToday = dayDate == DateOnly.FromDateTime(DateTime.Now);
 
-<!-- Tab Content Area -->
-<div class="tab-content" id="shiftTabsContent">
-    
-    <!-- Tab 1: All Shifts Stacked View -->
-    <div class="tab-pane fade show active" id="content-all" role="tabpanel">
-        @foreach (var shift in Model.Shifts)
-        {
-            @await Html.PartialAsync("_ShiftGridPartial", new ShiftGridViewModel { Shift = shift, Model = Model, DayNames = dayNames })
-        }
+                            <td class="schedule-cell-white align-top @(isToday ? "today-column" : "")" 
+                                data-cell-shift="@shift.ShiftId" 
+                                data-cell-date="@dateStr"
+                                style="@(isToday ? "background-color: #fff0f5 !important;" : "")">
+
+                                <!-- Badge Container for Staff -->
+                                <div class="badge-container">
+                                    @foreach (var s in cellSchedules)
+                                    {
+                                        <div class="staff-badge" id="badge-db-@s.ScheduleId" 
+                                             onclick="openEditStaffModal(@s.ScheduleId, 0, @shift.ShiftId, '@dateStr', @s.AccountId, '@shift.ShiftName')">
+                                            <div class="text-truncate me-1">
+                                                <i class="fa-solid fa-user-check text-brand-vibrant-pink me-1" style="font-size: 0.75rem;"></i>
+                                                <span class="fw-semibold">@s.Account.FullName</span>
+                                                @if (s.Account.Role != null)
+                                                {
+                                                    <span class="text-muted small ms-1" style="font-size: 0.7rem;">(@s.Account.Role.RoleName)</span>
+                                                }
+                                            </div>
+                                            <button type="button" class="btn-remove-badge" title="Đánh dấu xóa" 
+                                                    onclick="event.stopPropagation(); deleteStaffBadge(@s.ScheduleId, 0)">
+                                                <i class="fa-solid fa-xmark"></i>
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- [+] Add Staff Button inside Cell -->
+                                <button type="button" class="btn-add-staff-cell mt-1" 
+                                        onclick="openAddStaffModal(@shift.ShiftId, '@dateStr', '@shift.ShiftName')">
+                                    <i class="fa-solid fa-plus me-1"></i>Thêm NV
+                                </button>
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
-
-    <!-- Individual Shift Tabs -->
-    @foreach (var shift in Model.Shifts)
-    {
-        <div class="tab-pane fade" id="content-shift-@shift.ShiftId" role="tabpanel">
-            @await Html.PartialAsync("_ShiftGridPartial", new ShiftGridViewModel { Shift = shift, Model = Model, DayNames = dayNames })
-        </div>
-    }
 </div>
 
 <!-- Modal: Assign / Edit Staff -->
