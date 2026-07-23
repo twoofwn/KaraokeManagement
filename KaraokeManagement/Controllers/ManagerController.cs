@@ -1,4 +1,4 @@
-﻿using KaraokeManagement.Models;
+using KaraokeManagement.Models;
 using KaraokeManagement.Services.ManagerServices;
 using KaraokeManagement.ViewModel;
 using Microsoft.AspNetCore.Authorization;
@@ -42,10 +42,22 @@ namespace KaraokeManagement.Controllers
 
         #region Dashboard & Reporting
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? handler, int? month, int? year)
         {
+            if (handler == "MonthlyProfitDetail" && month.HasValue && year.HasValue)
+            {
+                var details = await _dashboardService.GetMonthlyProfitDetailAsync(month.Value, year.Value);
+                return Json(details);
+            }
             var viewModel = await _dashboardService.GetDashboardDataAsync();
             return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> MonthlyProfitDetail(int month, int year)
+        {
+            var details = await _dashboardService.GetMonthlyProfitDetailAsync(month, year);
+            return Json(details);
         }
 
         [HttpGet]

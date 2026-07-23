@@ -116,6 +116,19 @@
         color: white !important;
         border-color: var(--brand-pink) !important;
     }
+
+    .btn-outline-pink {
+        border: 1px solid var(--brand-pink);
+        color: var(--brand-pink);
+        background: transparent;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    .btn-outline-pink:hover {
+        background-color: var(--brand-pink);
+        color: #fff;
+    }
 </style>
 
 <div class="mb-4">
@@ -377,6 +390,7 @@
                                     <th class="text-end">Chi phí</th>
                                     <th class="text-end">Lợi nhuận</th>
                                     <th class="text-end">Biên LN</th>
+                                    <th class="text-end" style="width: 15%;">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -392,12 +406,57 @@
                                         <td class="text-end fw-semibold @(item.NetProfit >= 0 ? "text-green" : "text-red")">
                                             @item.Margin.ToString("F1")%
                                         </td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-outline-pink" onclick="showProfitDetail('@item.MonthLabel')">
+                                                <i class="fa-solid fa-circle-info me-1"></i> Chi tiết
+                                            </button>
+                                        </td>
                                     </tr>
                                 }
                             </tbody>
                         </table>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Monthly Profit/Loss Breakdown Detail -->
+<div class="modal fade" id="monthlyProfitDetailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-light border-0 py-3" style="border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title fw-bold text-dark" id="detailModalLabel">
+                    <i class="fa-solid fa-chart-pie text-pink me-2"></i>Chi Tiết Phân Tích Lời/Lỗ Theo Tháng
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-4">
+                    <!-- SECTION A: EXPENSE BREAKDOWN -->
+                    <div class="col-md-6 border-end">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="fs-5 fw-bold text-danger border-bottom pb-1 flex-grow-1"><i class="fa-solid fa-minus-circle me-1"></i>A. CHI PHÍ HOẠT ĐỘNG</span>
+                        </div>
+                        <div id="modalExpenseBody">
+                            <!-- Dynamically loaded -->
+                        </div>
+                    </div>
+
+                    <!-- SECTION B: REVENUE BREAKDOWN -->
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="fs-5 fw-bold text-success border-bottom pb-1 flex-grow-1"><i class="fa-solid fa-plus-circle me-1"></i>B. DOANH THU ĐẠT ĐƯỢC</span>
+                        </div>
+                        <div id="modalRevenueBody">
+                            <!-- Dynamically loaded -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-light-subtle py-3">
+                <button type="button" class="btn btn-secondary px-4 btn-sm" data-bs-dismiss="modal" style="border-radius: 6px;">Đóng</button>
             </div>
         </div>
     </div>
@@ -585,5 +644,86 @@
                 }
             });
         });
+
+        function showProfitDetail(monthLabel) {
+            const match = monthLabel.match(/Tháng\s+(\d+)\/(\d+)/i);
+            if (!match) {
+                alert("Nhãn tháng không hợp lệ: " + monthLabel);
+                return;
+            }
+            const month = parseInt(match[1]);
+            const year = parseInt(match[2]);
+
+            document.getElementById('modalExpenseBody').innerHTML = `
+                <div class="text-center py-4 text-muted">
+                    <div class="spinner-border text-pink spinner-border-sm mb-2" role="status"></div>
+                    <div>Đang tải chi phí...</div>
+                </div>
+            `;
+            document.getElementById('modalRevenueBody').innerHTML = `
+                <div class="text-center py-4 text-muted">
+                    <div class="spinner-border text-pink spinner-border-sm mb-2" role="status"></div>
+                    <div>Đang tải doanh thu...</div>
+                </div>
+            `;
+            document.getElementById('detailModalLabel').innerHTML = `<i class="fa-solid fa-chart-pie text-pink me-2"></i>Chi Tiết Phân Tích Lời/Lỗ - ${monthLabel}`;
+            
+            const profitModal = new bootstrap.Modal(document.getElementById('monthlyProfitDetailModal'));
+            profitModal.show();
+
+            fetch(`/Manager/Index?handler=MonthlyProfitDetail&month=${month}&year=${year}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Không thể tải chi tiết phân tích tài chính');
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('modalExpenseBody').innerHTML = `
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 border-bottom">
+                                <span class="text-muted"><i class="fa-solid fa-boxes-stacked me-2 text-primary"></i>Chi phí hóa đơn / nhập hàng</span>
+                                <span class="fw-bold text-dark">${formatCurrency(data.supplierExpenses)} ₫</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 border-bottom">
+                                <span class="text-muted"><i class="fa-solid fa-user-tie me-2 text-info"></i>Tiền lương nhân viên</span>
+                                <span class="fw-bold text-dark">${formatCurrency(data.staffPayroll)} ₫</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 border-bottom">
+                                <span class="text-muted"><i class="fa-solid fa-credit-card me-2 text-warning"></i>Chi phí cố định theo tháng</span>
+                                <span class="fw-bold text-dark">${formatCurrency(data.fixedExpenses)} ₫</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 bg-light mt-2 rounded">
+                                <span class="fw-bold text-danger"><i class="fa-solid fa-wallet me-2"></i>Tổng chi phí cuối cùng</span>
+                                <span class="fw-bold text-danger fs-5">${formatCurrency(data.totalExpense)} ₫</span>
+                            </div>
+                        </div>
+                    `;
+
+                    document.getElementById('modalRevenueBody').innerHTML = `
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 border-bottom">
+                                <span class="text-muted"><i class="fa-solid fa-microphone-lines me-2 text-success"></i>Tiền phòng hát</span>
+                                <span class="fw-bold text-dark">${formatCurrency(data.roomRevenue)} ₫</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 border-bottom">
+                                <span class="text-muted"><i class="fa-solid fa-utensils me-2 text-danger"></i>Tiền dịch vụ / ăn uống</span>
+                                <span class="fw-bold text-dark">${formatCurrency(data.serviceRevenue)} ₫</span>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 bg-light mt-2 rounded">
+                                <span class="fw-bold text-success"><i class="fa-solid fa-money-bill-trend-up me-2"></i>Tổng doanh thu cuối cùng</span>
+                                <span class="fw-bold text-success fs-5">${formatCurrency(data.totalRevenue)} ₫</span>
+                            </div>
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    document.getElementById('modalExpenseBody').innerHTML = `<div class="text-danger py-3 text-center">${error.message}</div>`;
+                    document.getElementById('modalRevenueBody').innerHTML = `<div class="text-danger py-3 text-center">${error.message}</div>`;
+                });
+        }
+
+        function formatCurrency(amount) {
+            if (!amount) return '0';
+            return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
     </script>
 }

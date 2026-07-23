@@ -1,4 +1,4 @@
-﻿using KaraokeManagement.Models;
+using KaraokeManagement.Models;
 using KaraokeManagement.ViewModel;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,7 +7,54 @@ namespace KaraokeManagement.Services.ManagerServices
     public class DashboardService
     {
         private readonly KaraokeManagementDbContext _context;
-        public DashboardService(KaraokeManagementDbContext context) { _context = context; }
+        private readonly ExpenseService _expenseService;
+
+        public DashboardService(KaraokeManagementDbContext context, ExpenseService expenseService)
+        {
+            _context = context;
+            _expenseService = expenseService;
+        }
+
+        public async Task<MonthlyProfitDetailViewModel> GetMonthlyProfitDetailAsync(int month, int year)
+        {
+            var monthStart = new DateTime(year, month, 1);
+            var monthEnd = monthStart.AddMonths(1).AddTicks(-1);
+
+            // 1. Supplier Expenses (Purchase Orders)
+            decimal supplierExpenses = await _context.PurchaseOrders
+                .Where(po => po.OrderDate.HasValue && po.OrderDate.Value >= monthStart && po.OrderDate.Value <= monthEnd)
+                .SumAsync(po => po.TotalAmount ?? 0);
+
+            // 2. Staff Payroll
+            decimal staffPayroll = await _expenseService.CalculatePayrollForMonthAsync(year, month);
+
+            // 3. Fixed Expenses (from Expense table)
+            decimal fixedExpenses = await _context.Expenses
+                .Where(e => e.ExpenseDate >= monthStart && e.ExpenseDate <= monthEnd)
+                .SumAsync(e => e.Amount);
+
+            // 4. Karaoke Room Revenue (from Paid Invoices)
+            decimal roomRevenue = await _context.Invoices
+                .Where(i => i.Status == "Paid" && i.CheckOutTime.HasValue && i.CheckOutTime.Value >= monthStart && i.CheckOutTime.Value <= monthEnd)
+                .SumAsync(i => i.RoomTotal ?? 0);
+
+            // 5. Service & F&B Revenue (from Paid Invoices)
+            decimal serviceRevenue = await _context.Invoices
+                .Where(i => i.Status == "Paid" && i.CheckOutTime.HasValue && i.CheckOutTime.Value >= monthStart && i.CheckOutTime.Value <= monthEnd)
+                .SumAsync(i => i.ServiceTotal ?? 0);
+
+            return new MonthlyProfitDetailViewModel
+            {
+                MonthLabel = $"Tháng {month}/{year}",
+                SupplierExpenses = supplierExpenses,
+                StaffPayroll = staffPayroll,
+                FixedExpenses = fixedExpenses,
+                TotalExpense = supplierExpenses + staffPayroll + fixedExpenses,
+                RoomRevenue = roomRevenue,
+                ServiceRevenue = serviceRevenue,
+                TotalRevenue = roomRevenue + serviceRevenue
+            };
+        }
 
         public async Task<FinancialDashboardViewModel> GetDashboardDataAsync()
         {
@@ -98,7 +145,10 @@ namespace KaraokeManagement.Services.ManagerServices
                 decimal rev = await _context.Invoices.Where(x => x.Status == "Paid" && x.CheckOutTime >= monthStart && x.CheckOutTime <= monthEnd).SumAsync(x => x.GrandTotal ?? 0);
                 decimal exp = await _context.Expenses.Where(e => e.ExpenseDate >= monthStart && e.ExpenseDate <= monthEnd).SumAsync(e => e.Amount);
                 decimal poAmt = await _context.PurchaseOrders.Where(po => po.OrderDate >= monthStart && po.OrderDate <= monthEnd).SumAsync(po => po.TotalAmount ?? 0);
-                decimal totalExp = exp + poAmt;
+                
+                // Add payroll
+                decimal payroll = await _expenseService.CalculatePayrollForMonthAsync(targetMonth.Year, targetMonth.Month);
+                decimal totalExp = exp + poAmt + payroll;
 
                 profitItems.Add(new MonthlyProfitReportItem
                 {

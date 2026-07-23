@@ -45,3 +45,15 @@ public class ExpensesViewModel
         };
     }
 }
+
+public class MonthlyProfitDetailViewModel
+{
+    public string MonthLabel { get; set; } = null!;
+    public decimal SupplierExpenses { get; set; }
+    public decimal StaffPayroll { get; set; }
+    public decimal FixedExpenses { get; set; }
+    public decimal TotalExpense { get; set; }
+    public decimal RoomRevenue { get; set; }
+    public decimal ServiceRevenue { get; set; }
+    public decimal TotalRevenue { get; set; }
+}
