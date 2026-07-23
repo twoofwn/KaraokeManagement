@@ -77,6 +77,14 @@
                     </div>
                 </div>
 
+                <div class="form-row-2" style="margin-top: 15px; margin-bottom: 15px;">
+                    <div class="field-group" style="display: flex; align-items: center; gap: 10px; flex-direction: row;">
+                        <input type="checkbox" asp-for="IsActive" id="isActiveCheckbox" style="width: 20px; height: 20px; cursor: pointer; accent-color: #2e7d32;" />
+                        <label for="isActiveCheckbox" class="field-label" style="margin-bottom: 0; cursor: pointer; font-weight: 600; font-size: 0.95em;">Kích hoạt tài khoản (Active)</label>
+                    </div>
+                    <div class="field-group"></div>
+                </div>
+
                 <div class="form-actions">
                     <a href="/Admin/Users" class="btn-cancel">Cancel</a>
                     <button type="submit" class="btn-save">

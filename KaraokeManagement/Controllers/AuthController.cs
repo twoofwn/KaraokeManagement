@@ -61,6 +61,11 @@ namespace KaraokeManagement.Controllers
 
             if (account != null)
             {
+                if (!account.IsActive)
+                {
+                    ViewBag.Error = "Tài khoản của bạn đã bị khóa hoặc ngừng hoạt động. Vui lòng liên hệ Admin.";
+                    return View(model);
+                }
                 isValidUser = PasswordHelper.VerifyPassword(model.Password, account.PasswordHash);
                 if (isValidUser && !PasswordHelper.IsBCryptHash(account.PasswordHash))
                 {

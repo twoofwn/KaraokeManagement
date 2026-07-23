@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 using System;
 using System.Collections.Generic;
 
@@ -41,5 +41,5 @@ public partial class Account
 
     public string? OtpCode { get; set; }
     public DateTime? OtpExpiry { get; set; }
-
+    public bool IsActive { get; set; } = true;
 }

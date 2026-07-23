@@ -1,5 +1,6 @@
-﻿using KaraokeManagement.Models;
+using KaraokeManagement.Models;
 using KaraokeManagement.Services;
+using KaraokeManagement.Services.ManagerServices;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,6 +27,13 @@ builder.Services.AddScoped<KaraokeManagement.Services.CustomerServices.RoomServi
 builder.Services.AddScoped<KaraokeManagement.Services.CustomerServices.BookingService>();
 builder.Services.AddScoped<KaraokeManagement.Services.CustomerServices.ServiceItemService>();
 builder.Services.AddScoped<KaraokeManagement.Services.CustomerServices.FeedbackService>();
+
+//Manager Service
+builder.Services.AddScoped<KaraokeManagement.Services.ManagerServices.DashboardService>();
+builder.Services.AddScoped<KaraokeManagement.Services.ManagerServices.InventoryService>();
+builder.Services.AddScoped<KaraokeManagement.Services.ManagerServices.ExpenseService>();
+builder.Services.AddScoped<KaraokeManagement.Services.ManagerServices.InvoiceService>();
+builder.Services.AddScoped<KaraokeManagement.Services.ManagerServices.PricingService>();
 
 
 builder.Services.AddAuthentication("CookieAuth")
@@ -58,7 +66,7 @@ app.UseAuthorization();
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
 
 app.Run();
