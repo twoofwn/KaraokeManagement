@@ -1,373 +1,388 @@
 ﻿@model KaraokeManagement.ViewModel.ImportHistoryViewModel
 @{
-    Layout = "~/Views/Manager/_ManagerLayout.cshtml";
-    ViewData["Title"] = "Lịch sử nhập hàng";
-    ViewData["ActiveNav"] = "history";
+	Layout = "~/Views/Manager/_ManagerLayout.cshtml";
+	ViewData["Title"] = "Lịch sử nhập hàng";
+	ViewData["ActiveNav"] = "history";
 }
 
 <style>
-    /* Custom Theme & Colors */
-    :root {
-        --brand-pink: #b60056;
-        --brand-pink-light: #fdf2f6;
-        --text-main: #212529;
-        --text-muted: #6c757d;
-    }
+	/* Custom Theme & Colors */
+	:root {
+		--brand-pink: #b60056;
+		--brand-pink-light: #fdf2f6;
+		--text-main: #212529;
+		--text-muted: #6c757d;
+	}
 
-    /* Summary Cards */
-    .history-card {
-        border-radius: 12px;
-        padding: 1.5rem;
-        position: relative;
-        overflow: hidden;
-        border: none;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
+	/* Summary Cards */
+	.history-card {
+		border-radius: 12px;
+		padding: 1.5rem;
+		position: relative;
+		overflow: hidden;
+		border: none;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+	}
 
-    .card-pink {
-        background-color: var(--brand-pink-light);
-    }
+	.card-pink {
+		background-color: var(--brand-pink-light);
+	}
 
-    .card-gray {
-        background-color: #f8f9fa;
-    }
+	.card-gray {
+		background-color: #f8f9fa;
+	}
 
-    .history-card-title {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 0.5rem;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
+	.history-card-title {
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--text-muted);
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		margin-bottom: 0.5rem;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
 
-    .history-card-icon {
-        width: 24px;
-        height: 24px;
-        background: #fff;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.8rem;
-        color: var(--brand-pink);
-    }
+	.history-card-icon {
+		width: 24px;
+		height: 24px;
+		background: #fff;
+		border-radius: 6px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.8rem;
+		color: var(--brand-pink);
+	}
 
-    .history-card-value {
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: var(--text-main);
-        line-height: 1.2;
-    }
+	.history-card-value {
+		font-size: 2.2rem;
+		font-weight: 700;
+		color: var(--text-main);
+		line-height: 1.2;
+	}
 
-    .history-card-sub {
-        font-size: 0.8rem;
-        margin-top: 0.5rem;
-        font-weight: 500;
-    }
+	.history-card-sub {
+		font-size: 0.8rem;
+		margin-top: 0.5rem;
+		font-weight: 500;
+	}
 
-    /* Abstract shapes in cards */
-    .card-shape {
-        position: absolute;
-        top: -20px;
-        right: -20px;
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        opacity: 0.5;
-    }
-    .card-pink .card-shape { background-color: #fce4ec; }
-    .card-gray .card-shape { background-color: #e9ecef; }
+	/* Abstract shapes in cards */
+	.card-shape {
+		position: absolute;
+		top: -20px;
+		right: -20px;
+		width: 100px;
+		height: 100px;
+		border-radius: 50%;
+		opacity: 0.5;
+	}
 
-    /* Action Card */
-    .card-action {
-        background-color: var(--brand-pink-light);
-        text-decoration: none;
-        transition: transform 0.2s;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        border: 1px dashed #f8bbd0;
-    }
-    .card-action:hover {
-        transform: translateY(-3px);
-    }
-    .btn-circle-pink {
-        width: 45px;
-        height: 45px;
-        background-color: var(--brand-pink);
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-        margin-bottom: 0.8rem;
-    }
-    .card-action span {
-        color: var(--brand-pink);
-        font-weight: 600;
-        font-size: 0.95rem;
-    }
+	.card-pink .card-shape {
+		background-color: #fce4ec;
+	}
 
-    /* Filter Bar */
-    .filter-bar {
-        background: transparent;
-        margin-bottom: 1.5rem;
-    }
-    .filter-select {
-        border-radius: 20px;
-        border: 1px solid #e0e0e0;
-        background-color: #fff;
-        padding: 0.4rem 1.2rem;
-        font-size: 0.85rem;
-        color: var(--text-main);
-        font-weight: 500;
-        cursor: pointer;
-    }
+	.card-gray .card-shape {
+		background-color: #e9ecef;
+	}
 
-    /* Table Styles */
-    .table-container {
-        background: #fff;
-        border-radius: 12px;
-        border: 1px solid #f0f0f0;
-    }
-    .table-history th {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        font-weight: 600;
-        border-bottom: 1px solid #f0f0f0;
-        padding: 1.2rem 1rem;
-        background-color: transparent;
-    }
-    .table-history td {
-        vertical-align: middle;
-        padding: 1.2rem 1rem;
-        border-bottom: 1px solid #f8f9fa;
-        color: var(--text-main);
-        font-size: 0.9rem;
-    }
-    .table-history tr:last-child td {
-        border-bottom: none;
-    }
+	/* Action Card */
+	.card-action {
+		background-color: var(--brand-pink-light);
+		text-decoration: none;
+		transition: transform 0.2s;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		border: 1px dashed #f8bbd0;
+	}
 
-    /* Supplier Avatar */
-    .supplier-avatar {
-        width: 32px;
-        height: 32px;
-        border-radius: 6px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: white;
-        margin-right: 0.8rem;
-    }
+		.card-action:hover {
+			transform: translateY(-3px);
+		}
 
-    /* Badges */
-    .badge-status {
-        padding: 0.4rem 1rem;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 500;
-    }
-    .status-done {
-        background-color: #e6f4ea;
-        color: #1e8e3e;
-    }
-    .status-debt {
-        background-color: #fef7e0;
-        color: #f29900;
-    }
+	.btn-circle-pink {
+		width: 45px;
+		height: 45px;
+		background-color: var(--brand-pink);
+		color: white;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 1.2rem;
+		margin-bottom: 0.8rem;
+	}
 
-    .page-info {
-        font-size: 0.85rem;
-        color: var(--text-muted);
-    }
+	.card-action span {
+		color: var(--brand-pink);
+		font-weight: 600;
+		font-size: 0.95rem;
+	}
+
+	/* Filter Bar */
+	.filter-bar {
+		background: transparent;
+		margin-bottom: 1.5rem;
+	}
+
+	.filter-select {
+		border-radius: 20px;
+		border: 1px solid #e0e0e0;
+		background-color: #fff;
+		padding: 0.4rem 1.2rem;
+		font-size: 0.85rem;
+		color: var(--text-main);
+		font-weight: 500;
+		cursor: pointer;
+	}
+
+	/* Table Styles */
+	.table-container {
+		background: #fff;
+		border-radius: 12px;
+		border: 1px solid #f0f0f0;
+	}
+
+	.table-history th {
+		font-size: 0.75rem;
+		color: var(--text-muted);
+		text-transform: uppercase;
+		font-weight: 600;
+		border-bottom: 1px solid #f0f0f0;
+		padding: 1.2rem 1rem;
+		background-color: transparent;
+	}
+
+	.table-history td {
+		vertical-align: middle;
+		padding: 1.2rem 1rem;
+		border-bottom: 1px solid #f8f9fa;
+		color: var(--text-main);
+		font-size: 0.9rem;
+	}
+
+	.table-history tr:last-child td {
+		border-bottom: none;
+	}
+
+	/* Supplier Avatar */
+	.supplier-avatar {
+		width: 32px;
+		height: 32px;
+		border-radius: 6px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.75rem;
+		font-weight: 700;
+		color: white;
+		margin-right: 0.8rem;
+	}
+
+	/* Badges */
+	.badge-status {
+		padding: 0.4rem 1rem;
+		border-radius: 20px;
+		font-size: 0.75rem;
+		font-weight: 500;
+	}
+
+	.status-done {
+		background-color: #e6f4ea;
+		color: #1e8e3e;
+	}
+
+	.status-debt {
+		background-color: #fef7e0;
+		color: #f29900;
+	}
+
+	.page-info {
+		font-size: 0.85rem;
+		color: var(--text-muted);
+	}
 </style>
 
 <div class="mb-4">
-    <h2 class="fw-bold mb-0">Lịch sử nhập hàng</h2>
+	<h2 class="fw-bold mb-0">Lịch sử nhập hàng</h2>
 </div>
 
 <div class="row g-4 mb-4">
-    <div class="col-md-4">
-        <div class="history-card card-pink">
-            <div class="card-shape"></div>
-            <div class="history-card-title">
-                Tổng chi tháng này
-                <div class="history-card-icon"><i class="fa-solid fa-wallet"></i></div>
-            </div>
-            <div class="history-card-value">
-                @((Model.TotalSpentThisMonth / 1000000).ToString("0.##")) <span style="font-size: 1.2rem; font-weight: 600; color: #555;">Tr. VND</span>
-            </div>
-            <div class="history-card-sub @(Model.PercentChange >= 0 ? "text-danger" : "text-success")">
-                <i class="fa-solid @(Model.PercentChange >= 0 ? "fa-arrow-trend-up" : "fa-arrow-trend-down")"></i> 
-                @(Model.PercentChange >= 0 ? "+" : "")@Model.PercentChange.ToString("0.#")% so với tháng trước
-            </div>
-        </div>
-    </div>
+	<div class="col-md-4">
+		<div class="history-card card-pink">
+			<div class="card-shape"></div>
+			<div class="history-card-title">
+				Tổng chi tháng này
+				<div class="history-card-icon"><i class="fa-solid fa-wallet"></i></div>
+			</div>
+			<div class="history-card-value">
+				@((Model.TotalSpentThisMonth / 1000000).ToString("0.##")) <span style="font-size: 1.2rem; font-weight: 600; color: #555;">Tr. VND</span>
+			</div>
+			<div class="history-card-sub @(Model.PercentChange >= 0 ? "text-danger" : "text-success")">
+				<i class="fa-solid @(Model.PercentChange >= 0 ? "fa-arrow-trend-up" : "fa-arrow-trend-down")"></i>
+				@(Model.PercentChange >= 0 ? "+" : "")@Model.PercentChange.ToString("0.#")% so với tháng trước
+			</div>
+		</div>
+	</div>
 
-    <div class="col-md-4">
-        <div class="history-card card-gray">
-            <div class="card-shape"></div>
-            <div class="history-card-title">
-                Số phiếu nhập
-                <div class="history-card-icon text-secondary"><i class="fa-regular fa-file-lines"></i></div>
-            </div>
-            <div class="history-card-value">
-                @Model.TotalOrders <span style="font-size: 1.2rem; font-weight: 600; color: #555;">phiếu</span>
-            </div>
-            <div class="history-card-sub" style="color: var(--brand-pink);">
-                <i class="fa-regular fa-circle-check"></i> Đã ghi nhận vào hệ thống
-            </div>
-        </div>
-    </div>
+	<div class="col-md-4">
+		<div class="history-card card-gray">
+			<div class="card-shape"></div>
+			<div class="history-card-title">
+				Số phiếu nhập
+				<div class="history-card-icon text-secondary"><i class="fa-regular fa-file-lines"></i></div>
+			</div>
+			<div class="history-card-value">
+				@Model.TotalOrders <span style="font-size: 1.2rem; font-weight: 600; color: #555;">phiếu</span>
+			</div>
+			<div class="history-card-sub" style="color: var(--brand-pink);">
+				<i class="fa-regular fa-circle-check"></i> Đã ghi nhận vào hệ thống
+			</div>
+		</div>
+	</div>
 
-    <div class="col-md-4">
-        <a href="/Manager/StockIn" class="history-card card-action">
-            <div class="btn-circle-pink">
-                <i class="fa-solid fa-plus"></i>
-            </div>
-            <span>Tạo Phiếu Nhập Mới</span>
-        </a>
-    </div>
+	<div class="col-md-4">
+		<a href="/Manager/StockIn" class="history-card card-action">
+			<div class="btn-circle-pink">
+				<i class="fa-solid fa-plus"></i>
+			</div>
+			<span>Tạo Phiếu Nhập Mới</span>
+		</a>
+	</div>
 </div>
 
 <form method="get" action="/Manager/ImportHistory" id="filterForm">
-    <div class="filter-bar d-flex justify-content-between align-items-center flex-wrap gap-3">
-        <div class="d-flex gap-2">
-            <select name="timeFilter" class="filter-select" onchange="document.getElementById('filterForm').submit();">
-                <option value="all" selected="@(Model.TimeFilter == "all")">Tất cả thời gian</option>
-                <option value="month" selected="@(Model.TimeFilter == "month")">Tháng này</option>
-                <option value="lastmonth" selected="@(Model.TimeFilter == "lastmonth")">Tháng trước</option>
-            </select>
+	<div class="filter-bar d-flex justify-content-between align-items-center flex-wrap gap-3">
+		<div class="d-flex gap-2">
+			<select name="timeFilter" class="filter-select" onchange="document.getElementById('filterForm').submit();">
+				<option value="all" selected="@(Model.TimeFilter == "all")">Tất cả thời gian</option>
+				<option value="month" selected="@(Model.TimeFilter == "month")">Tháng này</option>
+				<option value="lastmonth" selected="@(Model.TimeFilter == "lastmonth")">Tháng trước</option>
+			</select>
 
-            <select name="supplierId" class="filter-select" onchange="document.getElementById('filterForm').submit();">
-                <option value="">Tất cả nhà cung cấp</option>
-                @foreach (var sup in Model.Suppliers)
-                {
-                    <option value="@sup.SupplierId" selected="@(Model.SelectedSupplierId == sup.SupplierId)">@sup.SupplierName</option>
-                }
-            </select>
-            
-            </div>
+			<select name="supplierId" class="filter-select" onchange="document.getElementById('filterForm').submit();">
+				<option value="">Tất cả nhà cung cấp</option>
+				@foreach (var sup in Model.Suppliers)
+				{
+					<option value="@sup.SupplierId" selected="@(Model.SelectedSupplierId == sup.SupplierId)">@sup.SupplierName</option>
+				}
+			</select>
 
-        <div class="d-flex align-items-center gap-3">
-            <button type="button" class="btn btn-light rounded-circle" style="width: 35px; height: 35px; padding: 0;"><i class="fa-solid fa-download text-muted"></i></button>
-            
-            @{
-                int startEntry = Model.TotalCount == 0 ? 0 : (Model.CurrentPage - 1) * 10 + 1;
-                int endEntry = Math.Min(Model.CurrentPage * 10, Model.TotalCount);
-            }
-            <div class="page-info">Hiển thị @startEntry-@endEntry / @Model.TotalCount</div>
-            
-            <div class="d-flex gap-1">
-                @if (Model.CurrentPage > 1)
-                {
-                    <button type="submit" name="page" value="@(Model.CurrentPage - 1)" class="btn btn-sm btn-light border-0"><i class="fa-solid fa-chevron-left"></i></button>
-                }
-                else
-                {
-                    <button type="button" class="btn btn-sm btn-light border-0" disabled><i class="fa-solid fa-chevron-left"></i></button>
-                }
+		</div>
 
-                @if (Model.CurrentPage < Model.TotalPages)
-                {
-                    <button type="submit" name="page" value="@(Model.CurrentPage + 1)" class="btn btn-sm btn-light border-0"><i class="fa-solid fa-chevron-right"></i></button>
-                }
-                else
-                {
-                    <button type="button" class="btn btn-sm btn-light border-0" disabled><i class="fa-solid fa-chevron-right"></i></button>
-                }
-            </div>
-        </div>
-    </div>
+		<div class="d-flex align-items-center gap-3">
+			<button type="button" class="btn btn-light rounded-circle" style="width: 35px; height: 35px; padding: 0;"><i class="fa-solid fa-download text-muted"></i></button>
+
+			@{
+				int startEntry = Model.TotalCount == 0 ? 0 : (Model.CurrentPage - 1) * 10 + 1;
+				int endEntry = Math.Min(Model.CurrentPage * 10, Model.TotalCount);
+			}
+			<div class="page-info">Hiển thị @startEntry-@endEntry / @Model.TotalCount</div>
+
+			<div class="d-flex gap-1">
+				@if (Model.CurrentPage > 1)
+				{
+					<button type="submit" name="page" value="@(Model.CurrentPage - 1)" class="btn btn-sm btn-light border-0"><i class="fa-solid fa-chevron-left"></i></button>
+				}
+				else
+				{
+					<button type="button" class="btn btn-sm btn-light border-0" disabled><i class="fa-solid fa-chevron-left"></i></button>
+				}
+
+				@if (Model.CurrentPage < Model.TotalPages)
+				{
+					<button type="submit" name="page" value="@(Model.CurrentPage + 1)" class="btn btn-sm btn-light border-0"><i class="fa-solid fa-chevron-right"></i></button>
+				}
+				else
+				{
+					<button type="button" class="btn btn-sm btn-light border-0" disabled><i class="fa-solid fa-chevron-right"></i></button>
+				}
+			</div>
+		</div>
+	</div>
 </form>
 
 <div class="table-container table-responsive">
-    <table class="table table-history mb-0 table-hover">
-        <thead>
-            <tr>
-                <th width="15%">MÃ PHIẾU</th>
-                <th width="18%">NGÀY NHẬP</th>
-                <th width="32%">NHÀ CUNG CẤP</th>
-                <th width="15%" class="text-end">TỔNG TIỀN (VND)</th>
-                <th width="15%" class="text-center">TRẠNG THÁI</th>
-                <th width="5%">HÀNH ĐỘNG</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.PurchaseOrders.Any())
-            {
-                var colors = new[] { "#f48fb1", "#78909c", "#d81b60", "#4db6ac", "#7986cb" }; // Màu avatar ngẫu nhiên
-                
-                foreach (var po in Model.PurchaseOrders)
-                {
-                    var color = colors[po.SupplierId % colors.Length];
-                    var avatarText = !string.IsNullOrEmpty(po.Supplier.SupplierName) 
-                        ? po.Supplier.SupplierName.Substring(0, 2).ToUpper() 
-                        : "NC";
+	<table class="table table-history mb-0 table-hover">
+		<thead>
+			<tr>
+				<th width="15%">MÃ PHIẾU</th>
+				<th width="18%">NGÀY NHẬP</th>
+				<th width="32%">NHÀ CUNG CẤP</th>
+				<th width="15%" class="text-end">TỔNG TIỀN (VND)</th>
+				<th width="15%" class="text-center">TRẠNG THÁI</th>
+				<th width="5%">HÀNH ĐỘNG</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model.PurchaseOrders.Any())
+			{
+				var colors = new[] { "#f48fb1", "#78909c", "#d81b60", "#4db6ac", "#7986cb" }; // Màu avatar ngẫu nhiên
 
-                    <tr>
-                        <td class="text-muted">#PO-@po.PoId.ToString("D4")</td>
-                        <td>
-                            <div>@(po.OrderDate?.ToString("dd/MM/yyyy") ?? "N/A")</div>
-                            <div class="text-muted" style="font-size: 0.8rem;">@(po.OrderDate?.ToString("HH:mm") ?? "")</div>
-                        </td>
-                        <td class="fw-semibold">
-                            <span class="supplier-avatar" style="background-color: @color;">@avatarText</span> @po.Supplier.SupplierName
-                        </td>
-                        <td class="text-end fw-bold text-dark">@(po.TotalAmount?.ToString("N0") ?? "0")</td>
-                        <td class="text-center">
-                            <span class="badge-status status-done">Hoàn tất</span>
-                        </td>
-                        <td class="text-center">
-    <a href="/Manager/ImportHistoryDetail/@po.PoId" class="btn btn-sm btn-light" title="Xem chi tiết">
-        <i class="fa-regular fa-eye"></i>
-    </a>
-</td>
-                    </tr>
-                }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="6" class="text-center py-4 text-muted">Không tìm thấy phiếu nhập nào.</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+				foreach (var po in Model.PurchaseOrders)
+				{
+					var color = colors[po.SupplierId % colors.Length];
+					var avatarText = !string.IsNullOrEmpty(po.Supplier.SupplierName)
+					? po.Supplier.SupplierName.Substring(0, 2).ToUpper()
+					: "NC";
+
+					<tr>
+						<td class="text-muted">#PO-@po.PoId.ToString("D4")</td>
+						<td>
+							<div>@(po.OrderDate?.ToString("dd/MM/yyyy") ?? "N/A")</div>
+							<div class="text-muted" style="font-size: 0.8rem;">@(po.OrderDate?.ToString("HH:mm") ?? "")</div>
+						</td>
+						<td class="fw-semibold">
+							<span class="supplier-avatar" style="background-color: @color;">@avatarText</span> @po.Supplier.SupplierName
+						</td>
+						<td class="text-end fw-bold text-dark">@(po.TotalAmount?.ToString("N0") ?? "0")</td>
+						<td class="text-center">
+							<span class="badge-status status-done">Hoàn tất</span>
+						</td>
+						<td class="text-center">
+							<a href="/Manager/ImportHistoryDetail?id=@po.PoId" class="btn btn-sm btn-light" title="Xem chi tiết">
+								<i class="fa-regular fa-eye"></i>
+							</a>
+						</td>
+					</tr>
+				}
+			}
+			else
+			{
+				<tr>
+					<td colspan="6" class="text-center py-4 text-muted">Không tìm thấy phiếu nhập nào.</td>
+				</tr>
+			}
+		</tbody>
+	</table>
 </div>
 
 @section Scripts {
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            // JS Thuần: Lọc bảng theo trạng thái
-            const statusFilter = document.getElementById('statusFilter');
-            const tableRows = document.querySelectorAll('#historyTableBody tr');
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+			// JS Thuần: Lọc bảng theo trạng thái
+			const statusFilter = document.getElementById('statusFilter');
+			const tableRows = document.querySelectorAll('#historyTableBody tr');
 
-            statusFilter.addEventListener('change', function (e) {
-                const selectedStatus = e.target.value;
+			statusFilter.addEventListener('change', function (e) {
+				const selectedStatus = e.target.value;
 
-                tableRows.forEach(row => {
-                    const rowStatus = row.getAttribute('data-status');
-                    
-                    if (selectedStatus === 'all' || selectedStatus === rowStatus) {
-                        row.style.display = ''; // Hiện
-                    } else {
-                        row.style.display = 'none'; // Ẩn
-                    }
-                });
-            });
-        });
-    </script>
+				tableRows.forEach(row => {
+					const rowStatus = row.getAttribute('data-status');
+
+					if (selectedStatus === 'all' || selectedStatus === rowStatus) {
+						row.style.display = ''; // Hiện
+					} else {
+						row.style.display = 'none'; // Ẩn
+					}
+				});
+			});
+		});
+	</script>
 }

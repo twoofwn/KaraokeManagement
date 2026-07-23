@@ -1,4 +1,4 @@
-using KaraokeManagement.Models;
+﻿using KaraokeManagement.Models;
 using KaraokeManagement.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +10,7 @@ builder.Services.AddDbContext<KaraokeManagementDbContext>(options =>
 builder.Services.AddScoped<KaraokeManagement.Services.IScheduleService, KaraokeManagement.Services.ScheduleService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<PricePolicyService>();
+
 // Receptionist
 builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<OrderService>();
@@ -17,6 +18,14 @@ builder.Services.AddScoped<RoomBookingService>();
 builder.Services.AddScoped<PaymentService>();
 builder.Services.AddScoped<CustomerService>();
 builder.Services.AddScoped<InvoiceService>();
+
+//Customer Service
+builder.Services.AddScoped<KaraokeManagement.Services.CustomerServices.CustomerService>();
+builder.Services.AddScoped<KaraokeManagement.Services.CustomerServices.RoomService>();
+builder.Services.AddScoped<KaraokeManagement.Services.CustomerServices.BookingService>();
+builder.Services.AddScoped<KaraokeManagement.Services.CustomerServices.ServiceItemService>();
+builder.Services.AddScoped<KaraokeManagement.Services.CustomerServices.FeedbackService>();
+
 
 builder.Services.AddAuthentication("CookieAuth")
     .AddCookie("CookieAuth", options =>
