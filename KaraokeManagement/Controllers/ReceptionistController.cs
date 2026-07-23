@@ -1,4 +1,5 @@
-﻿using KaraokeManagement.ViewModel;
+﻿using KaraokeManagement.Models;
+using KaraokeManagement.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
