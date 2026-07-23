@@ -466,11 +466,7 @@ SET IDENTITY_INSERT [Role] ON;
 INSERT INTO [Role] (RoleID, RoleName) VALUES (1, N'Admin');
 INSERT INTO [Role] (RoleID, RoleName) VALUES (2, N'Manager');
 INSERT INTO [Role] (RoleID, RoleName) VALUES (3, N'Receptionist');
-INSERT INTO [Role] (RoleID, RoleName) VALUES (6, N'Customer');
-INSERT INTO [Role] (RoleID, RoleName) VALUES (7, N'Service Staff');
-INSERT INTO [Role] (RoleID, RoleName) VALUES (8, N'Admin');
-INSERT INTO [Role] (RoleID, RoleName) VALUES (9, N'Manager');
-INSERT INTO [Role] (RoleID, RoleName) VALUES (10, N'Receptionist');
+INSERT INTO [Role] (RoleID, RoleName) VALUES (4, N'Service Staff');
 SET IDENTITY_INSERT [Role] OFF;
 
 SET IDENTITY_INSERT [MembershipTier] ON;
@@ -578,16 +574,16 @@ INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phon
 VALUES (9, 3, 'servicestaff_c', '123456', N'Hoàng Anh Em', '0922334455', 'hoanganhe@gmail.com', '2026-07-21 16:03:17', 3, NULL, NULL);
 
 INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
-VALUES (11, 7, 'service1', '123456', N'Nguyễn Phục Vụ 1', '0912345601', 'service1@karaoke.com', '2026-07-22 15:47:51', 1, NULL, NULL);
+VALUES (11, 4, 'service1', '123456', N'Nguyễn Phục Vụ 1', '0912345601', 'service1@karaoke.com', '2026-07-22 15:47:51', 1, NULL, NULL);
 
 INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
-VALUES (12, 7, 'service2', '123456', N'Trần Phục Vụ 2', '0912345602', 'service2@karaoke.com', '2026-07-22 15:47:51', 2, NULL, NULL);
+VALUES (12, 4, 'service2', '123456', N'Trần Phục Vụ 2', '0912345602', 'service2@karaoke.com', '2026-07-22 15:47:51', 2, NULL, NULL);
 
 INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
-VALUES (13, 7, 'service3', '123456', N'Lê Phục Vụ 3', '0912345603', 'service3@karaoke.com', '2026-07-22 15:47:51', 3, NULL, NULL);
+VALUES (13, 4, 'service3', '123456', N'Lê Phục Vụ 3', '0912345603', 'service3@karaoke.com', '2026-07-22 15:47:51', 3, NULL, NULL);
 
 INSERT INTO [Account] (AccountID, RoleID, Username, PasswordHash, FullName, Phone, Email, CreatedAt, DefaultShiftID, OtpCode, OtpExpiry) 
-VALUES (14, 7, 'service4', '123456', N'Phạm Phục Vụ 4', '0912345604', 'service4@karaoke.com', '2026-07-22 15:47:51', 1, NULL, NULL);
+VALUES (14, 4, 'service4', '123456', N'Phạm Phục Vụ 4', '0912345604', 'service4@karaoke.com', '2026-07-22 15:47:51', 1, NULL, NULL);
 
 SET IDENTITY_INSERT [Account] OFF;
 
