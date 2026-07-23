@@ -75,4 +75,27 @@ namespace KaraokeManagement.Models
         public DateTime FilterStartDate { get; set; }
         public DateTime FilterEndDate { get; set; }
     }
+
+    public class EmployeeDetailViewModel
+    {
+        public string Username { get; set; } = null!;
+        public string FullName { get; set; } = null!;
+        public string RoleName { get; set; } = null!;
+        public string? Phone { get; set; }
+        public string? Email { get; set; }
+        public string IdentityCardNumber { get; set; } = null!;
+        public DateOnly? DateOfBirth { get; set; }
+        public string? Address { get; set; }
+        public DateOnly HireDate { get; set; }
+        public decimal? BaseHourlyRate { get; set; }
+        public bool IsActive { get; set; }
+    }
+
+    public class EmployeeReportItemViewModel
+    {
+        public string Month { get; set; } = null!;
+        public decimal WorkingHours { get; set; }
+        public int ShiftsWorked { get; set; }
+        public int DaysOff { get; set; }
+    }
 }

@@ -1,4 +1,4 @@
-﻿using KaraokeManagement.Models;
+using KaraokeManagement.Models;
 using KaraokeManagement.ViewModel;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +11,32 @@ namespace KaraokeManagement.Services.ManagerServices
         public ExpenseService(KaraokeManagementDbContext context)
         {
             _context = context;
+        }
+
+        public async Task<decimal> CalculatePayrollForMonthAsync(int year, int month)
+        {
+            var payrolls = await _context.Attendances
+                .Where(a => a.CheckInTime.Year == year && a.CheckInTime.Month == month)
+                .GroupBy(a => a.AccountId)
+                .Select(g => new {
+                    AccountId = g.Key,
+                    TotalHours = g.Sum(a => a.TotalHours ?? 0m)
+                })
+                .ToListAsync();
+
+            var profiles = await _context.EmployeeProfiles
+                .Where(p => payrolls.Select(x => x.AccountId).Contains(p.AccountId))
+                .ToDictionaryAsync(p => p.AccountId, p => p.BaseHourlyRate ?? 0m);
+
+            decimal totalPayroll = 0;
+            foreach (var item in payrolls)
+            {
+                if (profiles.TryGetValue(item.AccountId, out var rate))
+                {
+                    totalPayroll += item.TotalHours * rate;
+                }
+            }
+            return totalPayroll;
         }
 
         public async Task<ExpensesViewModel> GetExpensesViewModelAsync()
@@ -30,6 +56,40 @@ namespace KaraokeManagement.Services.ManagerServices
             var lastMonthExpenses = await _context.Expenses
                 .Where(e => e.ExpenseDate >= startOfLastMonth && e.ExpenseDate <= endOfLastMonth)
                 .ToListAsync();
+
+            // Dynamic Payroll Integration
+            var payrollCategory = new ExpenseCategory { CategoryId = -1, CategoryName = "Lương nhân viên" };
+
+            decimal currentMonthPayroll = await CalculatePayrollForMonthAsync(now.Year, now.Month);
+            decimal lastMonthPayroll = await CalculatePayrollForMonthAsync(startOfLastMonth.Year, startOfLastMonth.Month);
+
+            if (currentMonthPayroll > 0)
+            {
+                currentMonthExpenses.Add(new Expense
+                {
+                    ExpenseId = -1,
+                    CategoryId = -1,
+                    ExpenseDate = startOfCurrentMonth,
+                    Amount = currentMonthPayroll,
+                    Note = $"Lương nhân viên tháng {now.Month:D2}/{now.Year} (Tự động tính toán)",
+                    CreatedAt = startOfCurrentMonth,
+                    ExpenseCategory = payrollCategory
+                });
+            }
+
+            if (lastMonthPayroll > 0)
+            {
+                lastMonthExpenses.Add(new Expense
+                {
+                    ExpenseId = -2,
+                    CategoryId = -1,
+                    ExpenseDate = startOfLastMonth,
+                    Amount = lastMonthPayroll,
+                    Note = $"Lương nhân viên tháng {startOfLastMonth.Month:D2}/{startOfLastMonth.Year} (Tự động tính toán)",
+                    CreatedAt = startOfLastMonth,
+                    ExpenseCategory = payrollCategory
+                });
+            }
 
             decimal totalCurrentMonth = currentMonthExpenses.Sum(e => e.Amount);
             decimal totalLastMonth = lastMonthExpenses.Sum(e => e.Amount);
@@ -57,9 +117,40 @@ namespace KaraokeManagement.Services.ManagerServices
                 .ThenByDescending(e => e.CreatedAt)
                 .ToListAsync();
 
+            // Calculate payroll for historical months with attendance
+            var attendanceMonths = await _context.Attendances
+                .Select(a => new { a.CheckInTime.Year, a.CheckInTime.Month })
+                .Distinct()
+                .ToListAsync();
+
+            var virtualExpenses = new List<Expense>();
+            foreach (var m in attendanceMonths)
+            {
+                decimal payroll = await CalculatePayrollForMonthAsync(m.Year, m.Month);
+                if (payroll > 0)
+                {
+                    var mStart = new DateTime(m.Year, m.Month, 1);
+                    virtualExpenses.Add(new Expense
+                    {
+                        ExpenseId = -100 - (m.Year * 12 + m.Month),
+                        CategoryId = -1,
+                        ExpenseDate = mStart,
+                        Amount = payroll,
+                        Note = $"Lương nhân viên tháng {m.Month:D2}/{m.Year} (Tự động tính toán)",
+                        CreatedAt = mStart,
+                        ExpenseCategory = payrollCategory
+                    });
+                }
+            }
+
+            allExpenses.AddRange(virtualExpenses);
+            allExpenses = allExpenses.OrderByDescending(e => e.ExpenseDate).ThenByDescending(e => e.CreatedAt).ToList();
+
             var categories = await _context.ExpenseCategories
                 .OrderBy(c => c.CategoryName)
                 .ToListAsync();
+
+            categories.Add(payrollCategory);
 
             return new ExpensesViewModel
             {

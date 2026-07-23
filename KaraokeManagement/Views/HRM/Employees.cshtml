@@ -4,47 +4,168 @@
     Layout = "~/Views/Manager/_ManagerLayout.cshtml";
 }
 
+<style>
+    :root {
+        --brand-pink: #b60056;
+        --brand-pink-hover: #960046;
+        --brand-pink-light: #fce8f0;
+    }
+
+    .btn-pink {
+        background-color: var(--brand-pink);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    .btn-pink:hover {
+        background-color: var(--brand-pink-hover);
+        color: #fff;
+    }
+
+    .btn-outline-pink {
+        border: 1px solid var(--brand-pink);
+        color: var(--brand-pink);
+        background: transparent;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    .btn-outline-pink:hover {
+        background-color: var(--brand-pink);
+        color: #fff;
+    }
+
+    .card-soft {
+        background-color: #ffffff;
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #fafbfc;
+    }
+
+    .form-control-soft {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        padding: 0.6rem 0.8rem;
+    }
+    .form-control-soft:focus {
+        border-color: var(--brand-pink);
+        box-shadow: 0 0 0 0.2rem rgba(182, 0, 86, 0.15);
+    }
+
+    .badge-active {
+        background-color: #d1e7dd;
+        color: #0f5132;
+        padding: 0.4rem 0.6rem;
+        border-radius: 6px;
+        font-weight: 500;
+    }
+
+    .badge-inactive {
+        background-color: #f8d7da;
+        color: #842029;
+        padding: 0.4rem 0.6rem;
+        border-radius: 6px;
+        font-weight: 500;
+    }
+
+    .report-table th {
+        background-color: var(--brand-pink-light);
+        color: var(--brand-pink);
+        font-weight: 600;
+    }
+</style>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">Quản lý Hồ sơ Nhân sự</h2>
-    <button class="btn btn-primary" onclick="openEmployeeModal()"><i class="fa-solid fa-plus"></i> Thêm Nhân Viên</button>
+    <div>
+        <h2 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-users text-pink me-2"></i>Hồ sơ Nhân sự</h2>
+        <div class="text-muted small mt-1">Quản lý lý lịch, mức lương và thống kê lịch làm việc nhân viên</div>
+    </div>
+    <button class="btn btn-pink px-4 py-2" onclick="openEmployeeModal()">
+        <i class="fa-solid fa-user-plus me-1"></i> Thêm Nhân Viên
+    </button>
 </div>
 
-<div class="card shadow-sm border-0">
-    <div class="card-body">
+<!-- Filters Bar -->
+<div class="card card-soft mb-4">
+    <div class="card-body py-3">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0" style="border-radius: 8px 0 0 8px;"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                    <input type="text" class="form-control border-start-0" id="nameSearch" placeholder="Tìm theo tên hoặc tài khoản..." oninput="filterEmployees()" style="border-radius: 0 8px 8px 0; border: 1px solid #dee2e6;">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select form-control-soft" id="roleFilter" onchange="filterEmployees()">
+                    <option value="all">Tất cả chức vụ</option>
+                    @foreach (var role in Model.Roles)
+                    {
+                        <option value="@role.RoleName">@role.RoleName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select form-control-soft" id="statusFilter" onchange="filterEmployees()">
+                    <option value="all">Tất cả trạng thái</option>
+                    <option value="active">Đang làm việc (Active)</option>
+                    <option value="inactive">Đã nghỉ (Inactive)</option>
+                </select>
+            </div>
+            <div class="col-md-2 text-md-end">
+                <button class="btn btn-outline-secondary btn-sm w-100 py-2" onclick="resetFilters()" style="border-radius: 8px;">
+                    <i class="fa-solid fa-rotate-left"></i> Đặt lại
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Employee List -->
+<div class="card card-soft">
+    <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover align-middle">
+            <table class="table table-hover align-middle mb-0" id="employeeTable">
                 <thead class="table-light">
                     <tr>
-                        <th>Họ tên</th>
-                        <th>Chức vụ</th>
-                        <th>Điện thoại</th>
-                        <th>Ngày vào làm</th>
-                        <th>Trạng thái</th>
-                        <th class="text-end">Hành động</th>
+                        <th class="ps-4 py-3" width="35%">Họ tên / Tài khoản</th>
+                        <th width="25%">Chức vụ</th>
+                        <th width="20%">Trạng thái</th>
+                        <th class="pe-4 text-end" width="20%">Hành động</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="employeeTableBody">
                     @foreach (var emp in Model.Employees)
                     {
-                        <tr>
-                            <td>
-                                <div class="fw-bold">@emp.FullName</div>
-                                <div class="text-muted small">@emp.Username</div>
+                        <tr data-fullname="@emp.FullName" data-username="@emp.Username" data-role="@emp.RoleName" data-active="@(emp.EmploymentStatus == "Active" ? "true" : "false")">
+                            <td class="ps-4">
+                                <div class="fw-bold text-dark">@emp.FullName</div>
+                                <div class="text-muted small">@@@emp.Username</div>
                             </td>
-                            <td><span class="badge bg-info text-dark">@emp.RoleName</span></td>
-                            <td>@emp.Phone</td>
-                            <td>@emp.HireDate.ToString("dd/MM/yyyy")</td>
                             <td>
-                                @if(emp.EmploymentStatus == "Active") { <span class="badge bg-success">Đang làm việc</span> }
-                                else if(emp.EmploymentStatus == "OnLeave") { <span class="badge bg-warning text-dark">Nghỉ phép</span> }
-                                else { <span class="badge bg-secondary">Đã nghỉ</span> }
+                                <span class="badge bg-light text-dark border px-2 py-1">@emp.RoleName</span>
                             </td>
-                            <td class="text-end">
-                                <button class="btn btn-sm btn-outline-primary" onclick="editEmployee(@emp.AccountId, '@emp.Username', '@emp.FullName', '@emp.Phone', '@emp.Email', '@emp.IdentityCardNumber', '@(emp.DateOfBirth.HasValue ? emp.DateOfBirth.Value.ToString("yyyy-MM-dd") : "")', '@emp.Address', '@emp.HireDate.ToString("yyyy-MM-dd")', '@emp.BaseHourlyRate', '@emp.EmploymentStatus', @emp.RoleId)">
-                                    <i class="fa-solid fa-pen-to-square"></i>
+                            <td>
+                                @if (emp.EmploymentStatus == "Active")
+                                {
+                                    <span class="badge-active"><i class="fa-solid fa-circle-check me-1"></i>Đang làm việc</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-inactive"><i class="fa-solid fa-circle-xmark me-1"></i>Đã nghỉ việc</span>
+                                }
+                            </td>
+                            <td class="pe-4 text-end">
+                                <button class="btn btn-sm btn-outline-pink me-2" onclick="openEmployeeReport(@emp.AccountId)">
+                                    <i class="fa-solid fa-chart-line me-1"></i> Báo cáo
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="deleteEmployee(@emp.AccountId)">
-                                    <i class="fa-solid fa-trash"></i>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="openEmployeeDetails(@emp.AccountId)">
+                                    <i class="fa-solid fa-circle-info me-1"></i> Thông tin
                                 </button>
                             </td>
                         </tr>
@@ -55,37 +176,100 @@
     </div>
 </div>
 
-<!-- Modal -->
-<div class="modal fade" id="employeeModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalTitle">Thêm Nhân Viên Mới</h5>
+<!-- Modal 1: Employee Details -->
+<div class="modal fade" id="employeeDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-light border-0 py-3" style="border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title fw-bold text-dark"><i class="fa-solid fa-user-tie text-pink me-2"></i>Chi Tiết Hồ Sơ Nhân Viên</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4" id="detailModalBody">
+                <!-- Loaded via AJAX -->
+                <div class="text-center py-5 text-muted">
+                    <div class="spinner-border text-pink mb-3" role="status"></div>
+                    <div>Đang tải thông tin...</div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-light-subtle py-3">
+                <button type="button" class="btn btn-secondary px-4 btn-sm" data-bs-dismiss="modal" style="border-radius: 6px;">Đóng</button>
+                <button type="button" class="btn btn-pink px-4 btn-sm" id="btnEditFromDetail" style="border-radius: 6px;">
+                    <i class="fa-solid fa-pen-to-square me-1"></i>Chỉnh sửa hồ sơ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 2: Employee Working Report -->
+<div class="modal fade" id="employeeReportModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-light border-0 py-3" style="border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title fw-bold text-dark"><i class="fa-solid fa-chart-line text-pink me-2"></i>Báo Cáo Công Việc Nhân Viên</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold mb-0 text-dark" id="reportEmployeeName">N/A</h6>
+                        <span class="text-muted small" id="reportEmployeeRole">Chức vụ: N/A</span>
+                    </div>
+                </div>
+                <div class="table-responsive" style="max-height: 400px;">
+                    <table class="table table-hover align-middle report-table">
+                        <thead>
+                            <tr>
+                                <th class="ps-3 py-2">Tháng</th>
+                                <th class="text-center">Tổng giờ làm (giờ)</th>
+                                <th class="text-center">Số ca làm</th>
+                                <th class="text-center pe-3">Số ngày nghỉ / vắng</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportTableBody">
+                            <!-- Loaded via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-light-subtle py-3">
+                <button type="button" class="btn btn-secondary px-4 btn-sm" data-bs-dismiss="modal" style="border-radius: 6px;">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 3: Add/Edit Form Modal (Keep for functionality) -->
+<div class="modal fade" id="employeeModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header bg-light border-0 py-3" style="border-radius: 16px 16px 0 0;">
+                <h5 class="modal-title fw-bold text-dark" id="modalTitle">Thêm Nhân Viên Mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
                 <form id="employeeForm">
                     <input type="hidden" id="AccountId" name="AccountId" value="0" />
                     
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">Tên đăng nhập *</label>
-                            <input type="text" class="form-control" id="Username" name="Username" required />
+                            <label class="form-label fw-medium text-dark">Tên đăng nhập *</label>
+                            <input type="text" class="form-control form-control-soft" id="Username" name="Username" required />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Mật khẩu (Mặc định: 123456 cho tạo mới)</label>
-                            <input type="password" class="form-control" id="Password" disabled placeholder="*****" />
+                            <label class="form-label fw-medium text-dark">Mật khẩu (Mặc định: 123456 cho tạo mới)</label>
+                            <input type="password" class="form-control form-control-soft" id="Password" disabled placeholder="*****" />
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">Họ và Tên *</label>
-                            <input type="text" class="form-control" id="FullName" name="FullName" required />
+                            <label class="form-label fw-medium text-dark">Họ và Tên *</label>
+                            <input type="text" class="form-control form-control-soft" id="FullName" name="FullName" required />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Chức vụ *</label>
-                            <select class="form-select" id="RoleId" name="RoleId" required>
+                            <label class="form-label fw-medium text-dark">Chức vụ *</label>
+                            <select class="form-select form-control-soft" id="RoleId" name="RoleId" required>
                                 @foreach (var role in Model.Roles)
                                 {
                                     <option value="@role.RoleId">@role.RoleName</option>
@@ -96,54 +280,53 @@
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">Điện thoại</label>
-                            <input type="text" class="form-control" id="Phone" name="Phone" />
+                            <label class="form-label fw-medium text-dark">Điện thoại</label>
+                            <input type="text" class="form-control form-control-soft" id="Phone" name="Phone" />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-control" id="Email" name="Email" />
+                            <label class="form-label fw-medium text-dark">Email</label>
+                            <input type="email" class="form-control form-control-soft" id="Email" name="Email" />
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">Số CMND/CCCD *</label>
-                            <input type="text" class="form-control" id="IdentityCardNumber" name="IdentityCardNumber" required />
+                            <label class="form-label fw-medium text-dark">Số CMND/CCCD *</label>
+                            <input type="text" class="form-control form-control-soft" id="IdentityCardNumber" name="IdentityCardNumber" required />
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Ngày sinh</label>
-                            <input type="date" class="form-control" id="DateOfBirth" name="DateOfBirth" />
+                            <label class="form-label fw-medium text-dark">Ngày sinh</label>
+                            <input type="date" class="form-control form-control-soft" id="DateOfBirth" name="DateOfBirth" />
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Địa chỉ</label>
-                        <input type="text" class="form-control" id="Address" name="Address" />
+                        <label class="form-label fw-medium text-dark">Địa chỉ</label>
+                        <input type="text" class="form-control form-control-soft" id="Address" name="Address" />
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-4">
-                            <label class="form-label">Ngày vào làm *</label>
-                            <input type="date" class="form-control" id="HireDate" name="HireDate" required />
+                            <label class="form-label fw-medium text-dark">Ngày vào làm *</label>
+                            <input type="date" class="form-control form-control-soft" id="HireDate" name="HireDate" required />
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Lương cơ bản/giờ</label>
-                            <input type="number" class="form-control" id="BaseHourlyRate" name="BaseHourlyRate" />
+                            <label class="form-label fw-medium text-dark">Lương cơ bản/giờ (VNĐ)</label>
+                            <input type="number" class="form-control form-control-soft" id="BaseHourlyRate" name="BaseHourlyRate" />
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Trạng thái *</label>
-                            <select class="form-select" id="EmploymentStatus" name="EmploymentStatus" required>
+                            <label class="form-label fw-medium text-dark">Trạng thái *</label>
+                            <select class="form-select form-control-soft" id="EmploymentStatus" name="EmploymentStatus" required>
                                 <option value="Active">Đang làm việc</option>
                                 <option value="Resigned">Đã nghỉ</option>
-                                <option value="OnLeave">Nghỉ phép</option>
                             </select>
                         </div>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-primary" onclick="saveEmployee()">Lưu Hồ Sơ</button>
+            <div class="modal-footer border-0 bg-light-subtle py-3">
+                <button type="button" class="btn btn-secondary px-4 btn-sm" data-bs-dismiss="modal" style="border-radius: 6px;">Đóng</button>
+                <button type="button" class="btn btn-pink px-4 btn-sm" onclick="saveEmployee()" style="border-radius: 6px;">Lưu Hồ Sơ</button>
             </div>
         </div>
     </div>
@@ -151,33 +334,244 @@
 
 @section Scripts {
     <script>
-        const myModal = new bootstrap.Modal(document.getElementById('employeeModal'));
+        const editModal = new bootstrap.Modal(document.getElementById('employeeModal'));
+        const detailModal = new bootstrap.Modal(document.getElementById('employeeDetailModal'));
+        const reportModal = new bootstrap.Modal(document.getElementById('employeeReportModal'));
+        let currentLoadedEmployee = null;
+
+        function filterEmployees() {
+            const nameSearch = document.getElementById('nameSearch').value.trim().toLowerCase();
+            const roleFilter = document.getElementById('roleFilter').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const rows = document.querySelectorAll('#employeeTableBody tr');
+
+            rows.forEach(row => {
+                const fullname = row.getAttribute('data-fullname').toLowerCase();
+                const username = row.getAttribute('data-username').toLowerCase();
+                const role = row.getAttribute('data-role').toLowerCase();
+                const active = row.getAttribute('data-active');
+
+                const nameMatch = !nameSearch || fullname.includes(nameSearch) || username.includes(nameSearch);
+                const roleMatch = roleFilter === 'all' || role === roleFilter;
+                const statusMatch = statusFilter === 'all' ||
+                                    (statusFilter === 'active' && active === 'true') ||
+                                    (statusFilter === 'inactive' && active === 'false');
+
+                if (nameMatch && roleMatch && statusMatch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function resetFilters() {
+            document.getElementById('nameSearch').value = '';
+            document.getElementById('roleFilter').value = 'all';
+            document.getElementById('statusFilter').value = 'all';
+            filterEmployees();
+        }
 
         function openEmployeeModal() {
             document.getElementById('employeeForm').reset();
             document.getElementById('AccountId').value = 0;
             document.getElementById('Username').readOnly = false;
+            document.getElementById('Password').disabled = false;
+            document.getElementById('Password').placeholder = '';
             document.getElementById('modalTitle').innerText = 'Thêm Nhân Viên Mới';
-            myModal.show();
+            editModal.show();
         }
 
-        function editEmployee(id, user, name, phone, email, idcard, dob, addr, hire, rate, status, roleId) {
-            document.getElementById('AccountId').value = id;
-            document.getElementById('Username').value = user;
+        // AJAX Employee Details Modal
+        function openEmployeeDetails(accountId) {
+            document.getElementById('detailModalBody').innerHTML = `
+                <div class="text-center py-5 text-muted">
+                    <div class="spinner-border text-pink mb-3" role="status"></div>
+                    <div>Đang tải thông tin...</div>
+                </div>
+            `;
+            detailModal.show();
+
+            fetch(`/HRM/GetEmployeeDetails?accountId=${accountId}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Không thể lấy chi tiết nhân viên');
+                    return response.json();
+                })
+                .then(data => {
+                    currentLoadedEmployee = data;
+                    const dobFormatted = data.dateOfBirth ? formatDateString(data.dateOfBirth) : 'N/A';
+                    const hireFormatted = formatDateString(data.hireDate);
+                    const statusText = data.isActive 
+                        ? `<span class="badge-active"><i class="fa-solid fa-circle-check me-1"></i>Đang làm việc</span>`
+                        : `<span class="badge-inactive"><i class="fa-solid fa-circle-xmark me-1"></i>Đã nghỉ việc</span>`;
+                    
+                    document.getElementById('detailModalBody').innerHTML = `
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="p-2 border-bottom">
+                                    <div class="text-muted small">Tên đăng nhập / Tài khoản</div>
+                                    <div class="fw-bold text-dark">@@${data.username}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-2 border-bottom">
+                                    <div class="text-muted small">Họ và Tên</div>
+                                    <div class="fw-bold text-dark">${data.fullName}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-2 border-bottom">
+                                    <div class="text-muted small">Chức vụ</div>
+                                    <div class="fw-bold text-dark">${data.roleName}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-2 border-bottom">
+                                    <div class="text-muted small">Trạng thái hoạt động</div>
+                                    <div class="mt-1">${statusText}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-2 border-bottom">
+                                    <div class="text-muted small">Điện thoại</div>
+                                    <div class="fw-bold text-dark">${data.phone || 'N/A'}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-2 border-bottom">
+                                    <div class="text-muted small">Email</div>
+                                    <div class="fw-bold text-dark">${data.email || 'N/A'}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-2 border-bottom">
+                                    <div class="text-muted small">Số CMND / CCCD</div>
+                                    <div class="fw-bold text-dark">${data.identityCardNumber}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-2 border-bottom">
+                                    <div class="text-muted small">Ngày sinh</div>
+                                    <div class="fw-bold text-dark">${dobFormatted}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-2 border-bottom">
+                                    <div class="text-muted small">Ngày vào làm</div>
+                                    <div class="fw-bold text-dark">${hireFormatted}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-2 border-bottom">
+                                    <div class="text-muted small">Lương cơ bản / giờ</div>
+                                    <div class="fw-bold text-pink">${formatCurrency(data.baseHourlyRate)} ₫</div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="p-2 border-bottom">
+                                    <div class="text-muted small">Địa chỉ liên hệ</div>
+                                    <div class="fw-bold text-dark">${data.address || 'N/A'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    document.getElementById('btnEditFromDetail').onclick = function() {
+                        detailModal.hide();
+                        triggerEditMode(data);
+                    };
+                })
+                .catch(error => {
+                    document.getElementById('detailModalBody').innerHTML = `<div class="text-danger text-center py-4">${error.message}</div>`;
+                });
+        }
+
+        // Trigger Edit Form Modal from Details
+        function triggerEditMode(emp) {
+            document.getElementById('employeeForm').reset();
+            document.getElementById('AccountId').value = emp.accountId;
+            document.getElementById('Username').value = emp.username;
             document.getElementById('Username').readOnly = true; 
-            document.getElementById('FullName').value = name;
-            document.getElementById('Phone').value = phone;
-            document.getElementById('Email').value = email;
-            document.getElementById('IdentityCardNumber').value = idcard;
-            document.getElementById('DateOfBirth').value = dob;
-            document.getElementById('Address').value = addr;
-            document.getElementById('HireDate').value = hire;
-            document.getElementById('BaseHourlyRate').value = rate;
-            document.getElementById('EmploymentStatus').value = status;
-            document.getElementById('RoleId').value = roleId;
+            document.getElementById('Password').disabled = true;
+            document.getElementById('Password').placeholder = '*****';
+            document.getElementById('FullName').value = emp.fullName;
+            document.getElementById('Phone').value = emp.phone || '';
+            document.getElementById('Email').value = emp.email || '';
+            document.getElementById('IdentityCardNumber').value = emp.identityCardNumber;
+            document.getElementById('DateOfBirth').value = emp.dateOfBirth || '';
+            document.getElementById('Address').value = emp.address || '';
+            document.getElementById('HireDate').value = emp.hireDate;
+            document.getElementById('BaseHourlyRate').value = emp.baseHourlyRate || 0;
+            document.getElementById('EmploymentStatus').value = emp.isActive ? "Active" : "Resigned";
+
+            // Find matching Role Select option
+            const roleSelect = document.getElementById('RoleId');
+            for(let i=0; i<roleSelect.options.length; i++) {
+                if (roleSelect.options[i].text.trim().toLowerCase() === emp.roleName.trim().toLowerCase()) {
+                    roleSelect.selectedIndex = i;
+                    break;
+                }
+            }
 
             document.getElementById('modalTitle').innerText = 'Chỉnh sửa Hồ Sơ';
-            myModal.show();
+            editModal.show();
+        }
+
+        // AJAX Employee Report Modal
+        function openEmployeeReport(accountId) {
+            document.getElementById('reportTableBody').innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">
+                        <div class="spinner-border text-pink spinner-border-sm mb-2" role="status"></div>
+                        <div>Đang tổng hợp dữ liệu báo cáo...</div>
+                    </td>
+                </tr>
+            `;
+            reportModal.show();
+
+            // First load details to set header
+            fetch(`/HRM/GetEmployeeDetails?accountId=${accountId}`)
+                .then(response => response.json())
+                .then(details => {
+                    document.getElementById('reportEmployeeName').innerText = details.fullName;
+                    document.getElementById('reportEmployeeRole').innerText = 'Chức vụ: ' + details.roleName;
+
+                    // Then load working breakdown
+                    return fetch(`/HRM/GetEmployeeReport?accountId=${accountId}`);
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Không thể lấy báo cáo lịch sử làm việc');
+                    return response.json();
+                })
+                .then(reportItems => {
+                    let html = '';
+                    if (reportItems.length === 0) {
+                        html = `
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-3">Chưa có dữ liệu làm việc hoặc lịch làm việc được ghi nhận.</td>
+                            </tr>
+                        `;
+                    } else {
+                        reportItems.forEach(item => {
+                            html += `
+                                <tr>
+                                    <td class="ps-3 fw-bold">${item.month}</td>
+                                    <td class="text-center">${item.workingHours.toFixed(1)}</td>
+                                    <td class="text-center">${item.shiftsWorked}</td>
+                                    <td class="text-center pe-3">${item.daysOff}</td>
+                                </tr>
+                            `;
+                        });
+                    }
+                    document.getElementById('reportTableBody').innerHTML = html;
+                })
+                .catch(error => {
+                    document.getElementById('reportTableBody').innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-danger text-center py-3">${error.message}</td>
+                        </tr>
+                    `;
+                });
         }
 
         function saveEmployee() {
@@ -208,7 +602,7 @@
                 contentType: 'application/json',
                 data: JSON.stringify(data),
                 success: function() {
-                    myModal.hide();
+                    editModal.hide();
                     location.reload();
                 },
                 error: function(err) {
@@ -217,14 +611,20 @@
             });
         }
 
-        function deleteEmployee(id) {
-            if(confirm('Bạn có chắc chắn muốn xóa hồ sơ nhân viên này? Dữ liệu lịch sử có thể bị ảnh hưởng.')) {
-                $.post('/HRM/DeleteEmployee/' + id, function() {
-                    location.reload();
-                }).fail(function(err) {
-                    alert('Lỗi khi xóa.');
-                });
+        // Helpers
+        function formatDateString(dateStr) {
+            if (!dateStr) return '';
+            const dateOnly = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+            const parts = dateOnly.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
             }
+            return dateOnly;
+        }
+
+        function formatCurrency(amount) {
+            if (!amount) return '0';
+            return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
     </script>
 }

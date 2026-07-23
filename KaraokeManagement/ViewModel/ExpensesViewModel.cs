@@ -27,6 +27,7 @@ public class ExpensesViewModel
             var s when s.Contains("nước") || s.Contains("nuoc") => "fa-solid fa-droplet",
             var s when s.Contains("mặt bằng") || s.Contains("matbang") || s.Contains("thuê") => "fa-solid fa-shop",
             var s when s.Contains("bảo trì") || s.Contains("baotri") => "fa-solid fa-screwdriver-wrench",
+            var s when s.Contains("lương") || s.Contains("luong") => "fa-solid fa-user-tie",
             _ => "fa-solid fa-credit-card"
         };
     }
@@ -39,6 +40,7 @@ public class ExpensesViewModel
             var s when s.Contains("nước") || s.Contains("nuoc") => "cat-water",
             var s when s.Contains("mặt bằng") || s.Contains("matbang") || s.Contains("thuê") => "cat-rent",
             var s when s.Contains("bảo trì") || s.Contains("baotri") => "cat-maintenance",
+            var s when s.Contains("lương") || s.Contains("luong") => "cat-salary",
             _ => "cat-rent"
         };
     }

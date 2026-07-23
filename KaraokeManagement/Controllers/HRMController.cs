@@ -71,5 +71,20 @@ namespace KaraokeManagement.Controllers
             if (result.Success) return Ok();
             return BadRequest(result.Message);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetEmployeeDetails(int accountId)
+        {
+            var details = await _hrmService.GetEmployeeDetailsAsync(accountId);
+            if (details == null) return NotFound("Không tìm thấy nhân viên.");
+            return Json(details);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetEmployeeReport(int accountId)
+        {
+            var report = await _hrmService.GetEmployeeReportAsync(accountId);
+            return Json(report);
+        }
     }
 }

@@ -175,5 +175,84 @@ namespace KaraokeManagement.Services.HRMServices
             await _context.SaveChangesAsync();
             return (true, "Đã ghi nhận công thành công.");
         }
+
+        public async Task<EmployeeDetailViewModel?> GetEmployeeDetailsAsync(int accountId)
+        {
+            var account = await _context.Accounts
+                .Include(a => a.Role)
+                .FirstOrDefaultAsync(a => a.AccountId == accountId);
+
+            if (account == null) return null;
+
+            var profile = await _context.EmployeeProfiles.FirstOrDefaultAsync(p => p.AccountId == accountId);
+
+            return new EmployeeDetailViewModel
+            {
+                Username = account.Username,
+                FullName = account.FullName,
+                RoleName = account.Role?.RoleName ?? "Staff",
+                Phone = account.Phone,
+                Email = account.Email,
+                IdentityCardNumber = profile?.IdentityCardNumber ?? "N/A",
+                DateOfBirth = profile?.DateOfBirth,
+                Address = profile?.Address,
+                HireDate = profile?.HireDate ?? DateOnly.FromDateTime(account.CreatedAt ?? DateTime.Now),
+                BaseHourlyRate = profile?.BaseHourlyRate ?? 0,
+                IsActive = account.IsActive
+            };
+        }
+
+        public async Task<List<EmployeeReportItemViewModel>> GetEmployeeReportAsync(int accountId)
+        {
+            var report = new List<EmployeeReportItemViewModel>();
+
+            var profile = await _context.EmployeeProfiles.FirstOrDefaultAsync(p => p.AccountId == accountId);
+            var account = await _context.Accounts.FindAsync(accountId);
+            if (account == null) return report;
+
+            var firstDay = profile?.HireDate ?? DateOnly.FromDateTime(account.CreatedAt ?? DateTime.Now);
+            var startDate = new DateTime(firstDay.Year, firstDay.Month, 1);
+            var endDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+
+            var current = startDate;
+            while (current <= endDate)
+            {
+                int year = current.Year;
+                int month = current.Month;
+
+                var attendances = await _context.Attendances
+                    .Where(a => a.AccountId == accountId && a.CheckInTime.Year == year && a.CheckInTime.Month == month)
+                    .ToListAsync();
+
+                decimal totalHours = attendances.Sum(a => a.TotalHours ?? 0m);
+                int totalShifts = attendances.Count;
+
+                var offSchedules = await _context.EmployeeSchedules
+                    .Where(s => s.AccountId == accountId && s.WorkDate.Year == year && s.WorkDate.Month == month && (s.Status == "Off" || s.Status == "Leave" || s.IsActive == false))
+                    .Select(s => s.WorkDate)
+                    .ToListAsync();
+
+                var approvedLeaves = await _context.LeaveRequests
+                    .Include(r => r.Schedule)
+                    .Where(r => r.AccountId == accountId && r.Status == "Approved" && r.Schedule.WorkDate.Year == year && r.Schedule.WorkDate.Month == month)
+                    .Select(r => r.Schedule.WorkDate)
+                    .ToListAsync();
+
+                int totalOffDays = offSchedules.Union(approvedLeaves).Distinct().Count();
+
+                report.Add(new EmployeeReportItemViewModel
+                {
+                    Month = $"{month:D2}/{year}",
+                    WorkingHours = totalHours,
+                    ShiftsWorked = totalShifts,
+                    DaysOff = totalOffDays
+                });
+
+                current = current.AddMonths(1);
+            }
+
+            report.Reverse(); // Newest first
+            return report;
+        }
     }
 }

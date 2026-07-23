@@ -128,6 +128,7 @@
     .cat-maintenance { background-color: #ffebee; color: #c62828; } /* Red/Pink */
     .cat-rent { background-color: #e9ecef; color: #495057; } /* Gray */
     .cat-water { background-color: #e8f5e9; color: #2e7d32; } /* Green */
+    .cat-salary { background-color: #e3f2fd; color: #1565c0; } /* Blue */
 
     .badge-percent {
         background-color: #e9ecef;
@@ -328,7 +329,7 @@
                 <div class="d-flex gap-2">
                     <select class="form-select form-control-soft flex-fill" id="categorySelect" required style="max-width: calc(100% - 48px);">
                         <option value="" selected disabled>Chọn danh mục...</option>
-                        @foreach (var cat in Model.Categories)
+                        @foreach (var cat in Model.Categories.Where(c => c.CategoryId > 0))
                         {
                             <option value="@cat.CategoryId">@cat.CategoryName</option>
                         }
