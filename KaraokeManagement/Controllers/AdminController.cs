@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using KaraokeManagement.Helpers;
 using KaraokeManagement.ViewModel;
-using System.Security.Claims;
 
 namespace KaraokeManagement.Controllers
 {
@@ -536,24 +535,10 @@ namespace KaraokeManagement.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult UserEdit(int id, Account model, string? Password, string? AdminPassword)
+        public IActionResult UserEdit(int id, Account model, string? Password)
         {
             ModelState.Remove("Role");
             ModelState.Remove("PasswordHash");
-
-            // Verify currently logged in Admin's password
-            var currentAdminIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(currentAdminIdStr) || !int.TryParse(currentAdminIdStr, out int adminId))
-            {
-                return RedirectToAction("Login", "Auth");
-            }
-            var adminAccount = _context.Accounts.Find(adminId);
-            if (adminAccount == null || string.IsNullOrEmpty(AdminPassword) || !PasswordHelper.VerifyPassword(AdminPassword, adminAccount.PasswordHash))
-            {
-                ViewBag.AdminPasswordError = "Mật khẩu xác nhận của Admin không chính xác.";
-                ModelState.AddModelError("AdminPassword", "Mật khẩu xác nhận của Admin không chính xác.");
-            }
-
             if (_context.Accounts.Any(a => a.Username == model.Username && a.AccountId != id))
                 ModelState.AddModelError("Username", "Username này đã tồn tại.");
             if (!ModelState.IsValid) { LoadRoles(model.RoleId); ViewBag.IsEdit = true; return View("UserForm", model); }

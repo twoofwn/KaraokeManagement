@@ -77,26 +77,6 @@
                     </div>
                 </div>
 
-                @if (isEdit)
-                {
-                    <div class="form-row-2" style="margin-top: 15px; margin-bottom: 15px;">
-                        <div class="field-group">
-                            <label class="field-label" style="color: #e71d36; font-weight: 600;">
-                                Mật khẩu xác nhận Admin
-                                <span class="field-hint" style="color: #e71d36; margin-left: 6px;">(Bắt buộc để lưu thay đổi)</span>
-                            </label>
-                            <input name="AdminPassword" type="password" class="field-input" style="border-color: #e71d36;" placeholder="Nhập mật khẩu Admin của bạn" required />
-                            @if (ViewBag.AdminPasswordError != null)
-                            {
-                                <span class="field-error" style="color: #e71d36; font-weight: 500; display: block; margin-top: 4px;">@ViewBag.AdminPasswordError</span>
-                            }
-                        </div>
-                        <div class="field-group">
-                            <!-- Giữ layout cột cân xứng -->
-                        </div>
-                    </div>
-                }
-
                 <div class="form-actions">
                     <a href="/Admin/Users" class="btn-cancel">Cancel</a>
                     <button type="submit" class="btn-save">
