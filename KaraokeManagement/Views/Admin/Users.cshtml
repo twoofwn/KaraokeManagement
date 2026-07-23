@@ -66,13 +66,12 @@
                     <td><span class="role-badge @roleClass">@roleName</span></td>
                     <td>@user.CreatedAt?.ToString("dd/MM/yyyy")</td>
                     <td class="table-actions">
-                        <a href="/Admin/UserEdit/@user.AccountId" class="action-btn edit">
+                        <a href="javascript:void(0)" onclick="handleEdit(@user.AccountId)" class="action-btn edit">
                             <i class="fa-solid fa-pen"></i>
                         </a>
-                        <form method="post" action="/Admin/UserDelete/@user.AccountId"
-                              onsubmit="return confirm('Xóa tài khoản @user.Username?')" style="display:inline">
+                        <form id="delete-form-@user.AccountId" method="post" action="/Admin/UserDelete/@user.AccountId" style="display:inline">
                             @Html.AntiForgeryToken()
-                            <button type="submit" class="action-btn delete">
+                            <button type="button" onclick="handleDelete(@user.AccountId, '@user.Username')" class="action-btn delete">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </form>
@@ -91,3 +90,54 @@
     </table>
     @await Html.PartialAsync("_Pager")
 </div>
+
+@section Scripts {
+<script>
+    async function verifyPassword() {
+        const password = prompt("Nhập mật khẩu tài khoản Admin của bạn để tiếp tục:");
+        if (password === null) return null; // Cancelled
+        if (password.trim() === "") {
+            alert("Mật khẩu không được trống!");
+            return false;
+        }
+
+        try {
+            const response = await fetch('/Admin/VerifyAdminPassword', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({ password: password })
+            });
+            const data = await response.json();
+            if (data.success) {
+                return true;
+            } else {
+                alert(data.message || "Mật khẩu Admin không chính xác!");
+                return false;
+            }
+        } catch (error) {
+            console.error("Error verifying password:", error);
+            alert("Lỗi hệ thống khi kiểm tra mật khẩu.");
+            return false;
+        }
+    }
+
+    async function handleEdit(accountId) {
+        const verified = await verifyPassword();
+        if (verified === true) {
+            window.location.href = `/Admin/UserEdit/${accountId}`;
+        }
+    }
+
+    async function handleDelete(accountId, username) {
+        if (!confirm(`Bạn có chắc chắn muốn xóa tài khoản ${username}?`)) {
+            return;
+        }
+        const verified = await verifyPassword();
+        if (verified === true) {
+            document.getElementById(`delete-form-${accountId}`).submit();
+        }
+    }
+</script>
+}
