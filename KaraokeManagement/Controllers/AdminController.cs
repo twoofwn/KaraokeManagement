@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using KaraokeManagement.Helpers;
 using KaraokeManagement.ViewModel;
+using System.Security.Claims;
 
 namespace KaraokeManagement.Controllers
 {
@@ -19,6 +20,27 @@ namespace KaraokeManagement.Controllers
         }
 
         public IActionResult Index() => RedirectToAction("Dashboard");
+
+        [HttpPost]
+        public IActionResult VerifyAdminPassword(string password)
+        {
+            var currentAdminIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentAdminIdStr) || !int.TryParse(currentAdminIdStr, out int adminId))
+            {
+                return Json(new { success = false, message = "Phiên đăng nhập đã hết hạn." });
+            }
+            var adminAccount = _context.Accounts.Find(adminId);
+            if (adminAccount == null)
+            {
+                return Json(new { success = false, message = "Tài khoản Admin không tồn tại." });
+            }
+            bool isValid = PasswordHelper.VerifyPassword(password, adminAccount.PasswordHash);
+            if (isValid)
+            {
+                return Json(new { success = true });
+            }
+            return Json(new { success = false, message = "Mật khẩu xác nhận Admin không chính xác." });
+        }
 
         // ========== DASHBOARD ==========
         public IActionResult Dashboard()
