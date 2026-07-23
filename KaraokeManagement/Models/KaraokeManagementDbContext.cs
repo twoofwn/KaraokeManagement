@@ -121,6 +121,8 @@ public partial class KaraokeManagementDbContext : DbContext
             entity.Property(e => e.Username)
                 .HasMaxLength(50)
                 .IsUnicode(false);
+            entity.Property(e => e.IsActive)
+                .HasDefaultValueSql("((1))");
 
             entity.HasOne(d => d.Role).WithMany(p => p.Accounts)
                 .HasForeignKey(d => d.RoleId)

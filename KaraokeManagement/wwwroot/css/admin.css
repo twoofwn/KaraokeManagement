@@ -1,4 +1,4 @@
-﻿/* =============================================
+/* =============================================
    ADMIN PANEL - Color Palette
    #F8F4EC  cream background
    #FF8FB7  light pink (hover, tints)
@@ -416,6 +416,12 @@ body {
     color: #43334C;
 }
 
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .data-table {
     width: 100%;
     border-collapse: collapse;
@@ -423,7 +429,7 @@ body {
 
 .data-table th {
     text-align: left;
-    padding: 11px 20px;
+    padding: 11px 12px;
     font-size: 12px;
     font-weight: 600;
     color: #a09098;
@@ -434,7 +440,7 @@ body {
 }
 
 .data-table td {
-    padding: 13px 20px;
+    padding: 13px 12px;
     border-bottom: 1px solid #f8f5f0;
     color: #43334C;
     font-size: 13px;

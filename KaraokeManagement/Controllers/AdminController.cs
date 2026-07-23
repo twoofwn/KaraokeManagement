@@ -571,6 +571,7 @@ namespace KaraokeManagement.Controllers
             existing.Email = model.Email;
             existing.Phone = model.Phone;
             existing.RoleId = model.RoleId;
+            existing.IsActive = model.IsActive;
             if (!string.IsNullOrWhiteSpace(Password))
                 existing.PasswordHash = PasswordHelper.HashPassword(Password);
             _context.SaveChanges();
@@ -581,26 +582,20 @@ namespace KaraokeManagement.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult UserDelete(int id)
         {
-            var account = _context.Accounts
-                .Include(a => a.Invoices)
-                .Include(a => a.Bookings)
-                .Include(a => a.PurchaseOrders)
-                .Include(a => a.MaintenanceLogs)
-                .FirstOrDefault(a => a.AccountId == id);
+            var account = _context.Accounts.Find(id);
             if (account != null)
             {
                 if (account.Username == User.Identity?.Name)
                 {
-                    TempData["Error"] = "Bạn không thể xóa tài khoản đang đăng nhập.";
+                    TempData["Error"] = "Bạn không thể thay đổi trạng thái tài khoản đang đăng nhập.";
                     return RedirectToAction("Users");
                 }
-                if (account.Invoices.Any() || account.Bookings.Any() || account.PurchaseOrders.Any() || account.MaintenanceLogs.Any())
-                {
-                    TempData["Error"] = $"Không thể xóa tài khoản \"{account.Username}\" vì đã có hóa đơn, booking hoặc phiếu nhập gắn với tài khoản này.";
-                    return RedirectToAction("Users");
-                }
-                _context.Accounts.Remove(account);
+                
+                account.IsActive = !account.IsActive; // Toggle active status
                 _context.SaveChanges();
+                
+                string statusText = account.IsActive ? "kích hoạt" : "khóa";
+                TempData["Success"] = $"Đã {statusText} tài khoản \"{account.Username}\" thành công.";
             }
             return RedirectToAction("Users");
         }

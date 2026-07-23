@@ -41,6 +41,7 @@ CREATE TABLE [Account] (
     DefaultShiftID INT NULL,
     OtpCode VARCHAR(10) NULL,
     OtpExpiry DATETIME NULL,
+    IsActive BIT NOT NULL DEFAULT 1,
     FOREIGN KEY (RoleID) REFERENCES [Role](RoleID),
     FOREIGN KEY (DefaultShiftID) REFERENCES [WorkShift](ShiftID)
 );

@@ -24,6 +24,13 @@
     </div>
 }
 
+@if (TempData["Success"] != null)
+{
+    <div class="admin-alert success" style="background: #e2fcdb; color: #2e7d32; border: 1px solid #a5d6a7; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-circle-check"></i> @TempData["Success"]
+    </div>
+}
+
 <div class="table-card">
     <div class="table-card-header">
         <h2 class="table-card-title">Staff Accounts</h2>
@@ -33,7 +40,8 @@
         </form>
         <span class="record-count">@ViewBag.TotalCount records</span>
     </div>
-    <table class="data-table">
+    <div class="table-responsive">
+        <table class="data-table">
         <thead>
             <tr>
                 <th>#</th>
@@ -42,6 +50,7 @@
                 <th>Phone</th>
                 <th>Role</th>
                 <th>Created At</th>
+                <th>Status</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -65,15 +74,34 @@
                     <td>@user.Phone</td>
                     <td><span class="role-badge @roleClass">@roleName</span></td>
                     <td>@user.CreatedAt?.ToString("dd/MM/yyyy")</td>
+                    <td>
+                        @if (user.IsActive)
+                        {
+                            <span class="role-badge active" style="background-color: #e2fcdb; color: #2e7d32; border: 1px solid #a5d6a7; padding: 4px 8px; border-radius: 4px; font-weight: 500; font-size: 0.85em;">Hoạt động</span>
+                        }
+                        else
+                        {
+                            <span class="role-badge inactive" style="background-color: #ffebee; color: #c62828; border: 1px solid #ef9a9a; padding: 4px 8px; border-radius: 4px; font-weight: 500; font-size: 0.85em;">Đã khóa</span>
+                        }
+                    </td>
                     <td class="table-actions">
-                        <a href="javascript:void(0)" onclick="handleEdit(@user.AccountId)" class="action-btn edit">
+                        <a href="javascript:void(0)" onclick="handleEdit(@user.AccountId)" class="action-btn edit" title="Chỉnh sửa tài khoản">
                             <i class="fa-solid fa-pen"></i>
                         </a>
                         <form id="delete-form-@user.AccountId" method="post" action="/Admin/UserDelete/@user.AccountId" style="display:inline">
                             @Html.AntiForgeryToken()
-                            <button type="button" onclick="handleDelete(@user.AccountId, '@user.Username')" class="action-btn delete">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
+                            @if (user.IsActive)
+                            {
+                                <button type="button" onclick="handleDelete(@user.AccountId, '@user.Username', true)" class="action-btn delete" title="Khóa tài khoản">
+                                    <i class="fa-solid fa-user-slash"></i>
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="button" onclick="handleDelete(@user.AccountId, '@user.Username', false)" class="action-btn edit" style="background: #e8f5e9; color: #2e7d32;" title="Kích hoạt tài khoản">
+                                    <i class="fa-solid fa-user-check"></i>
+                                </button>
+                            }
                         </form>
                     </td>
                 </tr>
@@ -81,13 +109,14 @@
             @if (!Model.Any())
             {
                 <tr>
-                    <td colspan="7" style="text-align:center;color:#a09098;padding:32px;">
+                    <td colspan="8" style="text-align:center;color:#a09098;padding:32px;">
                         Chưa có tài khoản nào. <a href="javascript:void(0)" onclick="handleCreate()">Thêm mới</a>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
+    </div>
     @await Html.PartialAsync("_Pager")
 </div>
 
@@ -137,8 +166,9 @@
         }
     }
 
-    async function handleDelete(accountId, username) {
-        if (!confirm(`Bạn có chắc chắn muốn xóa tài khoản ${username}?`)) {
+    async function handleDelete(accountId, username, isActive) {
+        const actionText = isActive ? "Khóa" : "Kích hoạt lại";
+        if (!confirm(`Bạn có chắc chắn muốn ${actionText} tài khoản ${username}?`)) {
             return;
         }
         const verified = await verifyPassword();
