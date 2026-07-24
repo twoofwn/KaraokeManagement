@@ -36,6 +36,32 @@ namespace KaraokeManagement.Services
             _context = context;
         }
 
+        public static DateTime GetShiftEndDateTime(DateOnly workDate, TimeSpan startTime, TimeSpan endTime)
+        {
+            if (endTime <= startTime || endTime == TimeSpan.Zero)
+            {
+                return workDate.AddDays(1).ToDateTime(TimeOnly.FromTimeSpan(endTime));
+            }
+            return workDate.ToDateTime(TimeOnly.FromTimeSpan(endTime));
+        }
+
+        public static DateTime GetShiftStartDateTime(DateOnly workDate, TimeSpan startTime)
+        {
+            return workDate.ToDateTime(TimeOnly.FromTimeSpan(startTime));
+        }
+
+        public static bool IsShiftStarted(DateOnly workDate, TimeSpan startTime, DateTime now)
+        {
+            var startDateTime = GetShiftStartDateTime(workDate, startTime);
+            return now >= startDateTime;
+        }
+
+        public static bool IsShiftConcluded(DateOnly workDate, TimeSpan startTime, TimeSpan endTime, DateTime now)
+        {
+            var endDateTime = GetShiftEndDateTime(workDate, startTime, endTime);
+            return now >= endDateTime;
+        }
+
         // 2. AUTO-SCHEDULING ALGORITHM
         public async Task<bool> GenerateWeeklySchedule(DateTime startDate)
         {
@@ -48,6 +74,17 @@ namespace KaraokeManagement.Services
             if (sunday < DateTime.Today)
             {
                 throw new InvalidOperationException("Không thể xếp lịch cho tuần đã qua trong quá khứ.");
+            }
+
+            DateOnly monDate = DateOnly.FromDateTime(monday);
+            DateOnly sunDate = DateOnly.FromDateTime(sunday);
+
+            bool hasExistingSchedules = await _context.EmployeeSchedules
+                .AnyAsync(s => s.WorkDate >= monDate && s.WorkDate <= sunDate);
+
+            if (hasExistingSchedules)
+            {
+                throw new InvalidOperationException("Tuần này đã có lịch làm việc trước đó. Không thể tự động xếp lịch ghi đè.");
             }
 
             var shifts = await _context.WorkShifts.ToListAsync();
@@ -119,23 +156,34 @@ namespace KaraokeManagement.Services
             if (reqSched.WorkDate < DateOnly.FromDateTime(DateTime.Today))
                 return (false, "Không thể chỉnh sửa hoặc đổi ca cho các ngày trong quá khứ.");
 
-            // Real-time lock: block swaps for today's shifts that have already ended
-            if (reqSched.WorkDate == DateOnly.FromDateTime(DateTime.Today))
+            // Check for duplicate pending/consented swap request
+            bool duplicate = await _context.ShiftSwapRequests.AnyAsync(r =>
+                (r.Status == "Pending" || r.Status == "Consented") &&
+                ((r.RequesterId == requesterId && r.RequesterScheduleId == requesterScheduleId && r.TargetId == targetId && r.TargetScheduleId == targetScheduleId) ||
+                 (r.RequesterScheduleId == requesterScheduleId && r.TargetScheduleId == targetScheduleId)));
+
+            if (duplicate)
+                return (false, "Bạn đã gửi yêu cầu đổi ca làm việc này trước đó và đang chờ xử lý.");
+
+            // Real-time lock: block swaps for shifts that have already started
+            var reqShift = await _context.WorkShifts.FindAsync(reqSched.ShiftId);
+            if (reqShift != null && IsShiftStarted(reqSched.WorkDate, reqShift.StartTime, DateTime.Now))
             {
-                var reqShift = await _context.WorkShifts.FindAsync(reqSched.ShiftId);
-                if (reqShift != null && DateTime.Now.TimeOfDay >= reqShift.EndTime)
-                    return (false, "Không thể đổi ca hoặc phân ca cho ca làm việc đã kết thúc.");
+                return (false, "Không thể đổi ca cho ca làm việc đã hoặc đang diễn ra.");
+            }
+
+            var tarShift = await _context.WorkShifts.FindAsync(tarSched.ShiftId);
+            if (tarShift != null && IsShiftStarted(tarSched.WorkDate, tarShift.StartTime, DateTime.Now))
+            {
+                return (false, "Không thể đổi ca cho ca làm việc đã hoặc đang diễn ra.");
             }
 
             if (reqSched.AccountId != requesterId || tarSched.AccountId != targetId)
                 return (false, "Thông tin phân ca không trùng khớp với nhân viên.");
 
-            // Validation: Both employees MUST have the EXACT SAME Role and be scheduled on the EXACT SAME Day
+            // Validation: Both employees MUST have the EXACT SAME Role
             if (reqSched.Account.RoleId != tarSched.Account.RoleId && reqSched.Account.Role.RoleName != tarSched.Account.Role.RoleName)
                 return (false, "Cả 2 nhân viên phải có cùng Chức vụ (Role) mới có thể đổi ca.");
-
-            if (reqSched.WorkDate != tarSched.WorkDate)
-                return (false, "Cả 2 ca làm việc phải thuộc cùng 1 Ngày làm việc.");
 
             var swapReq = new ShiftSwapRequest
             {
@@ -174,6 +222,9 @@ namespace KaraokeManagement.Services
 
             req.Status = "Completed"; // Mark as Completed automatically
 
+            // Auto-reject any other conflicting pending/consented swap requests for these schedules
+            await RejectConflictingSwapRequestsAsync(req.SwapRequestId, req.RequesterScheduleId, req.TargetScheduleId);
+
             await _context.SaveChangesAsync();
 
             return (true, "Đổi ca thành công! Ca làm việc đã được tự động hoán đổi.");
@@ -210,6 +261,9 @@ namespace KaraokeManagement.Services
             req.Status = "Approved";
             req.ApprovedById = managerId;
 
+            // Auto-reject any other conflicting pending/consented swap requests for these schedules
+            await RejectConflictingSwapRequestsAsync(req.SwapRequestId, req.RequesterScheduleId, req.TargetScheduleId);
+
             await _context.SaveChangesAsync();
             return (true, "Đã phê duyệt và hoán đổi ca làm việc thành công.");
         }
@@ -224,6 +278,21 @@ namespace KaraokeManagement.Services
 
             await _context.SaveChangesAsync();
             return (true, "Đã từ chối yêu cầu đổi ca.");
+        }
+
+        private async Task RejectConflictingSwapRequestsAsync(int currentSwapRequestId, int reqScheduleId, int tarScheduleId)
+        {
+            var conflictingRequests = await _context.ShiftSwapRequests
+                .Where(r => r.SwapRequestId != currentSwapRequestId &&
+                            (r.Status == "Pending" || r.Status == "Consented") &&
+                            (r.RequesterScheduleId == reqScheduleId || r.TargetScheduleId == reqScheduleId ||
+                             r.RequesterScheduleId == tarScheduleId || r.TargetScheduleId == tarScheduleId))
+                .ToListAsync();
+
+            foreach (var conf in conflictingRequests)
+            {
+                conf.Status = "Rejected";
+            }
         }
 
         // 4. LEAVE REQUEST LOGIC
@@ -352,7 +421,18 @@ namespace KaraokeManagement.Services
             DateOnly monDate = DateOnly.FromDateTime(monday);
             DateOnly sunDate = DateOnly.FromDateTime(sunday);
 
-            var shifts = await _context.WorkShifts.ToListAsync();
+            var rawShifts = await _context.WorkShifts.ToListAsync();
+            var shifts = rawShifts.OrderBy(s => {
+                var name = s.ShiftName.ToLower();
+                if (name.Contains("khuya") || name.Contains("đêm") || name.Contains("night"))
+                    return 1;
+                if (name.Contains("sáng") || name.Contains("morning"))
+                    return 2;
+                if (name.Contains("chiều") || name.Contains("tối") || name.Contains("afternoon") || name.Contains("evening"))
+                    return 3;
+
+                return s.StartTime.Hours;
+            }).ThenBy(s => s.StartTime).ToList();
             var rawSchedules = await _context.EmployeeSchedules
                 .Include(s => s.Account).ThenInclude(a => a.Role)
                 .Include(s => s.Shift)
@@ -455,15 +535,14 @@ namespace KaraokeManagement.Services
             var rawShifts = await _context.WorkShifts.ToListAsync();
             var shifts = rawShifts.OrderBy(s => {
                 var name = s.ShiftName.ToLower();
-                if (name.Contains("khuya") || name.Contains("tối") || name.Contains("đêm") || name.Contains("night"))
+                if (name.Contains("khuya") || name.Contains("đêm") || name.Contains("night"))
+                    return 1;
+                if (name.Contains("sáng") || name.Contains("morning"))
+                    return 2;
+                if (name.Contains("chiều") || name.Contains("tối") || name.Contains("afternoon") || name.Contains("evening"))
                     return 3;
 
-                var startHour = s.StartTime.Hours;
-                if (startHour >= 18 || startHour < 6)
-                    return 3;
-                if (startHour >= 12 && startHour < 18)
-                    return 2;
-                return 1;
+                return s.StartTime.Hours;
             }).ThenBy(s => s.StartTime).ToList();
 
             var staffList = await _context.Accounts
@@ -520,31 +599,31 @@ namespace KaraokeManagement.Services
                     }
                 }
 
-                // Real-time lock: reject any modification to today's shifts that have already ended
-                var now = DateTime.Now.TimeOfDay;
-                var todayShiftIds = new HashSet<int>();
+                // Real-time lock: reject any modification to shifts that have already ended
+                var allShiftsDict = await _context.WorkShifts.ToDictionaryAsync(s => s.ShiftId);
+                var recordsToCheck = new List<(DateOnly WorkDate, int ShiftId)>();
 
                 if (payload.AddedRecords != null)
-                    foreach (var r in payload.AddedRecords.Where(r => r.WorkDate == today))
-                        todayShiftIds.Add(r.ShiftId);
+                    foreach (var r in payload.AddedRecords) recordsToCheck.Add((r.WorkDate, r.ShiftId));
                 if (payload.UpdatedRecords != null)
-                    foreach (var r in payload.UpdatedRecords.Where(r => r.WorkDate == today))
-                        todayShiftIds.Add(r.ShiftId);
+                    foreach (var r in payload.UpdatedRecords) recordsToCheck.Add((r.WorkDate, r.ShiftId));
                 if (payload.DeletedRecordIds != null && payload.DeletedRecordIds.Any())
                 {
-                    var deletedTodayShiftIds = await _context.EmployeeSchedules
-                        .Where(s => payload.DeletedRecordIds.Contains(s.ScheduleId) && s.WorkDate == today)
-                        .Select(s => s.ShiftId).ToListAsync();
-                    foreach (var sid in deletedTodayShiftIds) todayShiftIds.Add(sid);
+                    var deletedRecords = await _context.EmployeeSchedules
+                        .Where(s => payload.DeletedRecordIds.Contains(s.ScheduleId))
+                        .Select(s => new { s.WorkDate, s.ShiftId }).ToListAsync();
+                    foreach (var r in deletedRecords) recordsToCheck.Add((r.WorkDate, r.ShiftId));
                 }
 
-                if (todayShiftIds.Any())
+                foreach (var rec in recordsToCheck)
                 {
-                    var concludedShift = await _context.WorkShifts
-                        .Where(s => todayShiftIds.Contains(s.ShiftId) && s.EndTime <= now)
-                        .FirstOrDefaultAsync();
-                    if (concludedShift != null)
-                        return (false, "Không thể đổi ca hoặc phân ca cho ca làm việc đã kết thúc.");
+                    if (allShiftsDict.TryGetValue(rec.ShiftId, out var shift))
+                    {
+                        if (IsShiftStarted(rec.WorkDate, shift.StartTime, DateTime.Now))
+                        {
+                            return (false, "Không thể chỉnh sửa hoặc phân ca cho ca làm việc đã hoặc đang diễn ra.");
+                        }
+                    }
                 }
 
                 // 1. Execute all Insert operations for payload.AddedRecords

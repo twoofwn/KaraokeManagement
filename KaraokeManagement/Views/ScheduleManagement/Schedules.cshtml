@@ -270,10 +270,9 @@
                                 .Where(s => s.ShiftId == shift.ShiftId && s.WorkDate == dayDate)
                                 .ToList();
                             var isToday = dayDate == DateOnly.FromDateTime(DateTime.Now);
-                            var isPast = dayDate < DateOnly.FromDateTime(DateTime.Today);
-                            // Real-time lock: today's shift is locked if shift has ended
-                            var isConcluded = isToday && DateTime.Now.TimeOfDay >= shift.EndTime;
-                            var isLocked = isPast || isConcluded;
+                            var shiftStartDateTime = dayDate.ToDateTime(TimeOnly.FromTimeSpan(shift.StartTime));
+                            var isStarted = DateTime.Now >= shiftStartDateTime;
+                            var isLocked = isStarted;
 
                             <td class="schedule-cell-white align-top @(isToday ? "today-column" : "")" 
                                 data-cell-shift="@shift.ShiftId" 
@@ -316,9 +315,9 @@
                                         <i class="fa-solid fa-plus me-1"></i>Thêm NV
                                     </button>
                                 }
-                                @if (isConcluded)
+                                @if (isStarted)
                                 {
-                                    <div class="text-muted small fst-italic mt-1">⏰ Ca đã kết thúc</div>
+                                    <div class="text-muted small fst-italic mt-1">🔒 Ca đã/đang diễn ra</div>
                                 }
                             </td>
                         }
