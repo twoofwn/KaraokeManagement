@@ -11,6 +11,7 @@ namespace KaraokeManagement.ViewModel
         public string RoomTypeName { get; set; } = string.Empty;
         public decimal PricePerHour { get; set; }
 
+
         public DateTime CheckInTime { get; set; }
         public DateTime CheckOutTime { get; set; }
         public double DurationHours { get; set; }
@@ -25,6 +26,11 @@ namespace KaraokeManagement.ViewModel
         public string CustomerName { get; set; } = string.Empty;
         public string CustomerPhone { get; set; } = string.Empty;
         public string CustomerTier { get; set; } = string.Empty;
+
+        public string StaffName { get; set; } = "Chýa phân công";
+
+        public decimal SurchargeAmount { get; set; }
+        public string SurchargeNote { get; set; } = string.Empty;
 
         public List<CheckoutItemViewModel> OrderItems { get; set; } = new List<CheckoutItemViewModel>();
     }

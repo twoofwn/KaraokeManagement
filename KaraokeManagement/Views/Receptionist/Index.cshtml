@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="~/css/receptionist.css" asp-append-version="true" />
 </head>
 <body>
-    <partial name="_ReceptionistSidebar" />
+    <partial name="_ReceptionistLayout" />
 
     <div class="reception-main">
         <header class="reception-header1">
@@ -31,39 +31,45 @@
                 </div>
 
                 <div class="filter-section">
-                    <div class="filter-group">
-                        <span class="filter-label">Loại phòng</span>
-                        <select class="filter-dropdown" id="roomTypeSelect">
-                            @foreach (var type in Model.RoomTypes)
-                            {
-                                if (type == Model.SelectedRoomType)
-                                {
-                                    <option value="@type" selected>@type</option>
-                                }
-                                else
-                                {
-                                    <option value="@type">@type</option>
-                                }
-                            }
-                        </select>
-                    </div>
+                    <form id="filterForm" method="get" action="@Url.Action("Index", "Receptionist")">
+                        <div class="filter-section">
+                            <div class="filter-group">
+                                <span class="filter-label">Loại phòng</span>
 
-                    <div class="filter-group">
-                        <span class="filter-label">Trạng thái</span>
-                        <select class="filter-dropdown" id="statusSelect">
-                            @foreach (var status in Model.Statuses)
-                            {
-                                if (status == Model.SelectedStatus)
-                                {
-                                    <option value="@status" selected>@status</option>
-                                }
-                                else
-                                {
-                                    <option value="@status">@status</option>
-                                }
-                            }
-                        </select>
-                    </div>
+                                <select class="filter-dropdown" id="roomTypeSelect" name="roomType">
+                                    @foreach (var type in Model.RoomTypes)
+                                    {
+                                        if (type == Model.SelectedRoomType)
+                                        {
+                                            <option value="@type" selected>@type</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@type">@type</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <span class="filter-label">Trạng thái</span>
+
+                                <select class="filter-dropdown" id="statusSelect" name="status">
+                                    @foreach (var status in Model.Statuses)
+                                    {
+                                        if (status == Model.SelectedStatus)
+                                        {
+                                            <option value="@status" selected>@status</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@status">@status</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -174,44 +180,26 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+                document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('filterForm');
-            const searchInput = document.getElementById('searchInput');
             const roomTypeSelect = document.getElementById('roomTypeSelect');
             const statusSelect = document.getElementById('statusSelect');
-            const hiddenRoomType = document.getElementById('hiddenRoomType');
-            const hiddenStatus = document.getElementById('hiddenStatus');
 
+            // Tu submit
             if (roomTypeSelect) {
                 roomTypeSelect.addEventListener('change', () => {
-                    if (hiddenRoomType) hiddenRoomType.value = roomTypeSelect.value;
                     if (form) form.submit();
                 });
             }
 
+            // tu submit form khi doi trang thai
             if (statusSelect) {
                 statusSelect.addEventListener('change', () => {
-                    if (hiddenStatus) hiddenStatus.value = statusSelect.value;
                     if (form) form.submit();
                 });
             }
 
-            if (searchInput) {
-                let timeout = null;
-                searchInput.addEventListener('input', () => {
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => {
-                        if (form) form.submit();
-                    }, 600);
-                });
-
-                const searchVal = searchInput.value;
-                if (searchVal) {
-                    searchInput.focus();
-                    searchInput.setSelectionRange(searchVal.length, searchVal.length);
-                }
-            }
-
+            // Dem nguoc
             const timers = document.querySelectorAll('.time-left-countdown');
             setInterval(() => {
                 timers.forEach(timer => {
@@ -227,6 +215,7 @@
                 });
             }, 1000);
 
+            // redirect detail
             const usingCards = document.querySelectorAll('.room-card.status-using');
             usingCards.forEach(card => {
                 card.style.cursor = 'pointer';
@@ -240,7 +229,7 @@
             });
         });
 
-        // Chuyển đổi số giây thành định dạng giờ:phút:giây
+        // Chuyen doi thanh dinh dang gio phut giay
         function formatSeconds(totalSecs) {
             const hrs = Math.floor(totalSecs / 3600);
             const mins = Math.floor((totalSecs % 3600) / 60);

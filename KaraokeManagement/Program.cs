@@ -16,6 +16,10 @@ builder.Services.AddScoped<PricePolicyService>();
 // Auth
 builder.Services.AddScoped<KaraokeManagement.Services.AuthService.AuthService>();
 
+// Admin
+builder.Services.AddScoped<KaraokeManagement.Services.AdminServices.LoyalPointPolicyService>();
+builder.Services.AddScoped<KaraokeManagement.Services.AdminServices.AdminAccountService>();
+
 // Receptionist
 builder.Services.AddScoped<KaraokeManagement.Services.ReceptionistServices.DashboardService>();
 builder.Services.AddScoped<KaraokeManagement.Services.ReceptionistServices.OrderService>();
@@ -45,12 +49,14 @@ builder.Services.AddScoped<KaraokeManagement.Services.HRMServices.HRMService>();
 //Staff Services
 builder.Services.AddScoped<KaraokeManagement.Services.StaffServices.StaffService>();
 
+builder.Services.AddScoped<KaraokeManagement.Services.AuthService.AccountCookieAuthenticationEvents>();
 builder.Services.AddAuthentication("CookieAuth")
     .AddCookie("CookieAuth", options =>
     {
         options.LoginPath = "/Auth/Login";
         options.AccessDeniedPath = "/Auth/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromDays(7);
+        options.EventsType = typeof(KaraokeManagement.Services.AuthService.AccountCookieAuthenticationEvents);
     });
 
 var app = builder.Build();

@@ -58,9 +58,9 @@
                 <i class="fa-solid fa-users nav-icon"></i>
                 <span>Tài khoản</span>
             </a>
-            <a href="#" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "settings" ? "active" : "")">
-                <i class="fa-solid fa-gear nav-icon"></i>
-                <span>Cài đặt</span>
+            <a href="/Admin/LoyalPointPolicies" class="nav-item @(ViewData["ActiveNav"]?.ToString() == "loyal-point-policies" ? "active" : "")">
+                <i class="fa-solid fa-coins nav-icon"></i>
+                <span>Quy đổi điểm</span>
             </a>
         </nav>
 
@@ -96,6 +96,7 @@
     </div>
 </div>
 
+@await Html.PartialAsync("_AdminPopups")
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 @await RenderSectionAsync("Scripts", required: false)

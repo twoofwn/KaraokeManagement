@@ -17,6 +17,7 @@ public class AuthController : Controller
 
     // Nhan vien dang nhap
     [HttpGet]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public IActionResult Login()
     {
         if (User.Identity?.IsAuthenticated == true)
@@ -63,6 +64,7 @@ public class AuthController : Controller
 
     // Customer dang nhap
     [HttpGet]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public IActionResult CustomerLogin()
     {
         if (User.Identity?.IsAuthenticated == true && User.IsInRole("Customer"))
@@ -184,6 +186,39 @@ public class AuthController : Controller
     {
         var result = await _authService.ResendOtpAsync(email);
         return Json(new { success = result.success, message = result.message });
+    }
+
+
+    // Reset pass
+    [HttpGet]
+    public IActionResult ResetPassword(string email, string token)
+    {
+        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
+        {
+            return RedirectToAction("Login");
+        }
+        var model = new ResetPasswordViewModel { Email = email, Token = token };
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            ViewBag.Error = "Vui lòng nhập mật khẩu hợp lệ.";
+            return View(model);
+        }
+
+        var result = await _authService.ResetPasswordAsync(model);
+        if (result.success)
+        {
+            TempData["SuccessMessage"] = "Đặt lại mật khẩu thành công! Vui lòng đăng nhập bằng mật khẩu mới.";
+            return RedirectToAction("Login");
+        }
+
+        ViewBag.Error = result.error;
+        return View(model);
     }
 
 

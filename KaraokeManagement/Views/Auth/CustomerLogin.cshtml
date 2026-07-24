@@ -19,6 +19,18 @@
         <i class="fa-solid fa-house"></i>
     </a>
 
+
+    <div class="auth-switch-container">
+        <a asp-controller="Auth" asp-action="Login" class="auth-switch-btn ">
+            <i class="fa-solid fa-user-gear"></i>
+            <span>Nhân viên</span>
+        </a>
+        <a asp-controller="Auth" asp-action="CustomerLogin" class="auth-switch-btn active">
+            <i class="fa-solid fa-user"></i>
+            <span>Khách hàng</span>
+        </a>
+    </div>
+
     <div class="mesh-background">
         <div class="mesh-item top-left mesh-1"></div>
         <div class="mesh-item bottom-right mesh-1"></div>

@@ -59,8 +59,14 @@
                         <a href="/Admin/SupplierEdit/@supplier.SupplierId" class="action-btn edit">
                             <i class="fa-solid fa-pen"></i>
                         </a>
-                        <form method="post" action="/Admin/SupplierDelete/@supplier.SupplierId"
-                              onsubmit="return confirm('Xóa nhà cung cấp này?')" style="display:inline">
+                        <form method="post"
+                              action="/Admin/SupplierDelete/@supplier.SupplierId"
+                              data-admin-confirm-title="Xóa nhà cung cấp?"
+                              data-admin-confirm="Nhà cung cấp “@supplier.SupplierName” sẽ bị xóa khỏi hệ thống."
+                              data-admin-confirm-button="Xóa nhà cung cấp"
+                              data-admin-confirm-variant="danger"
+                              data-admin-confirm-icon="fa-solid fa-truck-field"
+                              style="display:inline">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="action-btn delete">
                                 <i class="fa-solid fa-trash"></i>

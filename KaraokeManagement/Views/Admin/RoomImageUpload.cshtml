@@ -83,8 +83,13 @@
                 <div style="position:relative;width:140px;">
                     <img src="@img.ImageUrl" alt="room img"
                          style="width:140px;height:100px;object-fit:cover;border-radius:8px;border:2px solid #e8e0f0;display:block;" />
-                    <form method="post" action="/Admin/RoomImageDelete/@img.RoomImageId"
-                          onsubmit="return confirm('Xóa ảnh này?')"
+                    <form method="post"
+                          action="/Admin/RoomImageDelete/@img.RoomImageId"
+                          data-admin-confirm-title="Xóa ảnh phòng?"
+                          data-admin-confirm="Ảnh này sẽ bị xóa vĩnh viễn khỏi thư viện loại phòng."
+                          data-admin-confirm-button="Xóa ảnh"
+                          data-admin-confirm-variant="danger"
+                          data-admin-confirm-icon="fa-solid fa-image"
                           style="position:absolute;top:4px;right:4px;">
                         @Html.AntiForgeryToken()
                         <button type="submit"

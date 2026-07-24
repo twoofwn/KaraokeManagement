@@ -64,6 +64,8 @@ public class InvoiceService
                                             .Include(i => i.Booking)
                                             .ThenInclude(b => b.Customer)
                                             .ThenInclude(c => c.Tier)
+                                            .Include(i => i.Booking)
+                                                .ThenInclude(b => b.Staff)
                                             .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
         if (invoice == null) return null;
 
@@ -92,6 +94,7 @@ public class InvoiceService
             CustomerName = invoice.Booking?.Customer?.FullName ?? "Khách vãng lai",
             CustomerPhone = invoice.Booking?.Customer?.Phone ?? "",
             CustomerTier = invoice.Booking?.Customer?.Tier?.TierName ?? "THƯỜNG",
+            StaffName = invoice.Booking?.Staff?.FullName ?? "Chưa phân công",
             OrderItems = invoice.InvoiceDetails.Select(id => new CheckoutItemViewModel { ServiceName = id.Service.ServiceName, Quantity = id.Quantity, UnitPrice = id.UnitPrice, TotalPrice = id.Quantity * id.UnitPrice, Unit = id.Service.Unit }).ToList()
         };
     }
