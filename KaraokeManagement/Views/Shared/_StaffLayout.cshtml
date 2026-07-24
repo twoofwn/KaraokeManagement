@@ -32,61 +32,26 @@
 			</div>
 
 			<nav class="sidebar-nav">
-				@if (roleName == "Receptionist")
-				{
-					<a href="/Receptionist/Index" class="nav-item">
-						<i class="fa-solid fa-arrow-left-long nav-icon"></i>
-						<span>Quay lại Lễ tân</span>
-					</a>
-				}
-				else
-				{
-					<a href="/Staff/Dashboard"
-					   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "dashboard" ? "active" : "")">
-						<i class="fa-solid fa-table-columns nav-icon"></i>
-						<span>Bảng điều khiển</span>
-					</a>
-				}
+				<a href="/Staff/Dashboard"
+				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "dashboard" ? "active" : "")">
+					<i class="fa-solid fa-table-columns nav-icon"></i>
+					<span>Bảng điều khiển</span>
+				</a>
 				<a href="/Staff/AssignedRooms"
 				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "assigned" ? "active" : "")">
 					<i class="fa-solid fa-concierge-bell nav-icon"></i>
 					<span>Phòng đang phục vụ</span>
 				</a>
-
-				@if (roleName == "Receptionist")
-				{
-					<a href="/Receptionist/Schedule"
-					   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "schedule" ? "active" : "")">
-						<i class="fa-solid fa-calendar-week nav-icon"></i>
-						<span>Lịch làm việc</span>
-					</a>
-
-					<a href="/Receptionist/SwapRequests"
-					   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "swap" ? "active" : "")">
-						<i class="fa-solid fa-right-left nav-icon"></i>
-						<span>Yêu cầu đổi ca</span>
-					</a>
-
-					<a href="/Receptionist/LeaveRequest"
-					   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "leave_request" ? "active" : "")">
-						<i class="fa-solid fa-calendar-minus nav-icon"></i>
-						<span>Xin nghỉ phép</span>
-					</a>
-				}
-				else
-				{
-					<a href="/Staff/Schedule"
-					   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "schedule" ? "active" : "")">
-						<i class="fa-solid fa-calendar-week nav-icon"></i>
-						<span>Lịch làm việc</span>
-					</a>
-
-					<a href="/Staff/LeaveRequest"
-					   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "leave_request" ? "active" : "")">
-						<i class="fa-solid fa-calendar-minus nav-icon"></i>
-						<span>Xin nghỉ phép</span>
-					</a>
-				}
+				<a href="/Staff/Schedule"
+				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "schedule" ? "active" : "")">
+					<i class="fa-solid fa-calendar-week nav-icon"></i>
+					<span>Lịch làm việc</span>
+				</a>
+				<a href="/Staff/LeaveRequest"
+				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "leave_request" ? "active" : "")">
+					<i class="fa-solid fa-calendar-minus nav-icon"></i>
+					<span>Xin nghỉ phép</span>
+				</a>
 			</nav>
 
 			<div class="sidebar-bottom">
