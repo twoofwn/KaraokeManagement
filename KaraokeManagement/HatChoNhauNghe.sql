@@ -487,11 +487,11 @@ INSERT INTO [MembershipTier] (TierID, TierName, DiscountPercent, MinPoints) VALU
 SET IDENTITY_INSERT [MembershipTier] OFF;
 
 SET IDENTITY_INSERT [RoomType] ON;
-INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageURL, Capacity) VALUES (1, N'Phòng Thường', 150000.00, N'Sức chứa 5-8 người', N'/images/rooms/standard.jpg', 5);
-INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageURL, Capacity) VALUES (2, N'Phòng VIP', 300000.00, N'Sức chứa 10-15 người', N'/images/rooms/vip.jpg', 15);
-INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageURL, Capacity) VALUES (3, N'Phòng Party', 600000.00, N'Sức chứa 30 người', N'/images/rooms/party.jpg', 30);
-INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageURL, Capacity) VALUES (4, N'Phòng Couple', 120000.00, N'Sức chứa 2-4 người', NULL, 10);
-INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageURL, Capacity) VALUES (5, N'Phòng Super VIP (Party)', 600000.00, N'Sức chứa 30 người', NULL, 10);
+INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageURL, Capacity) VALUES (1, N'Phòng Thường', 150000.00, N'Sức chứa 5-8 người', 'https://noithatvieta.vn/upload/images/2021/tu-van-thiet-ke/phong-hat-binh-dan-03.jpg', 5);
+INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageURL, Capacity) VALUES (2, N'Phòng VIP', 300000.00, N'Sức chứa 10-15 người', 'https://www.vntrip.vn/cam-nang/wp-content/uploads/2020/03/top-quan-cafe-vip-nhat-ha-noi-1.jpg', 15);
+INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageURL, Capacity) VALUES (3, N'Phòng Party', 600000.00, N'Sức chứa 30 người', 'https://vietwave.com.vn/karaokebay/upload/files/sanpham/thiet_ke_phong_hat_dep_1024x576.jpg', 30);
+INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageURL, Capacity) VALUES (4, N'Phòng Couple', 120000.00, N'Sức chứa 2-4 người', 'https://noithatktv.vn/wp-content/uploads/2021/01/thiet-ke-phong-hat-karaoke-gia-dinh-1.jpg', 10);
+INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageURL, Capacity) VALUES (5, N'Phòng Super VIP (Party)', 600000.00, N'Sức chứa 30 người', 'https://noithatkaraoke.vn/upload/images/mau-phong-karaoke/phong-karaoke-2024/phong-karaoke-phong-cach-moi-nam-2024.jpg', 10);
 SET IDENTITY_INSERT [RoomType] OFF;
 
 SET IDENTITY_INSERT [Category] ON;
@@ -622,26 +622,24 @@ VALUES (12, 1, N'Khách Vãng Lai', '0000000000', NULL, '123456', 0, '2026-07-22
 SET IDENTITY_INSERT [Customer] OFF;
 
 SET IDENTITY_INSERT [Room] ON;
+
 INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (1, 1, N'Tầng 1 - 101', N'Available');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (2, 1, N'Tầng 1 - 102', N'Available');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (3, 1, N'Tầng 1 - 103', N'Maintenance');
+INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (2, 2, N'Tầng 1 - 102', N'Available');
+INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (3, 3, N'Tầng 1 - 103', N'Maintenance');
 INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (4, 4, N'Tầng 1 - 104 (Couple)', N'InUse');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (5, 2, N'Tầng 2 - 201 (VIP)', N'Available');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (6, 2, N'Tầng 2 - 202 (VIP)', N'InUse');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (7, 2, N'Tầng 2 - 203 (VIP)', N'Available');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (8, 3, N'Tầng 3 - 301 (Party)', N'Available');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (9, 3, N'Tầng 3 - 302 (Party)', N'InUse');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (10, 1, N'Tầng 4 - 401', N'Available');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (11, 1, N'Tầng 1 - 105', N'Available');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (12, 4, N'Tầng 1 - 106', N'Available');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (13, 4, N'Tầng 1 - 107', N'Maintenance');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (14, 4, N'Tầng 1 - 108 (Couple)', N'InUse');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (15, 5, N'Tầng 2 - 204 (VIP)', N'Available');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (16, 5, N'Tầng 2 - 205 (VIP)', N'InUse');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (17, 5, N'Tầng 2 - 206 (VIP)', N'Available');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (18, 3, N'Tầng 3 - 303 (Party)', N'Available');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (19, 3, N'Tầng 3 - 304 (Party)', N'InUse');
-INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (20, 1, N'Tầng 4 - 402', N'Available');
+INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (5, 1, N'Tầng 2 - 201 (VIP)', N'Available');
+INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (6, 2, N'Tầng 2 - 202 (VIP)', N'InUse');    
+INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (7, 3, N'Tầng 2 - 203 (VIP)', N'Available');
+INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (8, 4, N'Tầng 2 - 204 (VIP)', N'Available');
+INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (9, 1, N'Tầng 3 - 301 (Party)', N'Available');
+INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (10, 2, N'Tầng 3 - 302 (Party)', N'InUse'); 
+INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (11, 3, N'Tầng 3 - 303 (Party)', N'Available');
+INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (12, 4, N'Tầng 3 - 304 (Party)', N'InUse'); 
+INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (13, 1, N'Tầng 4 - 401', N'Available');
+INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (14, 2, N'Tầng 4 - 402', N'Available');
+INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (15, 4, N'Tầng 4 - 403', N'Available');
+INSERT INTO [Room] (RoomID, RoomTypeID, RoomName, Status) VALUES (16, 5, N'Tầng 4 - 404 (Super VIP)', N'Available');
+
 SET IDENTITY_INSERT [Room] OFF;
 
 SET IDENTITY_INSERT [Equipment] ON;
@@ -731,36 +729,67 @@ INSERT INTO [RoomPrice] (PriceID, RoomTypeID, StartTime, EndTime, PricePerHour, 
 SET IDENTITY_INSERT [RoomPrice] OFF;
 
 SET IDENTITY_INSERT [Booking] ON;
+
+-- Đơn phòng 5 (Đã hoàn thành trong quá khứ)
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (1, 1, 3, 5, '2026-06-24 21:58:47', '2026-06-25 21:58:47', '2026-06-26 01:58:47', N'Confirmed', NULL, 4, N'Khách gọi đặt trước');
+VALUES (1, 1, 3, 5, '2026-06-24 21:58:47', '2026-06-25 21:58:47', '2026-06-26 01:58:47', N'Completed', 11, 4, N'Khách gọi đặt trước');
+
+-- Đơn phòng 8 (Đã hoàn thành trong quá khứ)
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (2, 2, 4, 8, '2026-06-26 21:58:47', '2026-06-26 21:58:47', '2026-06-27 00:58:47', N'Confirmed', NULL, 10, N'Sinh nhật');
+VALUES (2, 2, 4, 8, '2026-06-26 21:58:47', '2026-06-26 21:58:47', '2026-06-27 00:58:47', N'Completed', 12, 10, N'Sinh nhật');
+
+-- Đơn phòng 4 (Đã hoàn thành trong quá khứ)
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (3, 3, 3, 4, '2026-06-27 21:58:47', '2026-06-27 21:58:47', '2026-06-27 23:58:47', N'Confirmed', NULL, NULL, NULL);
+VALUES (3, 3, 3, 4, '2026-06-27 21:58:47', '2026-06-27 21:58:47', '2026-06-27 23:58:47', N'Completed', 13, NULL, NULL);
+
+-- Đơn phòng 1 (Đã hoàn thành trong quá khứ)
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (4, 1, 3, 1, '2026-06-12 21:58:47', '2026-06-13 21:58:47', '2026-06-13 23:58:47', N'Confirmed', NULL, NULL, NULL);
+VALUES (4, 1, 3, 1, '2026-06-12 21:58:47', '2026-06-13 21:58:47', '2026-06-13 23:58:47', N'Completed', 14, NULL, NULL);
+
+-- Đơn phòng 2 (Chờ nhận phòng ngày mai -> Phòng 2 vẫn Available)
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
 VALUES (5, 2, 3, 2, '2026-07-24 21:58:47', '2026-07-25 20:00:00', '2026-07-25 22:00:00', N'Pending', NULL, 4, N'Sinh nhật');
+
+-- 🟢 ĐẮT PHÒNG 4: Đang sử dụng (CheckedIn) -> Khớp với Room 4 (InUse)
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (6, 3, 4, 4, '2026-07-24 21:58:47', '2026-07-25 17:00:00', '2026-07-25 18:30:00', N'Pending', NULL, 3, NULL);
+VALUES (6, 3, 4, 4, '2026-07-24 15:00:00', '2026-07-24 17:00:00', '2026-07-24 22:00:00', N'CheckedIn', 11, 3, N'Khách đang hát');
+
+-- Đơn phòng 5 (Chờ nhận phòng ngày mai -> Phòng 5 vẫn Available)
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (7, 4, 4, 5, '2026-07-23 21:58:47', '2026-07-24 17:00:00', '2026-07-24 19:00:00', N'Pending', NULL, 4, N'Có thể đến muộn 10p');
+VALUES (7, 4, 4, 5, '2026-07-24 10:00:00', '2026-07-25 17:00:00', '2026-07-25 19:00:00', N'Pending', NULL, 4, N'Có thể đến muộn 10p');
+
+-- 🟢 ĐẶT PHÒNG 6: Đang sử dụng (CheckedIn) -> Khớp với Room 6 (InUse)
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (8, 5, 3, 6, '2026-07-23 21:58:47', '2026-07-24 20:00:00', '2026-07-24 22:00:00', N'Pending', NULL, 2, NULL);
+VALUES (8, 5, 3, 6, '2026-07-24 16:00:00', '2026-07-24 17:30:00', '2026-07-24 21:30:00', N'CheckedIn', 12, 2, N'Khách nhận phòng sớm');
+
+-- Đơn lịch sử (Completed)
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (9, 1, 3, 7, '2026-06-17 21:58:47', '2026-06-18 21:58:47', '2026-06-18 23:58:47', N'Completed', NULL, NULL, NULL);
+VALUES (9, 1, 3, 7, '2026-06-17 21:58:47', '2026-06-18 21:58:47', '2026-06-18 23:58:47', N'Completed', 13, NULL, NULL);
+
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (10, 2, 4, 8, '2026-06-18 21:58:47', '2026-06-19 21:58:47', '2026-06-20 00:58:47', N'Completed', NULL, NULL, NULL);
+VALUES (10, 2, 4, 8, '2026-06-18 21:58:47', '2026-06-19 21:58:47', '2026-06-20 00:58:47', N'Completed', 14, NULL, NULL);
+
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (11, 3, 4, 9, '2026-06-19 21:58:47', '2026-06-20 21:58:47', '2026-06-21 01:58:47', N'Completed', NULL, NULL, NULL);
+VALUES (11, 3, 4, 9, '2026-06-19 21:58:47', '2026-06-20 21:58:47', '2026-06-21 01:58:47', N'Completed', 11, NULL, NULL);
+
+-- 🟢 ĐẶT PHÒNG 10: Đang sử dụng (CheckedIn) -> Khớp với Room 10 (InUse)
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (12, 4, 3, 10, '2026-06-20 21:58:47', '2026-06-21 21:58:47', '2026-06-21 23:58:47', N'Completed', NULL, NULL, NULL);
+VALUES (12, 4, 3, 10, '2026-07-24 14:00:00', '2026-07-24 16:30:00', '2026-07-24 20:30:00', N'CheckedIn', 12, 8, N'Tiệc công ty');
+
+-- Đơn lịch sử (Completed)
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (13, 5, 3, 1, '2026-06-21 21:58:47', '2026-06-22 21:58:47', '2026-06-23 00:58:47', N'Completed', NULL, NULL, NULL);
+VALUES (13, 5, 3, 1, '2026-06-21 21:58:47', '2026-06-22 21:58:47', '2026-06-23 00:58:47', N'Completed', 13, NULL, NULL);
+
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (14, 1, 4, 2, '2026-06-22 21:58:47', '2026-06-23 21:58:47', '2026-06-23 23:58:47', N'Completed', NULL, NULL, NULL);
+VALUES (14, 1, 4, 2, '2026-06-22 21:58:47', '2026-06-23 21:58:47', '2026-06-23 23:58:47', N'Completed', 14, NULL, NULL);
+
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (15, 2, 4, 5, '2026-06-23 21:58:47', '2026-06-24 21:58:47', '2026-06-25 01:58:47', N'Completed', NULL, NULL, NULL);
+VALUES (15, 2, 4, 5, '2026-06-23 21:58:47', '2026-06-24 21:58:47', '2026-06-25 01:58:47', N'Completed', 11, NULL, NULL);
+
+-- 🟢 ĐẶT PHÒNG 12: Bổ sung mới -> Đang sử dụng (CheckedIn) -> Khớp với Room 12 (InUse)
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
+VALUES (16, 5, 4, 12, '2026-07-24 15:30:00', '2026-07-24 17:00:00', '2026-07-24 21:00:00', N'CheckedIn', 12, 12, N'Khách vãng lai vào thẳng');
+
 SET IDENTITY_INSERT [Booking] OFF;
 
 SET IDENTITY_INSERT [Invoice] ON;
