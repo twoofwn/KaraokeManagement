@@ -781,6 +781,23 @@ public partial class KaraokeManagementDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
+        modelBuilder.Entity<LoyalPointPolicy>(entity =>
+        {
+            entity.HasKey(e => e.PolicyId);
+            entity.ToTable("LoyalPointPolicy");
+
+            entity.Property(e => e.AmountPerPoint)
+                .HasColumnType("decimal(18, 2)");
+
+            entity.Property(e => e.Description)
+                .HasMaxLength(255);
+
+            entity.HasIndex(e => e.IsActive)
+                .IsUnique()
+                .HasFilter("[IsActive] = 1")
+                .HasDatabaseName("UX_LoyalPointPolicy_OneActive");
+        });
+
         OnModelCreatingPartial(modelBuilder);
     }
 

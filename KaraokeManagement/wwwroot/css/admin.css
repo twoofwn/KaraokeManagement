@@ -784,6 +784,472 @@ input[type="number"]::-webkit-outer-spin-button {
 .admin-alert.success { background: #edfaf3; color: #27a85f; border: 1px solid #c8ecd8; }
 
 /* =============================================
+   LOYAL POINT POLICIES
+   ============================================= */
+.loyal-policy-summary {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+    background: #fff;
+    border: 1px solid #f0eae0;
+    border-radius: 12px;
+}
+
+.loyal-policy-summary-label {
+    color: #a09098;
+    font-size: 12px;
+    margin-bottom: 3px;
+}
+
+.loyal-policy-summary-value {
+    color: #43334C;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.loyal-policy-summary-value.missing {
+    color: #c0264b;
+    font-size: 14px;
+}
+
+.loyal-policy-grid {
+    display: grid;
+    grid-template-columns: minmax(300px, 0.8fr) minmax(420px, 1.2fr);
+    gap: 20px;
+    align-items: start;
+}
+
+.loyal-policy-section-title {
+    margin-bottom: 22px;
+}
+
+.loyal-policy-money-input {
+    position: relative;
+}
+
+.loyal-policy-money-input .field-input {
+    padding-right: 115px;
+}
+
+.loyal-policy-money-input > span {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    color: #8a7e90;
+    font-size: 12px;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.loyal-policy-description {
+    margin-top: 20px;
+}
+
+.loyal-policy-description .field-textarea {
+    min-height: 96px;
+    margin-bottom: 0;
+}
+
+.loyal-policy-options {
+    padding: 10px 14px;
+}
+
+.loyal-policy-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 72px;
+    padding: 13px 14px;
+    margin: 8px 0;
+    border: 1.5px solid #ede6f0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.loyal-policy-option:hover {
+    border-color: #e8b3ce;
+    background: #fdfafc;
+}
+
+.loyal-policy-option.active {
+    border-color: #E83C91;
+    background: #fdf0f7;
+}
+
+.loyal-policy-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.loyal-policy-radio {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    border: 2px solid #c9bfce;
+    border-radius: 50%;
+    position: relative;
+}
+
+.loyal-policy-option input[type="radio"]:checked + .loyal-policy-radio {
+    border-color: #E83C91;
+}
+
+.loyal-policy-option input[type="radio"]:checked + .loyal-policy-radio::after {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: #E83C91;
+}
+
+.loyal-policy-option-content {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.loyal-policy-rate {
+    color: #43334C;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.loyal-policy-note {
+    overflow: hidden;
+    color: #8a7e90;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.loyal-policy-list-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px 20px 20px;
+    border-top: 1px solid #f0eae0;
+}
+
+.loyal-policy-empty {
+    padding: 48px 20px;
+    color: #a09098;
+    text-align: center;
+}
+
+.loyal-policy-empty i {
+    margin-bottom: 10px;
+    color: #d9ccd5;
+    font-size: 32px;
+}
+
+@media (max-width: 980px) {
+    .loyal-policy-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =============================================
+   ADMIN CONFIRMATION MODALS
+   ============================================= */
+body.admin-modal-open {
+    overflow: hidden;
+}
+
+.admin-modal[hidden] {
+    display: none;
+}
+
+.admin-modal {
+    position: fixed;
+    z-index: 1300;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+}
+
+.admin-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(41, 27, 47, 0.52);
+    backdrop-filter: blur(5px);
+    animation: admin-modal-fade 0.18s ease-out;
+}
+
+.admin-modal-card {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 440px);
+    padding: 30px;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at top right, rgba(232, 60, 145, 0.08), transparent 38%),
+        #fff;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 18px;
+    box-shadow: 0 24px 70px rgba(51, 28, 58, 0.25);
+    animation: admin-modal-rise 0.22s ease-out;
+}
+
+.admin-modal-card-sm {
+    width: min(100%, 410px);
+    text-align: center;
+}
+
+.admin-modal-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 34px;
+    height: 34px;
+    color: #8a7e90;
+    background: #f7f3f7;
+    border: 0;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.admin-modal-close:hover {
+    color: #43334C;
+    background: #efe8f0;
+    transform: rotate(4deg);
+}
+
+.admin-modal-icon {
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 16px;
+    font-size: 23px;
+    border-radius: 16px;
+}
+
+.admin-modal-icon.danger {
+    color: #d63e57;
+    background: #fff0f2;
+}
+
+.admin-modal-icon.primary {
+    color: #E83C91;
+    background: #fdf0f7;
+}
+
+.admin-modal-icon.success {
+    color: #219653;
+    background: #eaf8ef;
+}
+
+.admin-modal-icon.warning {
+    color: #b7791f;
+    background: #fff8e6;
+}
+
+.admin-modal-icon.security {
+    color: #E83C91;
+    background: #fdf0f7;
+}
+
+.admin-modal-title {
+    margin: 0 0 8px;
+    color: #43334C;
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.admin-modal-message {
+    max-width: 350px;
+    margin: 0 auto 24px;
+    color: #807285;
+    font-size: 13px;
+    line-height: 1.65;
+    text-align: center;
+}
+
+.admin-modal-label {
+    display: block;
+    margin-bottom: 8px;
+    color: #43334C;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.admin-password-control {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.admin-password-control > i {
+    position: absolute;
+    left: 14px;
+    color: #b2a6b6;
+    pointer-events: none;
+}
+
+.admin-password-control input {
+    width: 100%;
+    height: 46px;
+    padding: 0 46px 0 42px;
+    color: #43334C;
+    font: inherit;
+    font-size: 14px;
+    background: #fcfafc;
+    border: 1.5px solid #e9e1eb;
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.admin-password-control input:focus {
+    background: #fff;
+    border-color: #E83C91;
+    box-shadow: 0 0 0 4px rgba(232, 60, 145, 0.1);
+}
+
+.admin-password-control button {
+    position: absolute;
+    right: 7px;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    color: #9b8fa0;
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.admin-password-control button:hover {
+    color: #E83C91;
+    background: #fdf0f7;
+}
+
+.admin-modal-error {
+    margin-top: 10px;
+    padding: 9px 11px;
+    color: #bd2943;
+    font-size: 12px;
+    background: #fff1f3;
+    border: 1px solid #ffd6dc;
+    border-radius: 8px;
+}
+
+.admin-modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.admin-modal-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 112px;
+    height: 42px;
+    padding: 0 18px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 650;
+    border: 0;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.admin-modal-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.admin-modal-btn.secondary {
+    color: #756979;
+    background: #f2eef3;
+}
+
+.admin-modal-btn.secondary:hover {
+    background: #e9e2eb;
+}
+
+.admin-modal-btn.primary {
+    color: #fff;
+    background: linear-gradient(135deg, #E83C91, #cf2f7e);
+    box-shadow: 0 8px 18px rgba(232, 60, 145, 0.22);
+}
+
+.admin-modal-btn.danger {
+    color: #fff;
+    background: linear-gradient(135deg, #e4576e, #ca334d);
+    box-shadow: 0 8px 18px rgba(202, 51, 77, 0.2);
+}
+
+.admin-modal-btn.success {
+    color: #fff;
+    background: linear-gradient(135deg, #35b66d, #219653);
+    box-shadow: 0 8px 18px rgba(33, 150, 83, 0.2);
+}
+
+.admin-modal-btn.warning {
+    color: #fff;
+    background: linear-gradient(135deg, #e8a735, #c8811c);
+    box-shadow: 0 8px 18px rgba(200, 129, 28, 0.2);
+}
+
+.admin-modal-btn:disabled {
+    cursor: wait;
+    opacity: 0.72;
+}
+
+.admin-modal-btn.loading i {
+    animation: admin-modal-spin 0.8s linear infinite;
+}
+
+@keyframes admin-modal-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes admin-modal-rise {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes admin-modal-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (max-width: 520px) {
+    .admin-modal-card {
+        padding: 26px 20px 22px;
+        border-radius: 15px;
+    }
+
+    .admin-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .admin-modal-btn {
+        width: 100%;
+    }
+}
+
+/* =============================================
    DASHBOARD STATS EXTRAS
    ============================================= */
 .stat-trend {

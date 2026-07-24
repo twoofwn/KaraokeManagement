@@ -1,0 +1,163 @@
+@model KaraokeManagement.ViewModel.LoyalPointPolicyManagementViewModel
+@using System.Globalization
+@{
+    Layout = "~/Views/Admin/_AdminLayout.cshtml";
+    ViewData["Title"] = "Quy đổi điểm";
+    ViewData["ActiveNav"] = "loyal-point-policies";
+    var activePolicy = Model.Policies.FirstOrDefault(p => p.IsActive);
+    var viCulture = CultureInfo.GetCultureInfo("vi-VN");
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Quy đổi điểm thành viên</h1>
+        <nav class="breadcrumb-nav">
+            <span class="breadcrumb-current">Thiết lập số tiền tương ứng với một điểm</span>
+        </nav>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="admin-alert success">
+        <i class="fa-solid fa-circle-check"></i> @TempData["Success"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="admin-alert error">
+        <i class="fa-solid fa-circle-exclamation"></i> @TempData["Error"]
+    </div>
+}
+
+<div class="loyal-policy-summary">
+    <div class="stat-icon">
+        <i class="fa-solid fa-star"></i>
+    </div>
+    <div>
+        <div class="loyal-policy-summary-label">Mức đang áp dụng</div>
+        @if (activePolicy != null)
+        {
+            <div class="loyal-policy-summary-value">
+                @activePolicy.AmountPerPoint.ToString("N0", viCulture) VNĐ = 1 điểm
+            </div>
+        }
+        else
+        {
+            <div class="loyal-policy-summary-value missing">
+                Chưa có mức quy đổi — hãy tạo mức đầu tiên
+            </div>
+        }
+    </div>
+</div>
+
+<div class="loyal-policy-grid">
+    <div class="form-card">
+        <h2 class="table-card-title loyal-policy-section-title">Tạo mức quy đổi mới</h2>
+
+        <form method="post"
+              asp-controller="Admin"
+              asp-action="LoyalPointPolicyCreate">
+            @Html.AntiForgeryToken()
+
+            <div class="field-group">
+                <label asp-for="NewPolicy.AmountPerPoint" class="field-label"></label>
+                <div class="loyal-policy-money-input">
+                    <input asp-for="NewPolicy.AmountPerPoint"
+                           type="number"
+                           min="1"
+                           step="1000"
+                           class="field-input"
+                           placeholder="Ví dụ: 10000" />
+                    <span>VNĐ / điểm</span>
+                </div>
+                <span asp-validation-for="NewPolicy.AmountPerPoint" class="field-error"></span>
+                <span class="field-hint">
+                    Ví dụ nhập 10.000 nghĩa là khách chi tiêu 10.000 VNĐ sẽ nhận 1 điểm.
+                </span>
+            </div>
+
+            <div class="field-group loyal-policy-description">
+                <label asp-for="NewPolicy.Description" class="field-label"></label>
+                <textarea asp-for="NewPolicy.Description"
+                          class="field-textarea"
+                          maxlength="255"
+                          placeholder="Ghi chú cho mức quy đổi này"></textarea>
+                <span asp-validation-for="NewPolicy.Description" class="field-error"></span>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-save">
+                    <i class="fa-solid fa-plus"></i>
+                    Tạo mức quy đổi
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-card">
+        <div class="table-card-header">
+            <div>
+                <h2 class="table-card-title">Chọn mức đang áp dụng</h2>
+                <span class="field-hint">Chỉ một mức quy đổi được kích hoạt tại một thời điểm.</span>
+            </div>
+            <span class="record-count">@Model.Policies.Count mức</span>
+        </div>
+
+        @if (Model.Policies.Count > 0)
+        {
+            <form method="post"
+                  asp-controller="Admin"
+                  asp-action="LoyalPointPolicyActivate">
+                @Html.AntiForgeryToken()
+
+                <div class="loyal-policy-options">
+                    @foreach (var policy in Model.Policies)
+                    {
+                        <label class="loyal-policy-option @(policy.IsActive ? "active" : "")">
+                            <input type="radio"
+                                   name="policyId"
+                                   value="@policy.PolicyId"
+                                   checked="@policy.IsActive"
+                                   required />
+                            <span class="loyal-policy-radio"></span>
+                            <span class="loyal-policy-option-content">
+                                <span class="loyal-policy-rate">
+                                    @policy.AmountPerPoint.ToString("N0", viCulture) VNĐ = 1 điểm
+                                </span>
+                                <span class="loyal-policy-note">
+                                    @(string.IsNullOrWhiteSpace(policy.Description)
+                                        ? "Không có mô tả"
+                                        : policy.Description)
+                                </span>
+                            </span>
+                            @if (policy.IsActive)
+                            {
+                                <span class="badge-status active">Đang áp dụng</span>
+                            }
+                        </label>
+                    }
+                </div>
+
+                <div class="loyal-policy-list-actions">
+                    <button type="submit" class="btn-save">
+                        <i class="fa-solid fa-check"></i>
+                        Áp dụng mức đã chọn
+                    </button>
+                </div>
+            </form>
+        }
+        else
+        {
+            <div class="loyal-policy-empty">
+                <i class="fa-solid fa-coins"></i>
+                <p>Chưa có mức quy đổi nào.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

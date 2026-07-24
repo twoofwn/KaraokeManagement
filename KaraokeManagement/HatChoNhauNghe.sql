@@ -419,6 +419,10 @@ CREATE TABLE LoyalPointPolicy (
     Description NVARCHAR(255) NULL
 );
 
+CREATE UNIQUE INDEX UX_LoyalPointPolicy_OneActive
+ON LoyalPointPolicy(IsActive)
+WHERE IsActive = 1;
+
 -- ==========================================
 -- 8. TẠO BẢNG TIÊU CHÍ GIÁ CẢ & LỊCH SỬ PHÒNG
 -- ==========================================
@@ -488,10 +492,8 @@ INSERT INTO [MembershipTier] (TierID, TierName, DiscountPercent, MinPoints) VALU
 INSERT INTO [MembershipTier] (TierID, TierName, DiscountPercent, MinPoints) VALUES (5, N'Kim Cương', 20.00, 15000);
 SET IDENTITY_INSERT [MembershipTier] OFF;
 
-SET IDENTITY_INSERT [LoyalPointPolicy] ON;
 INSERT INTO LoyalPointPolicy (AmountPerPoint, IsActive, Description)
 VALUES (10000, 1, N'Quy đổi 10,000 VNĐ = 1 điểm tích lũy');
-SET IDENTITY_INSERT [LoyalPointPolicy] OFF;
 
 
 SET IDENTITY_INSERT [RoomType] ON;

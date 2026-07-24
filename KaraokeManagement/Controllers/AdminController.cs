@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using KaraokeManagement.Helpers;
 using KaraokeManagement.ViewModel;
+using KaraokeManagement.Services.AdminServices;
 using System.Security.Claims;
 
 namespace KaraokeManagement.Controllers
@@ -13,15 +14,23 @@ namespace KaraokeManagement.Controllers
     public class AdminController : Controller
     {
         private readonly KaraokeManagementDbContext _context;
+        private readonly LoyalPointPolicyService _loyalPointPolicyService;
+        private readonly AdminAccountService _adminAccountService;
 
-        public AdminController(KaraokeManagementDbContext context)
+        public AdminController(
+            KaraokeManagementDbContext context,
+            LoyalPointPolicyService loyalPointPolicyService,
+            AdminAccountService adminAccountService)
         {
             _context = context;
+            _loyalPointPolicyService = loyalPointPolicyService;
+            _adminAccountService = adminAccountService;
         }
 
         public IActionResult Index() => RedirectToAction("Dashboard");
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult VerifyAdminPassword(string password)
         {
             var currentAdminIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -142,6 +151,42 @@ namespace KaraokeManagement.Controllers
                 TopServices = topServices
             };
             return View(model);
+        }
+
+        // ========== LOYAL POINT POLICIES ==========
+        [HttpGet]
+        public async Task<IActionResult> LoyalPointPolicies()
+        {
+            var model = await _loyalPointPolicyService.GetManagementViewModelAsync();
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LoyalPointPolicyCreate(
+            LoyalPointPolicyManagementViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                var invalidModel = await _loyalPointPolicyService
+                    .GetManagementViewModelAsync(model.NewPolicy);
+                return View("LoyalPointPolicies", invalidModel);
+            }
+
+            var result = await _loyalPointPolicyService.CreateAsync(model.NewPolicy);
+            TempData[result.Success ? "Success" : "Error"] = result.Message;
+
+            return RedirectToAction(nameof(LoyalPointPolicies));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LoyalPointPolicyActivate(int policyId)
+        {
+            var result = await _loyalPointPolicyService.ActivateAsync(policyId);
+            TempData[result.Success ? "Success" : "Error"] = result.Message;
+
+            return RedirectToAction(nameof(LoyalPointPolicies));
         }
 
         // ========== INVENTORY (ServiceItems) ==========
@@ -517,6 +562,7 @@ namespace KaraokeManagement.Controllers
                     || (a.Email != null && a.Email.Contains(search))
                     || a.Role.RoleName.Contains(search));
             var users = PageList(query.OrderBy(a => a.AccountId), page, "Users", search);
+            ViewBag.CurrentAccountId = GetCurrentAccountId();
             return View("Users", users);
         }
 
@@ -552,6 +598,7 @@ namespace KaraokeManagement.Controllers
             if (account == null) return NotFound();
             LoadRoles(account.RoleId);
             ViewBag.IsEdit = true;
+            ViewBag.IsCurrentAccount = GetCurrentAccountId() == account.AccountId;
             return View("UserForm", account);
         }
 
@@ -563,7 +610,13 @@ namespace KaraokeManagement.Controllers
             ModelState.Remove("PasswordHash");
             if (_context.Accounts.Any(a => a.Username == model.Username && a.AccountId != id))
                 ModelState.AddModelError("Username", "Username này đã tồn tại.");
-            if (!ModelState.IsValid) { LoadRoles(model.RoleId); ViewBag.IsEdit = true; return View("UserForm", model); }
+            if (!ModelState.IsValid)
+            {
+                LoadRoles(model.RoleId);
+                ViewBag.IsEdit = true;
+                ViewBag.IsCurrentAccount = GetCurrentAccountId() == id;
+                return View("UserForm", model);
+            }
             var existing = _context.Accounts.Find(id);
             if (existing == null) return NotFound();
             existing.FullName = model.FullName;
@@ -571,7 +624,6 @@ namespace KaraokeManagement.Controllers
             existing.Email = model.Email;
             existing.Phone = model.Phone;
             existing.RoleId = model.RoleId;
-            existing.IsActive = model.IsActive;
             if (!string.IsNullOrWhiteSpace(Password))
                 existing.PasswordHash = PasswordHelper.HashPassword(Password);
             _context.SaveChanges();
@@ -580,27 +632,32 @@ namespace KaraokeManagement.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult UserDelete(int id)
+        public async Task<IActionResult> SetUserStatus(int id, bool isActive)
         {
-            var account = _context.Accounts.Find(id);
-            if (account != null)
+            var currentAccountId = GetCurrentAccountId();
+            if (!currentAccountId.HasValue)
             {
-                if (account.Username == User.Identity?.Name)
-                {
-                    TempData["Error"] = "Bạn không thể thay đổi trạng thái tài khoản đang đăng nhập.";
-                    return RedirectToAction("Users");
-                }
-                
-                account.IsActive = !account.IsActive; // Toggle active status
-                _context.SaveChanges();
-                
-                string statusText = account.IsActive ? "kích hoạt" : "khóa";
-                TempData["Success"] = $"Đã {statusText} tài khoản \"{account.Username}\" thành công.";
+                return Challenge();
             }
+
+            var result = await _adminAccountService.SetStatusAsync(
+                currentAccountId.Value,
+                id,
+                isActive);
+
+            TempData[result.Success ? "Success" : "Error"] = result.Message;
             return RedirectToAction("Users");
         }
 
         // ========== HELPERS ==========
+        private int? GetCurrentAccountId()
+        {
+            var accountIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(accountIdValue, out var accountId)
+                ? accountId
+                : null;
+        }
+
         private List<T> PageList<T>(IQueryable<T> query, int page, string pagerAction, string? search)
         {
             const int pageSize = 10;

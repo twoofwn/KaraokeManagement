@@ -59,8 +59,14 @@
                         <a href="/Admin/InventoryEdit/@item.ServiceId" class="action-btn edit">
                             <i class="fa-solid fa-pen"></i>
                         </a>
-                        <form method="post" action="/Admin/InventoryDelete/@item.ServiceId"
-                              onsubmit="return confirm('Xóa item này?')" style="display:inline">
+                        <form method="post"
+                              action="/Admin/InventoryDelete/@item.ServiceId"
+                              data-admin-confirm-title="Xóa sản phẩm?"
+                              data-admin-confirm="Sản phẩm “@item.ServiceName” sẽ bị xóa khỏi kho hàng."
+                              data-admin-confirm-button="Xóa sản phẩm"
+                              data-admin-confirm-variant="danger"
+                              data-admin-confirm-icon="fa-solid fa-box-open"
+                              style="display:inline">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="action-btn delete">
                                 <i class="fa-solid fa-trash"></i>

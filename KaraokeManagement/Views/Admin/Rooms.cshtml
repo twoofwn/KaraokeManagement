@@ -72,8 +72,14 @@
                         <a href="/Admin/RoomEdit/@room.RoomId" class="action-btn edit">
                             <i class="fa-solid fa-pen"></i>
                         </a>
-                        <form method="post" action="/Admin/RoomDelete/@room.RoomId"
-                              onsubmit="return confirm('Xóa phòng này?')" style="display:inline">
+                        <form method="post"
+                              action="/Admin/RoomDelete/@room.RoomId"
+                              data-admin-confirm-title="Xóa phòng hát?"
+                              data-admin-confirm="Phòng “@room.RoomName” sẽ bị xóa khỏi hệ thống."
+                              data-admin-confirm-button="Xóa phòng"
+                              data-admin-confirm-variant="danger"
+                              data-admin-confirm-icon="fa-solid fa-door-open"
+                              style="display:inline">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="action-btn delete">
                                 <i class="fa-solid fa-trash"></i>
