@@ -1,0 +1,273 @@
+﻿@model KaraokeManagement.ViewModel.AssignedDetailViewModel
+@{
+    ViewData["Title"] = "Chi tiết phục vụ phòng - " + Model.RoomName;
+    Layout = "~/Views/Shared/_StaffLayout.cshtml";
+    ViewData["ActiveNav"] = "assigned";
+    var timeInRoom = DateTime.Now - Model.CheckInTime;
+}
+
+<style>
+    :root {
+        --bg-light: #F8F4EC;
+        --accent-light: #FF8FB7;
+        --accent-strong: #E83C91;
+        --text-dark: #43334C;
+    }
+
+    .detail-container {
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(67, 51, 76, 0.08);
+        border: 1px solid var(--accent-light);
+        padding: 2rem;
+        margin-top: 1.5rem;
+    }
+
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px dashed var(--accent-light);
+        padding-bottom: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .room-title {
+        color: var(--text-dark);
+        font-weight: 700;
+        font-size: 1.8rem;
+        margin: 0;
+    }
+
+    .room-meta {
+        color: var(--accent-strong);
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-badge {
+        background-color: var(--bg-light);
+        color: var(--text-dark);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        border: 1px solid var(--accent-light);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .table-custom {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 1rem;
+    }
+
+        .table-custom th {
+            background-color: var(--text-dark);
+            color: var(--bg-light);
+            padding: 1rem;
+            font-weight: 600;
+            text-align: left;
+        }
+
+            .table-custom th:first-child {
+                border-top-left-radius: 8px;
+            }
+
+            .table-custom th:last-child {
+                border-top-right-radius: 8px;
+            }
+
+        .table-custom td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--accent-light);
+            color: var(--text-dark);
+            vertical-align: middle;
+        }
+
+        .table-custom tr:last-child td {
+            border-bottom: none;
+        }
+
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: bold;
+        display: inline-block;
+    }
+
+    .status-pending {
+        background-color: var(--accent-strong);
+        color: var(--bg-light);
+        animation: pulse-soft 2s infinite;
+    }
+
+    .status-fulfilled {
+        background-color: var(--bg-light);
+        color: var(--text-dark);
+        border: 1px solid var(--text-dark);
+        opacity: 0.7;
+    }
+
+    .btn-back {
+        background-color: var(--bg-light);
+        color: var(--text-dark);
+        border: 1px solid var(--text-dark);
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+
+        .btn-back:hover {
+            background-color: var(--text-dark);
+            color: var(--bg-light);
+        }
+
+    .btn-fulfill {
+        background-color: var(--text-dark);
+        color: var(--bg-light);
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+        .btn-fulfill:hover {
+            background-color: var(--accent-strong);
+            transform: translateY(-2px);
+        }
+
+    @@keyframes pulse-soft {
+        0% {
+            box-shadow: 0 0 0 0 rgba(232, 60, 145, 0.3);
+        }
+
+        70% {
+            box-shadow: 0 0 0 6px rgba(232, 60, 145, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(232, 60, 145, 0);
+        }
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="mb-3">
+        <a href="@Url.Action("AssignedRooms", "Staff")" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+        </a>
+    </div>
+
+    <div class="detail-container">
+        <div class="header-section">
+            <div>
+                <h2 class="room-title">@Model.RoomName</h2>
+                <div class="room-meta">@Model.RoomTypeName</div>
+                @if (!string.IsNullOrEmpty(Model.Note))
+                {
+                    <div class="text-muted mt-2"><i class="fas fa-comment-dots"></i> Ghi chú: @Model.Note</div>
+                }
+            </div>
+
+            <div class="d-flex flex-column gap-2 align-items-end">
+                <div class="info-badge">
+                    <i class="fas fa-clock" style="color: var(--accent-strong);"></i>
+                    Giờ vào: @Model.CheckInTime.ToString("HH:mm")
+                </div>
+                <div class="info-badge">
+                    <i class="fas fa-hourglass-half" style="color: var(--accent-strong);"></i>
+                    Đã hát: @($"{(int)timeInRoom.TotalHours:D2}:{timeInRoom.Minutes:D2}")
+                </div>
+            </div>
+        </div>
+
+        <h4 style="color: var(--text-dark); font-weight: bold; margin-bottom: 1rem;">
+            <i class="fas fa-list-ul me-2"></i>Danh sách dịch vụ / Order
+        </h4>
+
+        @if (!Model.Services.Any())
+        {
+            <div class="alert text-center" style="background-color: var(--bg-light); border: 1px solid var(--accent-light); color: var(--text-dark);">
+                Phòng này chưa order dịch vụ nào.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Tên món / Dịch vụ</th>
+                            <th class="text-center">Số lượng</th>
+                            <th>Ghi chú</th>
+                            <th class="text-center">Trạng thái</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int index = 1;
+                        }
+                        @foreach (var item in Model.Services.OrderBy(s => s.IsFulFilled))
+                        {
+                            <tr>
+                                <td>@index</td>
+                                <td style="font-weight: 600;">@item.ServiceName</td>
+                                <td class="text-center" style="font-size: 1.1rem; font-weight: bold; color: var(--accent-strong);">
+                                    @item.Quantity
+                                </td>
+                                <td style="font-style: italic; opacity: 0.8;">
+                                    @(string.IsNullOrEmpty(item.Note) ? "-" : item.Note)
+                                </td>
+                                <td class="text-center">
+                                    @if (!item.IsFulFilled)
+                                    {
+                                        <span class="status-badge status-pending">Chưa giao</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge status-fulfilled"><i class="fas fa-check"></i> Đã giao</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (!item.IsFulFilled)
+                                    {
+                                        <form asp-action="FulfillService" asp-controller="Staff" method="post" class="m-0 p-0">
+                                            <input type="hidden" name="invoiceDetailId" value="@item.InvoiceDetailId" />
+                                            <input type="hidden" name="bookingId" value="@Model.BookingId" />
+                                            <button type="submit" class="btn-fulfill">
+                                                <i class="fas fa-concierge-bell"></i> Giao đồ
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted"><i class="fas fa-check-double"></i> Hoàn tất</span>
+                                    }
+                                </td>
+                            </tr>
+                            index++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

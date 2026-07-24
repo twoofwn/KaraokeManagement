@@ -35,8 +35,12 @@ namespace KaraokeManagement.Services.CustomerServices
         public async Task<List<Booking>> GetActiveBookingsForCustomerAsync(int customerId)
         {
             var now = DateTime.Now;
-            return await _context.Bookings.Include(b => b.Room)
-                .Where(b => b.CustomerId == customerId && b.Status == "CheckedIn" && b.StartTime <= now && (b.EndTime == null || b.EndTime >= now))
+
+            return await _context.Bookings
+                .Include(b => b.Room)
+                .Where(b => b.CustomerId == customerId && b.Status == "CheckedIn")
+                .Where(b => b.Invoices.Any(i => i.CheckInTime <= now && ((i.CheckOutTime != null && i.CheckOutTime >= now) || (i.CheckOutTime == null && (b.EndTime == null || b.EndTime >= now)))
+                ))
                 .ToListAsync();
         }
 

@@ -1,4 +1,5 @@
-﻿@{
+﻿@model IEnumerable<KaraokeManagement.ViewModel.AssignedRoomViewModel>
+@{
     ViewData["Title"] = "Phòng đang phục vụ";
     Layout = "~/Views/Shared/_StaffLayout.cshtml";
     ViewData["ActiveNav"] = "assigned";
@@ -86,21 +87,27 @@
 
     .action-btn {
         background-color: var(--text-dark);
-        color: var(--bg-light);
+        color: var(--bg-light) !important;
         border: none;
-        padding: 0.6rem 1.2rem;
+        padding: 0.75rem 1.2rem;
         border-radius: 8px;
         font-weight: 600;
-        text-align: center;
-        text-decoration: none;
-        display: block;
-        margin-top: 1rem;
-        transition: background-color 0.2s;
+        text-decoration: none !important;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 50%;
+        margin-top: 1.5rem;
+        white-space: nowrap;
+        box-sizing: border-box;
+        transition: all 0.2s ease-in-out;
     }
 
         .action-btn:hover {
             background-color: var(--accent-strong);
-            color: var(--bg-light);
+            color: var(--bg-light) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(232, 60, 145, 0.3);
         }
 
     @@keyframes pulse {
@@ -173,9 +180,8 @@
                         </div>
                     </div>
 
-                    <!-- Bạn có thể thay đổi href thành link trỏ tới trang chi tiết Order của phòng -->
-                    <a href="@Url.Action("OrderDetails", "Staff", new { bookingId = room.BookingId })" class="action-btn">
-                        <i class="fas fa-concierge-bell me-1"></i> Xem Order / Phục vụ
+                    <a href="@Url.Action("AssignedDetail", "Staff", new { bookingId = room.BookingId })" class="action-btn">
+                        <i class="fas fa-concierge-bell me-2"></i> Xem Order / Phục vụ
                     </a>
                 </div>
             }

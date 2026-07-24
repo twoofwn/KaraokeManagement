@@ -175,5 +175,40 @@ namespace KaraokeManagement.Controllers
             var model = await _staffService.GetAssignedRoomsAsync(accountId);
             return View(model);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> AssignedDetail(int bookingId)
+        {
+            string? idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(idClaim, out int accountId))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var model = await _staffService.GetAssignedDetailAsync(bookingId, accountId);
+            if (model == null)
+            {
+                return NotFound("Không tìm thấy thông tin phòng hoặc bạn không có quyền truy cập.");
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> FulfillService(int invoiceDetailId, int bookingId)
+        {
+            var success = await _staffService.FulfillServiceItemAsync(invoiceDetailId);
+
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Đã xác nhận giao đồ thành công!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Có lỗi xảy ra, không tìm thấy món hoặc món đã được giao.";
+            }
+
+            return RedirectToAction("AssignedDetail", new { bookingId = bookingId });
+        }
     }
 }

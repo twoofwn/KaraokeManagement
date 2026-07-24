@@ -220,19 +220,53 @@ namespace KaraokeManagement.Services.StaffServices
                     RoomId = b.RoomId,
                     RoomName = b.Room.RoomName,
                     RoomTypeName = b.Room.RoomType.TypeName,
-
-                    CheckInTime = b.Invoices
-                        .OrderByDescending(i => i.CheckInTime)
-                        .Select(i => i.CheckInTime)
-                        .FirstOrDefault(),
-
-                    UnfulfilledCount = b.Invoices
-                        .SelectMany(i => i.InvoiceDetails)
-                        .Count(d => d.IsFulFilled == false)
+                    CheckInTime = b.Invoices.OrderByDescending(i => i.CheckInTime).Select(i => i.CheckInTime).FirstOrDefault(),
+                    UnfulfilledCount = b.Invoices.SelectMany(i => i.InvoiceDetails).Count(d => d.IsFulFilled == false)
                 })
                 .ToListAsync();
 
             return assignedRooms;
+        }
+
+        public async Task<AssignedDetailViewModel?> GetAssignedDetailAsync(int bookingId, int accountId)
+        {
+            var booking = await _context.Bookings.Include(b => b.Room).ThenInclude(r => r.RoomType).Include(b => b.Invoices).ThenInclude(i => i.InvoiceDetails).ThenInclude(id => id.Service).FirstOrDefaultAsync(b => b.BookingId == bookingId && b.StaffId == accountId && b.Status == "CheckedIn");
+
+            if (booking == null) return null;
+
+            var activeInvoice = booking.Invoices.OrderByDescending(i => i.CheckInTime).FirstOrDefault();
+            if (activeInvoice == null) return null;
+
+            var viewModel = new AssignedDetailViewModel
+            {
+                BookingId = booking.BookingId,
+                RoomName = booking.Room.RoomName,
+                RoomTypeName = booking.Room.RoomType.TypeName,
+                CheckInTime = activeInvoice.CheckInTime,
+                Note = booking.Note,
+                Services = activeInvoice.InvoiceDetails.Select(d => new ServiceItemDetail
+                {
+                    InvoiceDetailId = d.InvoiceDetailId,
+                    ServiceName = d.Service.ServiceName,
+                    Quantity = d.Quantity,
+                    IsFulFilled = d.IsFulFilled,
+                    Note = d.Note
+                }).ToList()
+            };
+
+            return viewModel;
+        }
+
+        public async Task<bool> FulfillServiceItemAsync(int invoiceDetailId)
+        {
+            var detail = await _context.InvoiceDetails.FindAsync(invoiceDetailId);
+            if (detail != null && !detail.IsFulFilled)
+            {
+                detail.IsFulFilled = true;
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            return false;
         }
     }
 }
