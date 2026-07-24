@@ -10,6 +10,8 @@ namespace KaraokeManagement.ViewModel
         public string RoomTypeName { get; set; } = string.Empty;
         public decimal PricePerHour { get; set; }
         public string RoomStatus { get; set; } = string.Empty;
+        public string? CustomerName { get; set; }
+        public string? CustomerPhone { get; set; }
 
         public int? InvoiceId { get; set; }
         public DateTime? CheckInTime { get; set; }
@@ -18,6 +20,7 @@ namespace KaraokeManagement.ViewModel
         public List<PosProductItem> ProductItems { get; set; } = new List<PosProductItem>();
         public List<CategoryViewModel> Categories { get; set; } = new List<CategoryViewModel>();
         public List<PosRoomItem> AvailableRooms { get; set; } = new List<PosRoomItem>();
+
         public string? StaffName { get; set; }
     }
 

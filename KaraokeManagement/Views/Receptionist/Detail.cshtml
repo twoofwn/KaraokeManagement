@@ -36,12 +36,39 @@
             </div>
 
             <div class="room-info-card">
-                <div class="room-card-header">
-                    <div>
+                <div class="room-card-header" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Tên phòng , Loại phòng -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                         <div class="room-label-name">@Model.RoomName</div>
-                        <div style="font-size: 0.75rem; color: var(--text-gray); margin-top: 2px;">Trạng thái: Đang sử dụng</div>
+                        <span class="room-label-type">@Model.RoomTypeName</span>
                     </div>
-                    <span class="room-label-type">@Model.RoomTypeName</span>
+
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; border-top: 1px dashed #e2e8f0; padding-top: 8px;">
+                        <!-- Trạng thái phòng -->
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span style="width: 8px; height: 8px; background-color: #10B981; border-radius: 50%; display: inline-block;"></span>
+                            <span style="font-size: 0.75rem; font-weight: 600; color: #059669;">Đang sử dụng</span>
+                        </div>
+
+                        <!-- Thông tin khách hàng -->
+                        <div style="text-align: right;">
+                            @if (!string.IsNullOrEmpty(Model.CustomerName))
+                            {
+                                <div style="font-size: 0.8rem; color: var(--text-dark, #2b2b2b); font-weight: 600;">
+                                    <i class="fa-solid fa-user" style="font-size: 0.75rem; margin-right: 4px; color: var(--primary-magenta);"></i>
+                                    @Model.CustomerName
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.CustomerPhone))
+                            {
+                                <div style="font-size: 0.75rem; color: var(--text-gray); margin-top: 2px;">
+                                    <i class="fa-solid fa-phone" style="font-size: 0.7rem; margin-right: 4px;"></i>
+                                    @Model.CustomerPhone
+                                </div>
+                            }
+                        </div>
+                    </div>
                 </div>
 
                 <div class="room-metrics">

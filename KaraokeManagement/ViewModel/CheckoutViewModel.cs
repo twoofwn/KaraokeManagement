@@ -29,6 +29,9 @@ namespace KaraokeManagement.ViewModel
 
         public string StaffName { get; set; } = "Chýa phân công";
 
+        public decimal SurchargeAmount { get; set; }
+        public string SurchargeNote { get; set; } = string.Empty;
+
         public List<CheckoutItemViewModel> OrderItems { get; set; } = new List<CheckoutItemViewModel>();
     }
 

@@ -89,13 +89,6 @@ namespace KaraokeManagement.Controllers
             return Json(new { success = result.success, message = result.message });
         }
 
-        [HttpPost]
-        public async Task<IActionResult> ProcessPayment([FromBody] PaymentRequest request)
-        {
-            var result = await _paymentService.ProcessPaymentFastAsync(request);
-            return Json(new { success = result.success, message = result.message });
-        }
-
         [HttpGet]
         public async Task<IActionResult> CheckIn(int? roomId)
         {

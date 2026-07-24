@@ -44,6 +44,8 @@
             <input type="hidden" name="DiscountPercent" value="@Model.DiscountPercent" />
             <input type="hidden" name="DiscountAmount" value="@Model.DiscountAmount" />
             <input type="hidden" name="GrandTotal" value="@Model.GrandTotal" />
+            <input type="hidden" name="SurchargeAmount" value="@Model.SurchargeAmount" />
+            <input type="hidden" name="SurchargeNote" value="@Model.SurchargeNote" />
 
             <div class="checkout-grid">
                 
@@ -144,6 +146,10 @@
                             {
                                 <div style="font-size: 0.75rem; color: var(--text-secondary-dark); margin-top: 2px;">SĐT: @Model.CustomerPhone</div>
                             }
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary-dark); margin-top: 4px;">
+                                        <i class="fa-solid fa-user-gear" style="margin-right: 3px; color: var(--primary-magenta);"></i>
+                                        NV phục vụ: <strong>@Model.StaffName</strong>
+                                    </div>
                         </div>
                     </div>
 
@@ -161,6 +167,18 @@
                                 <span>Chiết khấu thành viên (@Model.DiscountPercent.ToString("G0")%)</span>
                                 <span>-@(Model.DiscountAmount.ToString("N0"))đ</span>
                             </div>
+                                    @if (Model.SurchargeAmount != 0)
+                                    {
+                                        <div class="totals-row @(Model.SurchargeAmount > 0 ? "surcharge" : "discount")">
+                                            <span>
+                                                @(Model.SurchargeAmount > 0 ? "Phụ thu" : "Giảm giá")
+                                                @(!string.IsNullOrEmpty(Model.SurchargeNote) ? $" ({Model.SurchargeNote})" : "")
+                                            </span>
+                                            <span>
+                                                @(Model.SurchargeAmount > 0 ? "+" : "")@(Model.SurchargeAmount.ToString("N0"))đ
+                                            </span>
+                                        </div>
+                                    }
                             <hr class="totals-divider" />
                             <div class="totals-row grand-total">
                                 <span>TỔNG CỘNG THANH TOÁN</span>

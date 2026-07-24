@@ -78,6 +78,8 @@ public partial class KaraokeManagementDbContext : DbContext
     public virtual DbSet<ShiftSwapRequest> ShiftSwapRequests { get; set; }
     public virtual DbSet<LeaveRequest> LeaveRequests { get; set; }
 
+    public virtual DbSet<LoyalPointPolicy> LoyalPointPolicies { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
