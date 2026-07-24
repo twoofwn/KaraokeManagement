@@ -1,4 +1,4 @@
-@model KaraokeManagement.Models.ScheduleListViewModel
+@model KaraokeManagement.ViewModel.ScheduleListViewModel
 @{
     ViewData["Title"] = "Quản Lý Phân Ca Làm Việc";
     Layout = "~/Views/Manager/_ManagerLayout.cshtml";
@@ -271,11 +271,14 @@
                                 .ToList();
                             var isToday = dayDate == DateOnly.FromDateTime(DateTime.Now);
                             var isPast = dayDate < DateOnly.FromDateTime(DateTime.Today);
+                            // Real-time lock: today's shift is locked if shift has ended
+                            var isConcluded = isToday && DateTime.Now.TimeOfDay >= shift.EndTime;
+                            var isLocked = isPast || isConcluded;
 
                             <td class="schedule-cell-white align-top @(isToday ? "today-column" : "")" 
                                 data-cell-shift="@shift.ShiftId" 
                                 data-cell-date="@dateStr"
-                                style="@(isToday ? "background-color: #fff0f5 !important;" : "") @(isPast ? "opacity: 0.7; pointer-events: none;" : "")">
+                                style="@(isToday ? "background-color: #fff0f5 !important;" : "") @(isLocked ? "opacity: 0.7; pointer-events: none;" : "")">
 
                                 <!-- Badge Container for Staff -->
                                 <div class="badge-container">
@@ -284,7 +287,7 @@
                                         @if (s.Status != "Off")
                                         {
                                             <div class="staff-badge" id="badge-db-@s.ScheduleId" 
-                                                 @(isPast ? "" : Html.Raw($"onclick=\"openEditStaffModal({s.ScheduleId}, 0, {shift.ShiftId}, '{dateStr}', {s.AccountId}, '{shift.ShiftName}')\""))>
+                                                 @(isLocked ? "" : Html.Raw($"onclick=\"openEditStaffModal({s.ScheduleId}, 0, {shift.ShiftId}, '{dateStr}', {s.AccountId}, '{shift.ShiftName}')\""))>
                                                 <div class="text-truncate me-1">
                                                     <i class="fa-solid fa-user-check text-brand-vibrant-pink me-1" style="font-size: 0.75rem;"></i>
                                                     <span class="fw-semibold">@s.Account.FullName</span>
@@ -293,7 +296,7 @@
                                                         <span class="text-muted small ms-1" style="font-size: 0.7rem;">(@s.Account.Role.RoleName)</span>
                                                     }
                                                 </div>
-                                                @if (!isPast)
+                                                @if (!isLocked)
                                                 {
                                                     <button type="button" class="btn-remove-badge" title="Đánh dấu xóa" 
                                                             onclick="event.stopPropagation(); deleteStaffBadge(@s.ScheduleId, 0)">
@@ -306,12 +309,16 @@
                                 </div>
 
                                 <!-- [+] Add Staff Button inside Cell -->
-                                @if (!isPast)
+                                @if (!isLocked)
                                 {
                                     <button type="button" class="btn-add-staff-cell mt-1" 
                                             onclick="openAddStaffModal(@shift.ShiftId, '@dateStr', '@shift.ShiftName')">
                                         <i class="fa-solid fa-plus me-1"></i>Thêm NV
                                     </button>
+                                }
+                                @if (isConcluded)
+                                {
+                                    <div class="text-muted small fst-italic mt-1">⏰ Ca đã kết thúc</div>
                                 }
                             </td>
                         }

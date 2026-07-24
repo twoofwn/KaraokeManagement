@@ -119,6 +119,14 @@ namespace KaraokeManagement.Services
             if (reqSched.WorkDate < DateOnly.FromDateTime(DateTime.Today))
                 return (false, "Không thể chỉnh sửa hoặc đổi ca cho các ngày trong quá khứ.");
 
+            // Real-time lock: block swaps for today's shifts that have already ended
+            if (reqSched.WorkDate == DateOnly.FromDateTime(DateTime.Today))
+            {
+                var reqShift = await _context.WorkShifts.FindAsync(reqSched.ShiftId);
+                if (reqShift != null && DateTime.Now.TimeOfDay >= reqShift.EndTime)
+                    return (false, "Không thể đổi ca hoặc phân ca cho ca làm việc đã kết thúc.");
+            }
+
             if (reqSched.AccountId != requesterId || tarSched.AccountId != targetId)
                 return (false, "Thông tin phân ca không trùng khớp với nhân viên.");
 
@@ -221,8 +229,9 @@ namespace KaraokeManagement.Services
         // 4. LEAVE REQUEST LOGIC
         public async Task<(bool Success, string Message)> SubmitLeaveRequest(int accountId, DateOnly requestedDate, int? shiftId, string reason)
         {
-            if (requestedDate < DateOnly.FromDateTime(DateTime.Today))
-                return (false, "Không thể xin nghỉ phép cho các ngày trong quá khứ.");
+            // 1-day advance notice: must be at least tomorrow
+            if (requestedDate <= DateOnly.FromDateTime(DateTime.Today))
+                return (false, "Yêu cầu xin nghỉ phép phải được gửi trước ít nhất 1 ngày (từ ngày mai trở đi).");
 
             // Check if there is already a schedule for this employee, date, and shift
             EmployeeSchedule? existingSched = null;
@@ -509,6 +518,33 @@ namespace KaraokeManagement.Services
                     {
                         return (false, "Không thể chỉnh sửa hoặc đổi ca cho các ngày trong quá khứ.");
                     }
+                }
+
+                // Real-time lock: reject any modification to today's shifts that have already ended
+                var now = DateTime.Now.TimeOfDay;
+                var todayShiftIds = new HashSet<int>();
+
+                if (payload.AddedRecords != null)
+                    foreach (var r in payload.AddedRecords.Where(r => r.WorkDate == today))
+                        todayShiftIds.Add(r.ShiftId);
+                if (payload.UpdatedRecords != null)
+                    foreach (var r in payload.UpdatedRecords.Where(r => r.WorkDate == today))
+                        todayShiftIds.Add(r.ShiftId);
+                if (payload.DeletedRecordIds != null && payload.DeletedRecordIds.Any())
+                {
+                    var deletedTodayShiftIds = await _context.EmployeeSchedules
+                        .Where(s => payload.DeletedRecordIds.Contains(s.ScheduleId) && s.WorkDate == today)
+                        .Select(s => s.ShiftId).ToListAsync();
+                    foreach (var sid in deletedTodayShiftIds) todayShiftIds.Add(sid);
+                }
+
+                if (todayShiftIds.Any())
+                {
+                    var concludedShift = await _context.WorkShifts
+                        .Where(s => todayShiftIds.Contains(s.ShiftId) && s.EndTime <= now)
+                        .FirstOrDefaultAsync();
+                    if (concludedShift != null)
+                        return (false, "Không thể đổi ca hoặc phân ca cho ca làm việc đã kết thúc.");
                 }
 
                 // 1. Execute all Insert operations for payload.AddedRecords

@@ -29,7 +29,7 @@
                     <form id="leaveRequestForm" onsubmit="submitForm(event)">
                         <div class="mb-3">
                             <label for="requestedDate" class="form-label fw-semibold text-dark">Chọn ngày nghỉ phép</label>
-                            <input type="date" id="requestedDate" name="requestedDateStr" class="form-control border-2" required style="border-radius: 8px;" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                            <input type="date" id="requestedDate" name="requestedDateStr" class="form-control border-2" required style="border-radius: 8px;" min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" />
                         </div>
 
                         <div class="mb-3">
