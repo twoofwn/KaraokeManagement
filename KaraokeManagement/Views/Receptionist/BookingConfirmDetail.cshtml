@@ -207,7 +207,7 @@
                             </div>
 
                             <div style="margin-top: 20px; border-top: 1px solid var(--border-color-soft); padding-top: 12px;">
-                                <a href="/ReceptionistBooking/CheckIn" class="btn-back" style="width: 100%;">
+                                <a href="/Receptionist/BookingConfirm" class="btn-back" style="width: 100%;">
                                     <i class="fa-solid fa-angle-left"></i> Trở về danh sách
                                 </a>
                             </div>
@@ -221,7 +221,7 @@
         </main>
     </div>
 
-    <form asp-controller="ReceptionistBooking" asp-action="CancelBooking" method="post" id="cancelBookingForm" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn đặt phòng này?');">
+    <form asp-controller="Receptionist" asp-action="CancelBooking" method="post" id="cancelBookingForm" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn đặt phòng này?');">
         @Html.AntiForgeryToken()
         <input type="hidden" name="bookingId" value="@Model.BookingId" />
     </form>

@@ -19,7 +19,7 @@
     <partial name="_ReceptionistSidebar" />
 
     <div class="reception-main">
-        <form id="bookingForm" method="get" action="/ReceptionistBooking/ListBooking" style="display: contents;">
+        <form id="bookingForm" method="get" action="/Receptionist/ListBooking" style="display: contents;">
             <input type="hidden" name="page" id="pageNumberInput" value="@Model.CurrentPage" />
 
             <header class="reception-header">
@@ -250,7 +250,7 @@
                 return;
             }
 
-            fetch('/ReceptionistBooking/UpdateBookingStatus', {
+            fetch('/Receptionist/UpdateBookingStatus', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
