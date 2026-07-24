@@ -4,6 +4,7 @@ using KaraokeManagement.Helpers;
 using KaraokeManagement.Models;
 using KaraokeManagement.Services;
 using KaraokeManagement.ViewModel;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -268,6 +269,56 @@ public class AuthService
 
         await _emailService.SendEmailAsync(email, "Mã OTP mới - Minh Tuấn Karaoke", emailBody);
         return (true, "Mã OTP mới đã được gửi vào Email của bạn!");
+    }
+
+    // Reset Password
+    public async Task<(bool success, string error)> ResetPasswordAsync(ResetPasswordViewModel model)
+    {
+        if (string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.NewPassword))
+        {
+            return (false, "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.");
+        }
+
+        try
+        {
+            string newHash = PasswordHelper.HashPassword(model.NewPassword);
+            bool updated = false;
+
+            // Check trong bang Account
+            var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Email == model.Email);
+            if (account != null)
+            {
+                account.PasswordHash = newHash;
+                _context.Accounts.Update(account);
+                updated = true;
+            }
+
+            // Check trong bang customer
+            if (!updated)
+            {
+                var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == model.Email);
+                if (customer != null)
+                {
+                    customer.PasswordHash = newHash;
+                    _context.Customers.Update(customer);
+                    updated = true;
+                }
+            }
+
+            // Luu
+            if (updated)
+            {
+                await _context.SaveChangesAsync();
+                return (true, string.Empty);
+            }
+
+            return (false, "Không tìm thấy tài khoản tương ứng với Email này trong hệ thống.");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Lỗi đặt lại mật khẩu: {ex.Message}");
+            return (false, "Có lỗi xảy ra trong quá trình lưu mật khẩu mới. Vui lòng thử lại sau.");
+        }
     }
 
     // Random OTP

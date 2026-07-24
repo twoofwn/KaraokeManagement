@@ -16,6 +16,39 @@ body {
     user-select: none;
 }
 
+.auth-switch-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    gap: 6px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 5px;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.auth-switch-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    color: #000;
+    background: rgb(106 0 0 / 8%);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+    .auth-switch-btn.active {
+        background: #e48bc0;
+        color: #ffffff;
+    }
+
 @keyframes fadeInUp {
     from {
         opacity: 0;

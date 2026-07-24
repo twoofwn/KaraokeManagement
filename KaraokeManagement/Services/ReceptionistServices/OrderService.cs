@@ -17,6 +17,7 @@ public class OrderService
         if (room == null) return null;
 
         var invoice = await _context.Invoices
+            .Include(i => i.Booking).ThenInclude(b => b.Staff)
             .Include(i => i.InvoiceDetails)
             .ThenInclude(id => id.Service)
             .FirstOrDefaultAsync(i => i.RoomId == roomId && i.Status == "Unpaid");
@@ -62,6 +63,7 @@ public class OrderService
             PricePerHour = room.RoomType.PricePerHour,
             RoomStatus = room.Status ?? "InUse",
             InvoiceId = invoice.InvoiceId,
+            StaffName = invoice.Booking?.Staff?.FullName ?? "Chưa phân công",
             CheckInTime = invoice.CheckInTime,
             OrderItems = orderItems,
             ProductItems = serviceItems,

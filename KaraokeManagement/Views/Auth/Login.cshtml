@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Minh Tuấn Karaoke - Login</title>
-    
+
     <link rel="stylesheet" href="~/css/Auth.css" asp-append-version="true" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,9 +15,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
 </head>
 <body>
+
     <a asp-controller="Home" asp-action="Index" class="btn-home-back" title="Quay về trang chủ">
         <i class="fa-solid fa-house"></i>
     </a>
+
+
+    <div class="auth-switch-container">
+        <a asp-controller="Auth" asp-action="Login" class="auth-switch-btn active">
+            <i class="fa-solid fa-user-gear"></i>
+            <span>Nhân viên</span>
+        </a>
+        <a asp-controller="Auth" asp-action="CustomerLogin" class="auth-switch-btn">
+            <i class="fa-solid fa-user"></i>
+            <span>Khách hàng</span>
+        </a>
+    </div>
+
 
     <div class="mesh-background">
         <div class="mesh-item top-left mesh-1"></div>
@@ -26,7 +40,7 @@
     </div>
 
     <div class="login-container">
-        
+
         <div class="login-header">
             <div class="logo-box">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="white" class="logo-icon">
@@ -38,7 +52,7 @@
         </div>
 
         <div class="login-card">
-            
+
             @if (ViewBag.Error != null)
             {
                 <div class="error-alert">
@@ -99,7 +113,7 @@
                 togglePassword.addEventListener('click', () => {
                     const isPassword = passwordInput.getAttribute('type') === 'password';
                     passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
-                    
+
                     if (isPassword) {
                         eyeIcon.classList.remove('fa-eye');
                         eyeIcon.classList.add('fa-eye-slash');

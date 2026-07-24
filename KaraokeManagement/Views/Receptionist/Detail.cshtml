@@ -58,8 +58,11 @@
                         <span class="metric-value">@(Model.PricePerHour.ToString("N0")) đ/giờ</span>
                     </div>
                     <div class="metric-item">
-                        <span class="metric-label">Mã hóa đơn</span>
-                        <span class="metric-value">#@Model.InvoiceId</span>
+                        <span class="metric-label">Nhân viên phục vụ</span>
+                        <span class="metric-value">
+                            <i class="fa-regular fa-user" style="font-size: 0.8rem; margin-right: 4px; color: var(--primary-magenta);"></i>
+                            @(Model.StaffName)
+                        </span>
                     </div>
                 </div>
             </div>

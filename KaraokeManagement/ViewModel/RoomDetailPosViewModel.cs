@@ -18,6 +18,7 @@ namespace KaraokeManagement.ViewModel
         public List<PosProductItem> ProductItems { get; set; } = new List<PosProductItem>();
         public List<CategoryViewModel> Categories { get; set; } = new List<CategoryViewModel>();
         public List<PosRoomItem> AvailableRooms { get; set; } = new List<PosRoomItem>();
+        public string? StaffName { get; set; }
     }
 
     public class PosRoomItem
