@@ -1,4 +1,4 @@
-using KaraokeManagement.Models;
+﻿using KaraokeManagement.Models;
 using KaraokeManagement.Services.ManagerServices;
 using KaraokeManagement.ViewModel;
 using Microsoft.AspNetCore.Authorization;
@@ -40,7 +40,6 @@ namespace KaraokeManagement.Controllers
             return int.TryParse(userIdStr, out int userId) ? userId : 1;
         }
 
-        #region Dashboard & Reporting
         [HttpGet]
         public async Task<IActionResult> Index(string? handler, int? month, int? year)
         {
@@ -73,9 +72,7 @@ namespace KaraokeManagement.Controllers
             var viewModel = await _dashboardService.GetProfitReportAsync();
             return View(viewModel);
         }
-        #endregion
 
-        #region Inventory & Stock
         public async Task<IActionResult> StockIn()
         {
             ViewBag.Suppliers = await _inventoryService.GetAllSuppliersAsync();
@@ -136,9 +133,7 @@ namespace KaraokeManagement.Controllers
             if (viewModel == null) return RedirectToAction("ImportHistory");
             return View(viewModel);
         }
-        #endregion
 
-        #region Expenses
         [HttpGet]
         public async Task<IActionResult> Expenses()
         {
@@ -161,9 +156,7 @@ namespace KaraokeManagement.Controllers
 
             return Json(new { success = true, categoryId = result.CategoryId, categoryName = result.CategoryName });
         }
-        #endregion
 
-        #region Invoices
         [HttpGet]
         public async Task<IActionResult> Invoices(string? searchInvoiceId, DateTime? searchDate, int? roomId, DateTime? fromDate, DateTime? toDate, int page = 1)
         {
@@ -179,9 +172,7 @@ namespace KaraokeManagement.Controllers
 
             return Json(new { success = true, data = result.Data });
         }
-        #endregion
 
-        #region Dynamic Pricing Management
         [HttpGet]
         public async Task<IActionResult> DynamicPricing(string tab = "prices")
         {
@@ -274,6 +265,5 @@ namespace KaraokeManagement.Controllers
             TempData["SuccessMessage"] = "Xóa ngày lễ thành công!";
             return RedirectToAction(nameof(DynamicPricing), new { tab = "holidays" });
         }
-        #endregion
     }
 }
