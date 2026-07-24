@@ -153,13 +153,13 @@
                                                 }
                                             </td>
 
-                                            <td style="display: flex ">
+                                            <td style="display: flex; align-items: center; gap: 6px;">
                                                 @if (booking.Status == "Pending")
                                                 {
-                                                    <button type="button" class="btn-confirm" onclick="updateBookingStatus(@booking.BookingId, 'Confirmed')" title="Xác nhận Booking">
+                                                    <button type="button" class="btn-action btn-confirm" onclick="updateBookingStatus(@booking.BookingId, 'Confirmed')" title="Xác nhận Booking">
                                                         <i class="fa-solid fa-check"></i>
                                                     </button>
-                                                    <button type="button" class="btn-cancel-booking" onclick="updateBookingStatus(@booking.BookingId, 'Cancelled')" title="Hủy Booking">
+                                                    <button type="button" class="btn-action btn-cancel-booking" onclick="updateBookingStatus(@booking.BookingId, 'Cancelled')" title="Hủy Booking">
                                                         <i class="fa-solid fa-xmark"></i>
                                                     </button>
                                                 }

@@ -48,6 +48,8 @@ namespace KaraokeManagement.ViewModel
         public string? Unit { get; set; }
         public int StockQuantity { get; set; }
         public string CategoryName { get; set; } = string.Empty;
+        public string imageURL { get; set; }
+
     }
 
     public class CategoryViewModel

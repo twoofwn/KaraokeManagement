@@ -2,8 +2,8 @@
     var currentPath = Context.Request.Path.Value ?? "";
     var isRoomMapActive = currentPath.Contains("/Receptionist/Index") || currentPath.EndsWith("/Receptionist") || currentPath.EndsWith("/Receptionist/") || currentPath.Contains("/Receptionist/Checkout") || currentPath.Contains("/Receptionist/Detail");
     var isCheckInActive = currentPath.Contains("/Receptionist/CheckIn");
-    var isListBookingActive = currentPath.Contains("/ReceptionistBooking/ListBooking");
-    var isCheckInActive1 = currentPath.Contains("/ReceptionistBooking/CheckIn") || currentPath.Contains("/ReceptionistBooking/CheckInDetail");
+    var isListBookingActive = currentPath.Contains("/Receptionist/ListBooking");
+    var isCheckInActive1 = currentPath.Contains("/Receptionist/BookingConfirm") || currentPath.Contains("/Receptionist/BookingConfirmDetail");
     var isInvoiceHistoryActive = currentPath.Contains("/Receptionist/InvoiceHistory");
 }
 <aside class="reception-sidebar">
@@ -33,14 +33,14 @@
 
         </li>
         <li class="menu-item @(isListBookingActive ? "active" : "")">
-            <a href="/ReceptionistBooking/ListBooking">
+            <a href="/Receptionist/ListBooking">
                 <i class="fa-solid fa-calendar-check"></i>
                 <span>Danh sách đặt phòng</span>
             </a>
         </li>
 
         <li class="menu-item @(isCheckInActive1 ? "active" : "")">
-            <a href="/ReceptionistBooking/CheckIn">
+            <a href="/Receptionist/BookingConfirm">
                 <i class="fa-solid fa-calendar-check"></i>
                 <span>Xác nhận đặt phòng</span>
             </a>

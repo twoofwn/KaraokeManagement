@@ -158,45 +158,7 @@
                         var isOutOfStock = prod.StockQuantity <= 0;
                         <div class="product-card @(isOutOfStock ? "disabled" : "")" data-category="@prod.CategoryId" data-name="@prod.ServiceName.ToLower()">
                             <div class="product-image-container">
-                                @{
-                                    string imgPath = "/img/Reception_img/";
-                                    string prodName = prod.ServiceName;
-                                    string imgFile = "";
-                                    if (prodName.Contains("Heineken"))
-                                    {
-                                        imgFile = "bia_heineken.jpg";
-                                    }
-                                    else if (prodName.Contains("Tiger"))
-                                    {
-                                        imgFile = "bia_tiger.jpg";
-                                    }
-                                    else if (prodName.Contains("Chivas 12"))
-                                    {
-                                        imgFile = "chivas12.jpg";
-                                    }
-                                    else if (prodName.Contains("Aquafina"))
-                                    {
-                                        imgFile = "aquafina.jpg";
-                                    }
-                                    else if (prodName.Contains("Khô Bò"))
-                                    {
-                                        imgFile = "kho_bo.jpg";
-                                    }
-                                    else if (prodName.Contains("Trái Cây VIP"))
-                                    {
-                                        imgFile = "dia_trai_cay.jpg";
-                                    }
-                                    else if (prodName.Contains("Combo Sinh Nhật"))
-                                    {
-                                        imgFile = "combo_sinh_nhat.jpg";
-                                    }
-                                    else
-                                    {
-                                        imgFile = "dia_trai_cay.jpg";
-                                    }
-                                }
-                                
-                                <img src="@(imgPath + imgFile)" alt="@prod.ServiceName" />
+                                <img src="@(prod.imageURL)" alt="@prod.ServiceName" />
                             </div>
                             <div style="border-top: 1px solid #f0eae0;"></div>
                             <div class="product-info">

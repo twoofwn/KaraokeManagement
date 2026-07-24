@@ -18,7 +18,7 @@
     <partial name="_ReceptionistSidebar" />
 
     <div class="reception-main">
-        <form id="checkInForm" method="get" action="/ReceptionistBooking/CheckIn" style="display: contents;">
+        <form id="checkInForm" method="get" action="/Receptionist/BookingConfirm" style="display: contents;">
             <header class="reception-header">
                 <div class="header-title-wrapper" style="margin-left: 0; display: flex; align-items: center; gap: 16px; flex-grow: 1;">
                     <h1 class="header-title-text" style="font-size: 1.5rem; font-weight: 800; margin: 0;">Check-in Đặt Phòng</h1>
@@ -47,7 +47,7 @@
                     </div>
 
                     <div class="filter-actions">
-                        <button type="button" class="btn-filter btn-filter-reset" onclick="window.location.href='/ReceptionistBooking/CheckIn'">
+                        <button type="button" class="btn-filter btn-filter-reset" onclick="window.location.href='/Receptionist/BookingConfirm'">
                             <i class="fa-solid fa-rotate-right"></i> Đặt lại
                         </button>
                         <button type="submit" class="btn-filter btn-filter-search">
@@ -116,7 +116,7 @@
                                             </td>
 
                                             <td style="text-align: center;">
-                                                <a href="/ReceptionistBooking/CheckInDetail?id=@item.BookingId" class="btn-filter btn-filter-search" style="padding: 6px 12px; font-size: 0.825rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                                                <a href="/Receptionist/BookingConfirmDetail?id=@item.BookingId" class="btn-filter btn-filter-search" style="padding: 6px 12px; font-size: 0.825rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
                                                     <i class="fa-solid fa-arrow-right-to-bracket"></i> Check-in
                                                 </a>
                                             </td>

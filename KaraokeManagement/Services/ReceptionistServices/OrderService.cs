@@ -47,7 +47,7 @@ public class OrderService
 
         var categories = await _context.Categories.Select(c => new CategoryViewModel { CategoryId = c.CategoryId, CategoryName = c.CategoryName }).ToListAsync();
         var serviceItems = await _context.ServiceItems.Include(s => s.Category)
-            .Select(s => new PosProductItem { ServiceId = s.ServiceId, CategoryId = s.CategoryId, ServiceName = s.ServiceName, SellingPrice = s.SellingPrice, Unit = s.Unit, StockQuantity = s.StockQuantity ?? 0, CategoryName = s.Category.CategoryName }).ToListAsync();
+            .Select(s => new PosProductItem { ServiceId = s.ServiceId, CategoryId = s.CategoryId, ServiceName = s.ServiceName, SellingPrice = s.SellingPrice, Unit = s.Unit, StockQuantity = s.StockQuantity ?? 0, CategoryName = s.Category.CategoryName , imageURL = s.ImageUrl ?? "/img/Reception_img/dia_trai_cay.jpg" }).ToListAsync();
 
         var orderItems = invoice.InvoiceDetails.Select(id => new PosOrderItem { InvoiceDetailId = id.InvoiceDetailId, ServiceId = id.ServiceId, ServiceName = id.Service.ServiceName, Unit = id.Service.Unit, Quantity = id.Quantity, UnitPrice = id.UnitPrice }).ToList();
 

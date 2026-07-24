@@ -495,12 +495,9 @@ SET IDENTITY_INSERT [Category] ON;
 INSERT INTO [Category] (CategoryID, CategoryName) VALUES (1, N'Đồ Uống');
 INSERT INTO [Category] (CategoryID, CategoryName) VALUES (2, N'Đồ Ăn');
 INSERT INTO [Category] (CategoryID, CategoryName) VALUES (3, N'Trái Cây');
-INSERT INTO [Category] (CategoryID, CategoryName) VALUES (4, N'Đồ Ăn');
-INSERT INTO [Category] (CategoryID, CategoryName) VALUES (5, N'Combo');
-INSERT INTO [Category] (CategoryID, CategoryName) VALUES (6, N'Bia');
-INSERT INTO [Category] (CategoryID, CategoryName) VALUES (7, N'Rượu');
-INSERT INTO [Category] (CategoryID, CategoryName) VALUES (8, N'Nước Khát');
-INSERT INTO [Category] (CategoryID, CategoryName) VALUES (9, N'Trái Cây');
+INSERT INTO [Category] (CategoryID, CategoryName) VALUES (4, N'Combo');
+INSERT INTO [Category] (CategoryID, CategoryName) VALUES (5, N'Bia');
+INSERT INTO [Category] (CategoryID, CategoryName) VALUES (6, N'Rượu');
 SET IDENTITY_INSERT [Category] OFF;
 
 SET IDENTITY_INSERT [Supplier] ON;
@@ -666,35 +663,35 @@ SET IDENTITY_INSERT [MaintenanceLog] OFF;
 
 SET IDENTITY_INSERT [ServiceItem] ON;
 INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
-VALUES (1, 1, 'https://images.unsplash.com/photo-1605810731454-e0c45164bc14?auto=format&fit=crop&q=80&w=600', N'Heineken', 40000.00, N'Lon', 500);
+VALUES (1, 5, 'https://images.unsplash.com/photo-1599419685838-28e405ea05b9?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', N'Heineken', 40000.00, N'Lon', 500);
 INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
-VALUES (2, 1, 'https://images.unsplash.com/photo-1575037614876-c385db44f33d?auto=format&fit=crop&q=80&w=600', N'Tiger', 30000.00, N'Lon', 800);
+VALUES (2, 5, 'https://images.unsplash.com/photo-1624795763669-d3605b99a0cb?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', N'Tiger', 30000.00, N'Lon', 800);
 INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
-VALUES (11, 1, 'https://images.unsplash.com/photo-1614316051515-512ebcefcba6?auto=format&fit=crop&q=80&w=600', N'Saigon Bia', 40000.00, N'Lon', 500);
+VALUES (11, 5, 'https://product.hstatic.net/200000768759/product/bia-sai-gon-special-bun-bo-ganh_5d620d0b06814c71921dd7f9a93d620f_master.png', N'Saigon Bia', 40000.00, N'Lon', 500);
 INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
-VALUES (12, 1, 'https://images.unsplash.com/photo-1558500213-90d54a20b720?auto=format&fit=crop&q=80&w=600', N'333 Bia', 30000.00, N'Lon', 800);
+VALUES (12, 5, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEAJDIigBoE2SlJPVg0CMhqP3Udgm9w6e4K9ScBQM94g&s=10', N'333 Bia', 30000.00, N'Lon', 800);
 INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
-VALUES (3, 2, 'https://images.unsplash.com/photo-1527281400683-1aae777175f8?auto=format&fit=crop&q=80&w=600', N'Chivas 12', 1500000.00, N'Chai', 20);
+VALUES (3, 6, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfaRpKLvTJqyAa2h2Pbft9SkIdv0NMNWDZNE2WwU0aFw&s=10', N'Chivas 12', 1500000.00, N'Chai', 20);
 INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
-VALUES (13, 2, 'https://images.unsplash.com/photo-1563223771-5fe4038fbfc9?auto=format&fit=crop&q=80&w=600', N'Chivas 32', 1500000.00, N'Chai', 20);
+VALUES (13, 6, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnc4P2O4yblkjCh7c8pyNGWelPlJy3WQnCiVf4-oeA8Q&s=10', N'Chivas 32', 1500000.00, N'Chai', 20);
 INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
-VALUES (4, 3, 'https://images.unsplash.com/photo-1523362628745-0c100150b504?auto=format&fit=crop&q=80&w=600', N'Aquafina', 20000.00, N'Chai', 400);
+VALUES (4, 1, 'https://sonhawater.com/wp-content/uploads/2019/10/aquafina-15-lit.jpg', N'Aquafina', 20000.00, N'Chai', 400);
 INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
-VALUES (14, 3, 'https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&q=80&w=600', N'Lavie', 20000.00, N'Chai', 400);
+VALUES (14, 1, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQoe6keF5DkVOszFGOBSaBb4-gKCPuj8LHeo6ooGMDeSw&s=10', N'Lavie', 20000.00, N'Chai', 400);
 INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
-VALUES (5, 4, 'https://images.unsplash.com/photo-1621939514649-280e2ee25f60?auto=format&fit=crop&q=80&w=600', N'Khô bò', 150000.00, N'Đĩa', 50);
+VALUES (5, 2, 'https://bokhothuba.com/wp-content/uploads/2020/03/bo-kho-soi-2.jpg', N'Khô bò', 150000.00, N'Đĩa', 50);
 INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
-VALUES (15, 4, 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?auto=format&fit=crop&q=80&w=600', N'Khô gà Mixi', 150000.00, N'Đĩa', 50);
+VALUES (15, 2, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStfEu0XWU5xbEOCKjTsh5bDFm3LfqVPRSALgnv2G1sNoBguqzVDyZLc-M&s=10', N'Khô gà Mixi', 150000.00, N'Đĩa', 50);
 INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
-VALUES (6, 5, 'https://images.unsplash.com/photo-1519996529931-28324d5a630e?auto=format&fit=crop&q=80&w=600', N'Trái cây VIP loại 2', 450000.00, N'Đĩa', 20);
+VALUES (6, 3, 'https://images.unsplash.com/photo-1519996529931-28324d5a630e?auto=format&fit=crop&q=80&w=600', N'Trái cây VIP loại 2', 450000.00, N'Đĩa', 20);
 INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
-VALUES (8, 4, 'https://images.unsplash.com/photo-1528821128474-27f963b062bf?auto=format&fit=crop&q=80&w=600', N'Đào Tiên', 3000000.00, N'EM', 5);
+VALUES (8, 2, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_37y9BhxeWYbd5tpGG4ZcOpzH5LoL7Sx0V23yoNtlYA&s=10', N'Đào Tiên', 3000000.00, N'EM', 5);
 INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
-VALUES (16, 5, 'https://images.unsplash.com/photo-1582294440173-9a00cebd350a?auto=format&fit=crop&q=80&w=600', N'Trái cây VIP', 350000.00, N'Đĩa', 20);
+VALUES (16, 3, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQCcjJQx2h7QZ7m_vD_fAuwQ5leiAj3JPa-TC1Su1MYXQ&s=10', N'Trái cây VIP', 350000.00, N'Đĩa', 20);
 INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
-VALUES (7, 6, 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&q=80&w=600', N'Combo Sinh Nhật VIP', 4000000.00, N'Combo', 5);
+VALUES (7, 4, 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&q=80&w=600', N'Combo Sinh Nhật VIP', 4000000.00, N'Combo', 5);
 INSERT INTO [ServiceItem] (ServiceID, CategoryID, ImageUrl, ServiceName, SellingPrice, Unit, StockQuantity) 
-VALUES (17, 6, 'https://images.unsplash.com/photo-1558636508-e0db3814bd1d?auto=format&fit=crop&q=80&w=600', N'Combo Sinh Nhật', 1500000.00, N'Combo', 5);
+VALUES (17, 4, 'https://images.unsplash.com/photo-1558636508-e0db3814bd1d?auto=format&fit=crop&q=80&w=600', N'Combo Sinh Nhật', 1500000.00, N'Combo', 5);
 SET IDENTITY_INSERT [ServiceItem] OFF;
 
 SET IDENTITY_INSERT [PurchaseOrder] ON;
@@ -732,21 +729,21 @@ SET IDENTITY_INSERT [RoomPrice] OFF;
 
 SET IDENTITY_INSERT [Booking] ON;
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (1, 1, 3, 5, '2026-06-24 21:58:47', '2026-06-25 21:58:47', '2026-06-26 01:58:47', N'Completed', NULL, 4, N'Khách gọi đặt trước');
+VALUES (1, 1, 3, 5, '2026-06-24 21:58:47', '2026-06-25 21:58:47', '2026-06-26 01:58:47', N'Confirmed', NULL, 4, N'Khách gọi đặt trước');
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (2, 2, 4, 8, '2026-06-26 21:58:47', '2026-06-26 21:58:47', '2026-06-27 00:58:47', N'Completed', NULL, 10, N'Sinh nhật');
+VALUES (2, 2, 4, 8, '2026-06-26 21:58:47', '2026-06-26 21:58:47', '2026-06-27 00:58:47', N'Confirmed', NULL, 10, N'Sinh nhật');
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (3, 3, 3, 4, '2026-06-27 21:58:47', '2026-06-27 21:58:47', '2026-06-27 23:58:47', N'CheckedIn', NULL, NULL, NULL);
+VALUES (3, 3, 3, 4, '2026-06-27 21:58:47', '2026-06-27 21:58:47', '2026-06-27 23:58:47', N'Confirmed', NULL, NULL, NULL);
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (4, 1, 3, 1, '2026-06-12 21:58:47', '2026-06-13 21:58:47', '2026-06-13 23:58:47', N'Completed', NULL, NULL, NULL);
+VALUES (4, 1, 3, 1, '2026-06-12 21:58:47', '2026-06-13 21:58:47', '2026-06-13 23:58:47', N'Confirmed', NULL, NULL, NULL);
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (5, 2, 3, 2, '2026-06-13 21:58:47', '2026-06-14 21:58:47', '2026-06-15 00:58:47', N'Completed', NULL, NULL, NULL);
+VALUES (5, 2, 3, 2, '2026-07-24 21:58:47', '2026-07-25 20:00:00', '2026-07-25 22:00:00', N'Pending', NULL, 4, N'Sinh nhật');
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (6, 3, 4, 4, '2026-06-14 21:58:47', '2026-06-15 21:58:47', '2026-06-15 23:58:47', N'Completed', NULL, NULL, NULL);
+VALUES (6, 3, 4, 4, '2026-07-24 21:58:47', '2026-07-25 17:00:00', '2026-07-25 18:30:00', N'Pending', NULL, 3, NULL);
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (7, 4, 4, 5, '2026-06-15 21:58:47', '2026-06-16 21:58:47', '2026-06-17 01:58:47', N'Completed', NULL, NULL, NULL);
+VALUES (7, 4, 4, 5, '2026-07-23 21:58:47', '2026-07-24 17:00:00', '2026-07-24 19:00:00', N'Pending', NULL, 4, N'Có thể đến muộn 10p');
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (8, 5, 3, 6, '2026-06-16 21:58:47', '2026-06-17 21:58:47', '2026-06-18 02:58:47', N'Completed', NULL, NULL, NULL);
+VALUES (8, 5, 3, 6, '2026-07-23 21:58:47', '2026-07-24 20:00:00', '2026-07-24 22:00:00', N'Pending', NULL, 2, NULL);
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
 VALUES (9, 1, 3, 7, '2026-06-17 21:58:47', '2026-06-18 21:58:47', '2026-06-18 23:58:47', N'Completed', NULL, NULL, NULL);
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 

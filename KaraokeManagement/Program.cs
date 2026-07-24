@@ -13,6 +13,9 @@ builder.Services.AddScoped<KaraokeManagement.Services.IScheduleService, KaraokeM
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<PricePolicyService>();
 
+// Auth
+builder.Services.AddScoped<KaraokeManagement.Services.AuthService.AuthService>();
+
 // Receptionist
 builder.Services.AddScoped<KaraokeManagement.Services.ReceptionistServices.DashboardService>();
 builder.Services.AddScoped<KaraokeManagement.Services.ReceptionistServices.OrderService>();
@@ -20,6 +23,7 @@ builder.Services.AddScoped<KaraokeManagement.Services.ReceptionistServices.RoomB
 builder.Services.AddScoped<KaraokeManagement.Services.ReceptionistServices.PaymentService>();
 builder.Services.AddScoped<KaraokeManagement.Services.ReceptionistServices.CustomerService>();
 builder.Services.AddScoped<KaraokeManagement.Services.ReceptionistServices.InvoiceService>();
+builder.Services.AddScoped<KaraokeManagement.Services.ReceptionistServices.ReceptionistBookingService>();
 
 //Customer Service
 builder.Services.AddScoped<KaraokeManagement.Services.CustomerServices.CustomerService>();

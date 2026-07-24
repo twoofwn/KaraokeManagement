@@ -3,24 +3,19 @@ using KaraokeManagement.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using KaraokeManagement.Services.ReceptionistServices;
-using KaraokeManagement.ViewModel;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace KaraokeManagement.Controllers
 {
     [Authorize(Roles = "Receptionist")]
     public class ReceptionistController : Controller
     {
-        // Khai báo tiêm trực tiếp các Class Service
         private readonly DashboardService _dashboardService;
         private readonly OrderService _orderService;
         private readonly RoomBookingService _bookingService;
         private readonly PaymentService _paymentService;
         private readonly CustomerService _customerService;
         private readonly InvoiceService _invoiceService;
+        private readonly ReceptionistBookingService _recepBookingService;
 
         public ReceptionistController(
             DashboardService dashboardService,
@@ -28,7 +23,8 @@ namespace KaraokeManagement.Controllers
             RoomBookingService bookingService,
             PaymentService paymentService,
             CustomerService customerService,
-            InvoiceService invoiceService)
+            InvoiceService invoiceService,
+            ReceptionistBookingService recepBookingService)
         {
             _dashboardService = dashboardService;
             _orderService = orderService;
@@ -36,6 +32,7 @@ namespace KaraokeManagement.Controllers
             _paymentService = paymentService;
             _customerService = customerService;
             _invoiceService = invoiceService;
+            _recepBookingService = recepBookingService;
         }
 
         [HttpGet]
@@ -154,6 +151,78 @@ namespace KaraokeManagement.Controllers
             var vm = await _invoiceService.GetInvoiceDetailAsync(invoiceId);
             if (vm == null) return NotFound("Không tìm thấy thông tin hóa đơn.");
             return PartialView("_InvoiceDetailModal", vm);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ListBooking(
+        string searchString,
+        string customerFilter,
+        string dateRange = "all",
+        string status = "Pending",
+        int page = 1)
+        {
+            var viewModel = await _recepBookingService.GetListBookingAsync(searchString, customerFilter, dateRange, status, page);
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateBookingStatus([FromBody] UpdateBookingStatusRequest request)
+        {
+            var accountIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("AccountId");
+            if (!int.TryParse(accountIdClaim, out int accountId) || accountId <= 0)
+            {
+                return Json(new { success = false, message = "Phiên làm việc hết hạn hoặc không xác định được tài khoản thao tác." });
+            }
+
+            var result = await _recepBookingService.UpdateBookingStatusAsync(request, accountId);
+            return Json(new { success = result.success, message = result.message });
+        }
+
+        // Đổi tên CheckIn -> BookingConfirm
+        [HttpGet]
+        public async Task<IActionResult> BookingConfirm(string search = "")
+        {
+            var pendingBookings = await _recepBookingService.GetBookingConfirmListAsync(search);
+            return View(pendingBookings);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> BookingConfirmDetail(int id)
+        {
+            var viewModel = await _recepBookingService.GetBookingConfirmDetailAsync(id);
+            if (viewModel == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy thông tin đơn đặt phòng này!";
+                return RedirectToAction("BookingConfirm");
+            }
+
+            return View(viewModel); 
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmCheckIn(CheckInDetailViewModel model)
+        {
+            var accountIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("AccountId");
+            if (!int.TryParse(accountIdClaim, out int accountId) || accountId <= 0)
+            {
+                return Json(new { success = false, message = "Phiên làm việc hết hạn hoặc không xác định được tài khoản thao tác." });
+            }
+
+            bool success = await _recepBookingService.ConfirmCheckInAsync(model, accountId);
+            if (!success) return NotFound();
+
+            TempData["SuccessMessage"] = "Check-in thành công!";
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelBooking(int bookingId)
+        {
+            await _recepBookingService.CancelBookingAsync(bookingId);
+            TempData["SuccessMessage"] = "Đã hủy đơn đặt phòng thành công.";
+            return RedirectToAction("BookingConfirm");
         }
     }
 }
