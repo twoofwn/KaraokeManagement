@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -161,6 +161,19 @@ namespace KaraokeManagement.Controllers
             }
 
             return BadRequest(result.Message);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AssignedRooms()
+        {
+            string? idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(idClaim, out int accountId))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var model = await _staffService.GetAssignedRoomsAsync(accountId);
+            return View(model);
         }
     }
 }

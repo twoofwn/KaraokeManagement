@@ -1,0 +1,184 @@
+﻿@{
+    ViewData["Title"] = "Phòng đang phục vụ";
+    Layout = "~/Views/Shared/_StaffLayout.cshtml";
+    ViewData["ActiveNav"] = "assigned";
+}
+<style>
+    :root {
+        --bg-light: #F8F4EC;
+        --accent-light: #FF8FB7;
+        --accent-strong: #E83C91;
+        --text-dark: #43334C;
+    }
+
+    .room-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .room-card {
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(67, 51, 76, 0.08);
+        border: 1px solid var(--accent-light);
+        padding: 1.5rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+        .room-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(232, 60, 145, 0.15);
+        }
+
+    .room-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 2px dashed var(--accent-light);
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .room-title {
+        color: var(--text-dark);
+        font-weight: 700;
+        font-size: 1.5rem;
+        margin: 0;
+    }
+
+    .room-type {
+        color: var(--accent-strong);
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .room-info p {
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .unfulfilled-badge {
+        background-color: var(--accent-strong);
+        color: var(--bg-light);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: bold;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.95rem;
+        animation: pulse 2s infinite;
+    }
+
+        .unfulfilled-badge.zero {
+            background-color: var(--text-dark);
+            opacity: 0.6;
+            animation: none;
+        }
+
+    .action-btn {
+        background-color: var(--text-dark);
+        color: var(--bg-light);
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        display: block;
+        margin-top: 1rem;
+        transition: background-color 0.2s;
+    }
+
+        .action-btn:hover {
+            background-color: var(--accent-strong);
+            color: var(--bg-light);
+        }
+
+    @@keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(232, 60, 145, 0.4);
+        }
+
+        70% {
+            box-shadow: 0 0 0 10px rgba(232, 60, 145, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(232, 60, 145, 0);
+        }
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <h2 style="color: var(--text-dark); font-weight: bold;">
+        <i class="fas fa-door-open me-2"></i>Phòng Đang Phục Vụ
+    </h2>
+    <p style="color: var(--text-dark); opacity: 0.8;">
+        Danh sách các phòng bạn đang được phân công theo dõi hiện tại.
+    </p>
+
+    @if (!Model.Any())
+    {
+        <div class="alert mt-4 text-center" style="background-color: var(--bg-light); border: 2px dashed var(--accent-light); color: var(--text-dark); padding: 3rem;">
+            <h4><i class="fas fa-check-circle me-2" style="color: var(--accent-strong);"></i>Hiện tại bạn không có phòng nào đang phục vụ.</h4>
+        </div>
+    }
+    else
+    {
+        <div class="room-container">
+            @foreach (var room in Model)
+            {
+                var timeInRoom = DateTime.Now - room.CheckInTime;
+
+                <div class="room-card">
+                    <div>
+                        <div class="room-header">
+                            <div>
+                                <h3 class="room-title">@room.RoomName</h3>
+                                <span class="room-type">@room.RoomTypeName</span>
+                            </div>
+
+                            @if (room.UnfulfilledCount > 0)
+                            {
+                                <div class="unfulfilled-badge">
+                                    <i class="fas fa-bell"></i> @room.UnfulfilledCount món chưa giao
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="unfulfilled-badge zero">
+                                    <i class="fas fa-check"></i> Đã giao đủ
+                                </div>
+                            }
+                        </div>
+
+                        <div class="room-info">
+                            <p>
+                                <i class="fas fa-clock" style="color: var(--accent-light);"></i>
+                                <strong>Giờ vào:</strong> @room.CheckInTime.ToString("HH:mm")
+                            </p>
+                            <p>
+                                <i class="fas fa-hourglass-half" style="color: var(--accent-light);"></i>
+                                <strong>Thời lượng:</strong> @($"{(int)timeInRoom.TotalHours:D2}:{timeInRoom.Minutes:D2}")
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Bạn có thể thay đổi href thành link trỏ tới trang chi tiết Order của phòng -->
+                    <a href="@Url.Action("OrderDetails", "Staff", new { bookingId = room.BookingId })" class="action-btn">
+                        <i class="fas fa-concierge-bell me-1"></i> Xem Order / Phục vụ
+                    </a>
+                </div>
+            }
+        </div>
+    }
+</div>

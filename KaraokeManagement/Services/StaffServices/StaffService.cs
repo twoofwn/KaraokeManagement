@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -208,6 +208,31 @@ namespace KaraokeManagement.Services.StaffServices
                 EligibleSchedules = eligibleSchedules,
                 RequestHistory = requestHistory
             };
+        }
+
+        public async Task<List<AssignedRoomViewModel>> GetAssignedRoomsAsync(int accountId)
+        {
+            var assignedRooms = await _context.Bookings
+                .Where(b => b.StaffId == accountId && b.Status == "CheckedIn")
+                .Select(b => new AssignedRoomViewModel
+                {
+                    BookingId = b.BookingId,
+                    RoomId = b.RoomId,
+                    RoomName = b.Room.RoomName,
+                    RoomTypeName = b.Room.RoomType.TypeName,
+
+                    CheckInTime = b.Invoices
+                        .OrderByDescending(i => i.CheckInTime)
+                        .Select(i => i.CheckInTime)
+                        .FirstOrDefault(),
+
+                    UnfulfilledCount = b.Invoices
+                        .SelectMany(i => i.InvoiceDetails)
+                        .Count(d => d.IsFulFilled == false)
+                })
+                .ToListAsync();
+
+            return assignedRooms;
         }
     }
 }

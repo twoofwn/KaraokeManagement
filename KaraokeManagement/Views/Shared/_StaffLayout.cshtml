@@ -1,4 +1,4 @@
-@using System.Security.Claims
+﻿@using System.Security.Claims
 @{
 	var fullName = User.FindFirstValue(ClaimTypes.Name) ?? "Nhân viên";
 	var avatar = fullName.Substring(0, 1).ToUpper();
@@ -47,6 +47,11 @@
 						<span>Bảng điều khiển</span>
 					</a>
 				}
+				<a href="/Staff/AssignedRooms"
+				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "assigned" ? "active" : "")">
+					<i class="fa-solid fa-concierge-bell nav-icon"></i>
+					<span>Phòng đang phục vụ</span>
+				</a>
 
 				<a href="/Staff/Schedule"
 				   class="nav-item @(ViewData["ActiveNav"]?.ToString() == "schedule" ? "active" : "")">
