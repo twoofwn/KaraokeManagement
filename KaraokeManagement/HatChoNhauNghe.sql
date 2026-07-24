@@ -325,14 +325,17 @@ CREATE TABLE [EmployeeTask] (
 CREATE TABLE [LeaveRequest] (
     LeaveRequestId INT IDENTITY(1,1) PRIMARY KEY,
     AccountId INT NOT NULL,
-    ScheduleId INT NOT NULL,
+    ScheduleId INT NULL,
     Reason NVARCHAR(500) NOT NULL,
     Status VARCHAR(30) NOT NULL DEFAULT 'Pending',
     CreatedAt DATETIME NULL DEFAULT GETDATE(),
     ApprovedById INT NULL,
+    RequestedDate DATE NULL,
+    ShiftId INT NULL,
     FOREIGN KEY (AccountId) REFERENCES [Account](AccountID),
     FOREIGN KEY (ScheduleId) REFERENCES [EmployeeSchedule](ScheduleID),
-    FOREIGN KEY (ApprovedById) REFERENCES [Account](AccountID)
+    FOREIGN KEY (ApprovedById) REFERENCES [Account](AccountID),
+    FOREIGN KEY (ShiftId) REFERENCES [WorkShift](ShiftID)
 );
 
 CREATE TABLE [ShiftSwapRequest] (

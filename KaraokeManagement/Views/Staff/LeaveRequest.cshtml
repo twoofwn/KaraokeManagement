@@ -4,6 +4,7 @@
     ViewData["ActiveNav"] = "leave_request";
     var eligibleSchedules = ViewBag.EligibleSchedules as List<KaraokeManagement.Models.EmployeeSchedule> ?? new List<KaraokeManagement.Models.EmployeeSchedule>();
     var requestHistory = ViewBag.RequestHistory as List<KaraokeManagement.Models.LeaveRequest> ?? new List<KaraokeManagement.Models.LeaveRequest>();
+    var workShifts = ViewBag.WorkShifts as List<KaraokeManagement.Models.WorkShift> ?? new List<KaraokeManagement.Models.WorkShift>();
 }
 
 <div class="leave-request-container" style="max-width: 1440px; margin: 0 auto; padding: 15px;">
@@ -25,38 +26,35 @@
                     </h5>
                 </div>
                 <div class="card-body p-4">
-                    @if (!eligibleSchedules.Any())
-                    {
-                        <div class="alert alert-info border-0 rounded-3 mb-0" role="alert">
-                            <i class="fa-solid fa-circle-info me-2"></i> Bạn hiện không có ca làm việc nào sắp tới đủ điều kiện để xin nghỉ (hoặc bạn đã đăng ký nghỉ phép cho tất cả ca làm việc sắp tới).
+                    <form id="leaveRequestForm" onsubmit="submitForm(event)">
+                        <div class="mb-3">
+                            <label for="requestedDate" class="form-label fw-semibold text-dark">Chọn ngày nghỉ phép</label>
+                            <input type="date" id="requestedDate" name="requestedDateStr" class="form-control border-2" required style="border-radius: 8px;" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
                         </div>
-                    }
-                    else
-                    {
-                        <form id="leaveRequestForm" onsubmit="submitForm(event)">
-                            <div class="mb-3">
-                                <label for="scheduleId" class="form-label fw-semibold text-dark">Chọn ca làm việc cần nghỉ</label>
-                                <select id="scheduleId" name="scheduleId" class="form-select border-2" required style="border-radius: 8px;">
-                                    <option value="" disabled selected>-- Chọn ca cần nghỉ --</option>
-                                    @foreach (var sched in eligibleSchedules)
-                                    {
-                                        <option value="@sched.ScheduleId">
-                                            @sched.WorkDate.ToString("dd/MM/yyyy") - Ca @sched.Shift.ShiftName (@sched.Shift.StartTime.ToString(@"hh\:mm") - @sched.Shift.EndTime.ToString(@"hh\:mm"))
-                                        </option>
-                                    }
-                                </select>
-                            </div>
 
-                            <div class="mb-4">
-                                <label for="reason" class="form-label fw-semibold text-dark">Lý do xin nghỉ</label>
-                                <textarea id="reason" name="reason" rows="4" class="form-control border-2" placeholder="Vui lòng cung cấp lý do chi tiết..." required style="resize: none; border-radius: 8px;"></textarea>
-                            </div>
+                        <div class="mb-3">
+                            <label for="shiftId" class="form-label fw-semibold text-dark">Chọn ca làm việc</label>
+                            <select id="shiftId" name="shiftId" class="form-select border-2" required style="border-radius: 8px;">
+                                <option value="" disabled selected>-- Chọn ca cần nghỉ --</option>
+                                <option value="0">Cả ngày (Full Day)</option>
+                                @foreach (var shift in workShifts)
+                                {
+                                    <option value="@shift.ShiftId">
+                                        Ca @shift.ShiftName (@shift.StartTime.ToString(@"hh\:mm") - @shift.EndTime.ToString(@"hh\:mm"))
+                                    </option>
+                                }
+                            </select>
+                        </div>
 
-                            <button type="submit" class="btn btn-danger w-100 fw-bold py-2" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(220, 53, 69, 0.15);">
-                                <i class="fa-solid fa-paper-plane me-1"></i> Gửi đơn xin nghỉ
-                            </button>
-                        </form>
-                    }
+                        <div class="mb-4">
+                            <label for="reason" class="form-label fw-semibold text-dark">Lý do xin nghỉ</label>
+                            <textarea id="reason" name="reason" rows="4" class="form-control border-2" placeholder="Vui lòng cung cấp lý do chi tiết..." required style="resize: none; border-radius: 8px;"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-danger w-100 fw-bold py-2" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(220, 53, 69, 0.15);">
+                            <i class="fa-solid fa-paper-plane me-1"></i> Gửi đơn xin nghỉ
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -108,8 +106,8 @@
 
                                         <tr>
                                             <td class="px-4">
-                                                <div class="fw-bold">Ca @(request.Schedule?.Shift?.ShiftName ?? "N/A")</div>
-                                                <div class="text-muted small">@(request.Schedule?.WorkDate.ToString("dd/MM/yyyy") ?? "N/A")</div>
+                                                <div class="fw-bold">@(request.Schedule?.Shift?.ShiftName ?? request.Shift?.ShiftName ?? "Cả ngày")</div>
+                                                <div class="text-muted small">@(request.Schedule?.WorkDate.ToString("dd/MM/yyyy") ?? request.RequestedDate?.ToString("dd/MM/yyyy") ?? "N/A")</div>
                                             </td>
                                             <td class="text-wrap text-muted" style="max-width: 250px;">
                                                 @request.Reason
@@ -139,15 +137,16 @@
         function submitForm(event) {
             event.preventDefault();
             
-            var scheduleId = $('#scheduleId').val();
+            var requestedDateStr = $('#requestedDate').val();
+            var shiftId = $('#shiftId').val();
             var reason = $('#reason').val();
 
-            if (!scheduleId || !reason.trim()) {
-                alert('Vui lòng chọn ca làm việc và điền lý do xin nghỉ.');
+            if (!requestedDateStr || shiftId === null || !reason.trim()) {
+                alert('Vui lòng chọn ngày, ca làm việc và điền lý do xin nghỉ.');
                 return;
             }
 
-            $.post('/Staff/SubmitLeave', { scheduleId: scheduleId, reason: reason }, function(res) {
+            $.post('/Staff/SubmitLeave', { requestedDateStr: requestedDateStr, shiftId: shiftId, reason: reason }, function(res) {
                 alert(res.message || 'Đã gửi đơn xin nghỉ phép thành công!');
                 location.reload();
             }).fail(function(err) {

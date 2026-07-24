@@ -1,0 +1,163 @@
+@{
+    ViewData["Title"] = "Xin Nghỉ Phép";
+    Layout = "~/Views/Shared/_StaffLayout.cshtml";
+    ViewData["ActiveNav"] = "leave_request";
+    var eligibleSchedules = ViewBag.EligibleSchedules as List<KaraokeManagement.Models.EmployeeSchedule> ?? new List<KaraokeManagement.Models.EmployeeSchedule>();
+    var requestHistory = ViewBag.RequestHistory as List<KaraokeManagement.Models.LeaveRequest> ?? new List<KaraokeManagement.Models.LeaveRequest>();
+    var workShifts = ViewBag.WorkShifts as List<KaraokeManagement.Models.WorkShift> ?? new List<KaraokeManagement.Models.WorkShift>();
+}
+
+<div class="leave-request-container" style="max-width: 1440px; margin: 0 auto; padding: 15px;">
+    <!-- Top banner -->
+    <div class="card shadow-sm border-0 mb-4 bg-white rounded-3">
+        <div class="card-body p-4">
+            <h3 class="fw-bold text-danger mb-1"><i class="fa-solid fa-calendar-minus me-2"></i>Xin Nghỉ Phép</h3>
+            <p class="text-muted mb-0 small">Đăng ký xin phép vắng mặt và theo dõi kết quả xét duyệt từ Quản lý.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- New Request Form Card -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-danger bg-opacity-10 py-3 border-0">
+                    <h5 class="fw-bold text-danger-emphasis mb-0">
+                        <i class="fa-solid fa-file-pen me-2"></i>Đơn xin nghỉ phép mới
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form id="leaveRequestForm" onsubmit="submitForm(event)">
+                        <div class="mb-3">
+                            <label for="requestedDate" class="form-label fw-semibold text-dark">Chọn ngày nghỉ phép</label>
+                            <input type="date" id="requestedDate" name="requestedDateStr" class="form-control border-2" required style="border-radius: 8px;" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="shiftId" class="form-label fw-semibold text-dark">Chọn ca làm việc</label>
+                            <select id="shiftId" name="shiftId" class="form-select border-2" required style="border-radius: 8px;">
+                                <option value="" disabled selected>-- Chọn ca cần nghỉ --</option>
+                                <option value="0">Cả ngày (Full Day)</option>
+                                @foreach (var shift in workShifts)
+                                {
+                                    <option value="@shift.ShiftId">
+                                        Ca @shift.ShiftName (@shift.StartTime.ToString(@"hh\:mm") - @shift.EndTime.ToString(@"hh\:mm"))
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="reason" class="form-label fw-semibold text-dark">Lý do xin nghỉ</label>
+                            <textarea id="reason" name="reason" rows="4" class="form-control border-2" placeholder="Vui lòng cung cấp lý do chi tiết..." required style="resize: none; border-radius: 8px;"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-danger w-100 fw-bold py-2" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(220, 53, 69, 0.15);">
+                            <i class="fa-solid fa-paper-plane me-1"></i> Gửi đơn xin nghỉ
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Request History Card -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-dark text-white py-3 border-0">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fa-solid fa-clock-rotate-left me-2"></i>Lịch sử yêu cầu vắng mặt
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    @if (!requestHistory.Any())
+                    {
+                        <div class="text-center py-5 text-muted">
+                            <i class="fa-regular fa-folder-open mb-3" style="font-size: 3rem;"></i>
+                            <p class="mb-0 small">Bạn chưa gửi yêu cầu nghỉ phép nào trước đây.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="px-4 py-3">Ca & Ngày nghỉ</th>
+                                        <th>Lý do</th>
+                                        <th>Trạng thái</th>
+                                        <th class="px-4 text-center">Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var request in requestHistory)
+                                    {
+                                        var badgeColor = "bg-warning";
+                                        var statusText = "Chờ duyệt";
+                                        if (request.Status == "Approved")
+                                        {
+                                            badgeColor = "bg-success";
+                                            statusText = "Đã duyệt";
+                                        }
+                                        else if (request.Status == "Rejected")
+                                        {
+                                            badgeColor = "bg-danger";
+                                            statusText = "Từ chối";
+                                        }
+
+                                        <tr>
+                                            <td class="px-4">
+                                                <div class="fw-bold">@(request.Schedule?.Shift?.ShiftName ?? request.Shift?.ShiftName ?? "Cả ngày")</div>
+                                                <div class="text-muted small">@(request.Schedule?.WorkDate.ToString("dd/MM/yyyy") ?? request.RequestedDate?.ToString("dd/MM/yyyy") ?? "N/A")</div>
+                                            </td>
+                                            <td class="text-wrap text-muted" style="max-width: 250px;">
+                                                @request.Reason
+                                            </td>
+                                            <td>
+                                                <span class="badge rounded-pill @badgeColor px-3 py-1.5" style="font-size: 0.72rem; font-weight: 500;">
+                                                    @statusText
+                                                </span>
+                                            </td>
+                                            <td class="px-4 text-center">
+                                                @if (request.Status == "Pending")
+                                                {
+                                                    <span class="text-muted font-monospace small">Đang xử lý</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-success small"><i class="fa-solid fa-lock me-1"></i>Hoàn tất</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function submitForm(event) {
+            event.preventDefault();
+            
+            var requestedDateStr = $('#requestedDate').val();
+            var shiftId = $('#shiftId').val();
+            var reason = $('#reason').val();
+
+            if (!requestedDateStr || shiftId === null || !reason.trim()) {
+                alert('Vui lòng chọn ngày, ca làm việc và điền lý do xin nghỉ.');
+                return;
+            }
+
+            $.post('/Receptionist/SubmitLeave', { requestedDateStr: requestedDateStr, shiftId: shiftId, reason: reason }, function(res) {
+                alert(res.message || 'Đã gửi đơn xin nghỉ phép thành công!');
+                location.reload();
+            }).fail(function(err) {
+                alert('Lỗi: ' + (err.responseText || 'Không thể gửi đơn xin nghỉ phép.'));
+            });
+        }
+    </script>
+}

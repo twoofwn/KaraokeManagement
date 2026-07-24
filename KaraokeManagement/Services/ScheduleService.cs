@@ -16,7 +16,7 @@ namespace KaraokeManagement.Services
         Task<(bool Success, string Message)> RejectSwapRequestByTarget(int swapRequestId, int targetId);
         Task<(bool Success, string Message)> ApproveSwapRequest(int swapRequestId, int managerId);
         Task<(bool Success, string Message)> RejectSwapRequest(int swapRequestId, int managerId);
-        Task<(bool Success, string Message)> SubmitLeaveRequest(int accountId, int scheduleId, string reason);
+        Task<(bool Success, string Message)> SubmitLeaveRequest(int accountId, DateOnly requestedDate, int? shiftId, string reason);
         Task<(bool Success, string Message)> ApproveLeaveRequest(int leaveRequestId, int managerId);
         Task<(bool Success, string Message)> RejectLeaveRequest(int leaveRequestId, int managerId);
         Task<WeeklyGridViewModel> GetWeeklyGridDataAsync(string? startDate);
@@ -24,6 +24,7 @@ namespace KaraokeManagement.Services
         Task<LeaveApprovalsViewModel> GetLeaveApprovalsDataAsync();
         Task<ScheduleListViewModel> GetSchedulesViewModelAsync(string? date);
         Task<(bool Success, string Message)> BatchUpdateSchedulesAsync(BatchSchedulePayload payload);
+        Task<List<object>> GetAvailableStaffForShiftAsync(int shiftId, string date, string? role, string? status);
     }
 
     public class ScheduleService : IScheduleService
@@ -218,16 +219,25 @@ namespace KaraokeManagement.Services
         }
 
         // 4. LEAVE REQUEST LOGIC
-        public async Task<(bool Success, string Message)> SubmitLeaveRequest(int accountId, int scheduleId, string reason)
+        public async Task<(bool Success, string Message)> SubmitLeaveRequest(int accountId, DateOnly requestedDate, int? shiftId, string reason)
         {
-            var sched = await _context.EmployeeSchedules.FindAsync(scheduleId);
-            if (sched == null || sched.AccountId != accountId)
-                return (false, "Lịch làm việc không hợp lệ.");
+            if (requestedDate < DateOnly.FromDateTime(DateTime.Today))
+                return (false, "Không thể xin nghỉ phép cho các ngày trong quá khứ.");
+
+            // Check if there is already a schedule for this employee, date, and shift
+            EmployeeSchedule? existingSched = null;
+            if (shiftId.HasValue)
+            {
+                existingSched = await _context.EmployeeSchedules
+                    .FirstOrDefaultAsync(s => s.AccountId == accountId && s.WorkDate == requestedDate && s.ShiftId == shiftId.Value);
+            }
 
             var leaveReq = new LeaveRequest
             {
                 AccountId = accountId,
-                ScheduleId = scheduleId,
+                ScheduleId = existingSched?.ScheduleId,
+                RequestedDate = requestedDate,
+                ShiftId = shiftId,
                 Reason = reason,
                 Status = "Pending",
                 CreatedAt = DateTime.Now
@@ -241,43 +251,74 @@ namespace KaraokeManagement.Services
 
         public async Task<(bool Success, string Message)> ApproveLeaveRequest(int leaveRequestId, int managerId)
         {
-            var req = await _context.LeaveRequests
-                .Include(r => r.Schedule)
-                .FirstOrDefaultAsync(r => r.LeaveRequestId == leaveRequestId);
-
-            if (req == null) return (false, "Đơn xin nghỉ không tồn tại.");
-
-            if (req.Schedule == null)
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                // Attempt to explicitly load the reference
-                await _context.Entry(req).Reference(r => r.Schedule).LoadAsync();
+                var req = await _context.LeaveRequests
+                    .Include(r => r.Schedule)
+                    .FirstOrDefaultAsync(r => r.LeaveRequestId == leaveRequestId);
 
-                if (req.Schedule == null)
+                if (req == null) return (false, "Đơn xin nghỉ không tồn tại.");
+                if (req.Status != "Pending") return (false, "Đơn đã được xử lý trước đó.");
+
+                req.Status = "Approved";
+                req.ApprovedById = managerId;
+
+                var targetDate = req.RequestedDate ?? (req.Schedule != null ? req.Schedule.WorkDate : DateOnly.FromDateTime(DateTime.Today));
+
+                // Identify target shifts to block:
+                var targetShifts = new List<int>();
+                if (req.ShiftId.HasValue)
                 {
-                    // Attempt direct manual lookup
-                    var sched = await _context.EmployeeSchedules.FindAsync(req.ScheduleId);
-                    if (sched != null)
+                    targetShifts.Add(req.ShiftId.Value);
+                }
+                else if (req.Schedule != null)
+                {
+                    targetShifts.Add(req.Schedule.ShiftId);
+                }
+                else
+                {
+                    // Full Day: Block all shifts
+                    var allShifts = await _context.WorkShifts.Select(s => s.ShiftId).ToListAsync();
+                    targetShifts.AddRange(allShifts);
+                }
+
+                foreach (var shiftId in targetShifts)
+                {
+                    // Check existing schedule for this Account, Date, and Shift
+                    var existingSched = await _context.EmployeeSchedules
+                        .FirstOrDefaultAsync(s => s.AccountId == req.AccountId && s.WorkDate == targetDate && s.ShiftId == shiftId);
+
+                    if (existingSched != null)
                     {
-                        req.Schedule = sched;
+                        // Case A: Update status to "Off" and IsActive to false
+                        existingSched.Status = "Off";
+                        existingSched.IsActive = false;
                     }
                     else
                     {
-                        return (false, $"Không tìm thấy lịch làm việc liên quan (ScheduleId: {req.ScheduleId}).");
+                        // Case B: Insert new record
+                        var blockedSched = new EmployeeSchedule
+                        {
+                            AccountId = req.AccountId,
+                            ShiftId = shiftId,
+                            WorkDate = targetDate,
+                            Status = "Off",
+                            IsActive = false
+                        };
+                        _context.EmployeeSchedules.Add(blockedSched);
                     }
                 }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return (true, "Đã phê duyệt đơn xin nghỉ. Ca làm việc liên quan đã được chuyển sang trạng thái Off.");
             }
-
-            if (req.Status != "Pending") return (false, "Đơn đã được xử lý trước đó.");
-
-            req.Status = "Approved";
-            req.ApprovedById = managerId;
-
-            // Deactivate schedule record (Status = Off / Deactivated, IsActive = false)
-            req.Schedule.Status = "Off";
-            req.Schedule.IsActive = false;
-
-            await _context.SaveChangesAsync();
-            return (true, "Đã phê duyệt đơn xin nghỉ. Ca làm việc đã được chuyển sang trạng thái Off.");
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return (false, "Lỗi phê duyệt đơn xin nghỉ: " + ex.Message);
+            }
         }
 
         public async Task<(bool Success, string Message)> RejectLeaveRequest(int leaveRequestId, int managerId)
@@ -306,7 +347,7 @@ namespace KaraokeManagement.Services
             var rawSchedules = await _context.EmployeeSchedules
                 .Include(s => s.Account).ThenInclude(a => a.Role)
                 .Include(s => s.Shift)
-                .Where(s => s.WorkDate >= monDate && s.WorkDate <= sunDate)
+                .Where(s => s.WorkDate >= monDate && s.WorkDate <= sunDate && s.Status != "Off")
                 .ToListAsync();
 
             return new WeeklyGridViewModel
@@ -368,12 +409,14 @@ namespace KaraokeManagement.Services
             var pending = await _context.LeaveRequests
                 .Include(r => r.Account).ThenInclude(a => a.Role)
                 .Include(r => r.Schedule).ThenInclude(s => s.Shift)
+                .Include(r => r.Shift)
                 .Where(r => r.Status == "Pending")
                 .ToListAsync();
 
             var history = await _context.LeaveRequests
                 .Include(r => r.Account).ThenInclude(a => a.Role)
                 .Include(r => r.Schedule).ThenInclude(s => s.Shift)
+                .Include(r => r.Shift)
                 .Include(r => r.ApprovedBy)
                 .Where(r => r.Status != "Pending")
                 .OrderByDescending(r => r.CreatedAt)
@@ -475,6 +518,17 @@ namespace KaraokeManagement.Services
                     {
                         if (item.AccountId <= 0 || item.ShiftId <= 0) continue;
 
+                        // Check if employee is on leave ("Off") for this date/shift
+                        bool isOff = await _context.EmployeeSchedules.AnyAsync(s =>
+                            s.AccountId == item.AccountId &&
+                            s.WorkDate == item.WorkDate &&
+                            s.ShiftId == item.ShiftId &&
+                            s.Status == "Off");
+                        if (isOff)
+                        {
+                            return (false, "Không thể phân ca: Nhân viên này đang trong trạng thái nghỉ phép (Off) vào thời điểm này.");
+                        }
+
                         bool exists = await _context.EmployeeSchedules.AnyAsync(s =>
                             s.AccountId == item.AccountId &&
                             s.ShiftId == item.ShiftId &&
@@ -500,6 +554,17 @@ namespace KaraokeManagement.Services
                 {
                     foreach (var item in payload.UpdatedRecords)
                     {
+                        // Check if employee is on leave ("Off") for this date/shift
+                        bool isOff = await _context.EmployeeSchedules.AnyAsync(s =>
+                            s.AccountId == item.AccountId &&
+                            s.WorkDate == item.WorkDate &&
+                            s.ShiftId == item.ShiftId &&
+                            s.Status == "Off");
+                        if (isOff)
+                        {
+                            return (false, "Không thể phân ca: Nhân viên này đang trong trạng thái nghỉ phép (Off) vào thời điểm này.");
+                        }
+
                         var schedule = await _context.EmployeeSchedules.FindAsync(item.ScheduleId);
                         if (schedule != null)
                         {
@@ -533,6 +598,79 @@ namespace KaraokeManagement.Services
                 await transaction.RollbackAsync();
                 return (false, "Lỗi xử lý giao dịch: " + ex.Message);
             }
+        }
+
+        public async Task<List<object>> GetAvailableStaffForShiftAsync(int shiftId, string date, string? role, string? status)
+        {
+            DateOnly workDate = DateOnly.Parse(date);
+
+            // Find account IDs of employees who have an "Off" schedule for this date
+            var offStaffIds = await _context.EmployeeSchedules
+                .Where(s => s.WorkDate == workDate && s.Status == "Off")
+                .Select(s => s.AccountId)
+                .ToListAsync();
+
+            // Fetch active staff
+            var staffListQuery = _context.Accounts
+                .Include(a => a.Role)
+                .Where(a => a.Role != null && a.Role.RoleName != "Customer" && a.IsActive == true && !offStaffIds.Contains(a.AccountId));
+
+            if (!string.IsNullOrEmpty(role) && role != "All")
+            {
+                staffListQuery = staffListQuery.Where(a => a.Role.RoleName == role);
+            }
+
+            var staffList = await staffListQuery.ToListAsync();
+
+            // Fetch schedules for this date and shift
+            var schedules = await _context.EmployeeSchedules
+                .Where(s => s.WorkDate == workDate && s.ShiftId == shiftId)
+                .ToListAsync();
+
+            var result = new List<object>();
+
+            foreach (var emp in staffList)
+            {
+                var sched = schedules.FirstOrDefault(s => s.AccountId == emp.AccountId);
+                string currentStatus = "Available"; // default
+                string statusText = "Sẵn sàng";
+
+                if (sched != null)
+                {
+                    if (sched.Status == "Off")
+                    {
+                        currentStatus = "Off";
+                        statusText = "Nghỉ phép";
+                    }
+                    else
+                    {
+                        currentStatus = "Scheduled";
+                        statusText = "Đã phân ca";
+                    }
+                }
+
+                // Filter by status: On (Available only), Off (Off only), All (all)
+                if (status == "On" && currentStatus != "Available")
+                {
+                    continue;
+                }
+                if (status == "Off" && currentStatus != "Off")
+                {
+                    continue;
+                }
+
+                result.Add(new
+                {
+                    accountId = emp.AccountId,
+                    fullName = emp.FullName,
+                    roleName = emp.Role?.RoleName ?? "Staff",
+                    phone = emp.Phone ?? "N/A",
+                    statusText = statusText,
+                    currentStatus = currentStatus
+                });
+            }
+
+            return result;
         }
     }
 }

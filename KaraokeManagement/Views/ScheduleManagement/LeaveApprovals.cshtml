@@ -51,7 +51,7 @@
                                     </div>
                                     <div class="small text-muted mb-3">
                                         <div class="mb-1">
-                                            <strong>Ca đăng ký nghỉ:</strong> @(leave.Schedule?.Shift?.ShiftName ?? "N/A") (@(leave.Schedule?.WorkDate.ToString("dd/MM/yyyy") ?? "N/A"))
+                                            <strong>Ca đăng ký nghỉ:</strong> @(leave.Shift?.ShiftName ?? leave.Schedule?.Shift?.ShiftName ?? "Cả ngày") (@(leave.RequestedDate?.ToString("dd/MM/yyyy") ?? leave.Schedule?.WorkDate.ToString("dd/MM/yyyy") ?? "N/A"))
                                         </div>
                                         <div class="p-2 bg-light rounded mt-2 border-start border-3 border-warning text-dark fst-italic">
                                             <strong>Lý do:</strong> "@leave.Reason"
@@ -107,8 +107,8 @@
                                         <tr>
                                             <td class="px-3 fw-bold">@(leave.Account?.FullName ?? "N/A")</td>
                                             <td>
-                                                <div>@(leave.Schedule?.Shift?.ShiftName ?? "N/A")</div>
-                                                <div class="text-muted" style="font-size: 0.75rem;">@(leave.Schedule?.WorkDate.ToString("dd/MM/yyyy") ?? "N/A")</div>
+                                                <div>@(leave.Shift?.ShiftName ?? leave.Schedule?.Shift?.ShiftName ?? "Cả ngày")</div>
+                                                <div class="text-muted" style="font-size: 0.75rem;">@(leave.RequestedDate?.ToString("dd/MM/yyyy") ?? leave.Schedule?.WorkDate.ToString("dd/MM/yyyy") ?? "N/A")</div>
                                             </td>
                                             <td class="text-wrap text-muted" style="max-width: 150px;">@leave.Reason</td>
                                             <td>

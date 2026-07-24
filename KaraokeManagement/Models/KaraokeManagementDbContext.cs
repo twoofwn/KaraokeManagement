@@ -767,10 +767,16 @@ public partial class KaraokeManagementDbContext : DbContext
 
             entity.HasOne(d => d.Schedule).WithMany()
                 .HasForeignKey(d => d.ScheduleId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
             entity.HasOne(d => d.ApprovedBy).WithMany()
                 .HasForeignKey(d => d.ApprovedById);
+
+            entity.HasOne(d => d.Shift).WithMany()
+                .HasForeignKey(d => d.ShiftId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         OnModelCreatingPartial(modelBuilder);

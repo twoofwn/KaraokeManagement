@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -136,12 +136,13 @@ namespace KaraokeManagement.Controllers
             ViewBag.EligibleSchedules = viewModel.EligibleSchedules;
             ViewBag.RequestHistory = viewModel.RequestHistory;
             ViewBag.Account = viewModel.Account;
+            ViewBag.WorkShifts = viewModel.WorkShifts;
 
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> SubmitLeave(int scheduleId, string reason)
+        public async Task<IActionResult> SubmitLeave(string requestedDateStr, int? shiftId, string reason)
         {
             string? idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!int.TryParse(idClaim, out int accountId))
@@ -154,7 +155,15 @@ namespace KaraokeManagement.Controllers
                 return BadRequest("Vui lòng cung cấp lý do xin nghỉ.");
             }
 
-            var result = await _scheduleService.SubmitLeaveRequest(accountId, scheduleId, reason);
+            if (!DateOnly.TryParse(requestedDateStr, out var requestedDate))
+            {
+                return BadRequest("Ngày chọn không hợp lệ.");
+            }
+
+            // Treat 0 or null as Full Day (null ShiftId)
+            int? targetShiftId = (shiftId == 0) ? null : shiftId;
+
+            var result = await _scheduleService.SubmitLeaveRequest(accountId, requestedDate, targetShiftId, reason);
             if (result.Success)
             {
                 return Ok(new { success = true, message = result.Message });

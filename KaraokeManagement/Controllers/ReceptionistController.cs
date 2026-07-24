@@ -1,4 +1,6 @@
-﻿using KaraokeManagement.Services.ReceptionistServices;
+using KaraokeManagement.Services;
+using KaraokeManagement.Services.StaffServices;
+using KaraokeManagement.Services.ReceptionistServices;
 using KaraokeManagement.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +18,8 @@ namespace KaraokeManagement.Controllers
         private readonly CustomerService _customerService;
         private readonly InvoiceService _invoiceService;
         private readonly ReceptionistBookingService _recepBookingService;
+        private readonly StaffService _staffService;
+        private readonly IScheduleService _scheduleService;
 
         public ReceptionistController(
             DashboardService dashboardService,
@@ -24,7 +28,9 @@ namespace KaraokeManagement.Controllers
             PaymentService paymentService,
             CustomerService customerService,
             InvoiceService invoiceService,
-            ReceptionistBookingService recepBookingService)
+            ReceptionistBookingService recepBookingService,
+            StaffService staffService,
+            IScheduleService scheduleService)
         {
             _dashboardService = dashboardService;
             _orderService = orderService;
@@ -33,6 +39,8 @@ namespace KaraokeManagement.Controllers
             _customerService = customerService;
             _invoiceService = invoiceService;
             _recepBookingService = recepBookingService;
+            _staffService = staffService;
+            _scheduleService = scheduleService;
         }
 
         [HttpGet]
@@ -223,6 +231,134 @@ namespace KaraokeManagement.Controllers
             await _recepBookingService.CancelBookingAsync(bookingId);
             TempData["SuccessMessage"] = "Đã hủy đơn đặt phòng thành công.";
             return RedirectToAction("BookingConfirm");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Schedule(string? startDate)
+        {
+            string? idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int.TryParse(idClaim, out int accountId);
+            string? name = User.Identity?.Name;
+
+            var viewModel = await _staffService.GetScheduleViewModelAsync(accountId, name, startDate);
+            if (viewModel == null)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            ViewBag.StartOfWeek = viewModel.StartOfWeek;
+            ViewBag.EndOfWeek = viewModel.EndOfWeek;
+            ViewBag.Shifts = viewModel.Shifts;
+            ViewBag.Schedules = viewModel.Schedules;
+            ViewBag.Account = viewModel.Account;
+
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetShiftCoworkers(int scheduleId)
+        {
+            var coworkers = await _staffService.GetShiftCoworkersAsync(scheduleId);
+            return Json(coworkers);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetEligibleSwapTargets(int scheduleId)
+        {
+            string? idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(idClaim, out int accountId)) return BadRequest("Không xác định được nhân viên.");
+
+            var (valid, error, targets) = await _staffService.GetEligibleSwapTargetsAsync(scheduleId, accountId);
+            if (!valid) return BadRequest(error);
+
+            return Json(targets);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SubmitSwap(int requesterScheduleId, int targetScheduleId, int targetEmployeeId)
+        {
+            string? idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(idClaim, out int accountId)) return BadRequest("Không xác định được nhân viên.");
+
+            var account = await _staffService.GetAccountAsync(accountId, null);
+            if (account == null) return BadRequest("Không xác định được nhân viên.");
+
+            var res = await _scheduleService.SubmitSwapRequest(accountId, requesterScheduleId, targetEmployeeId, targetScheduleId);
+            if (res.Success) return Ok(new { success = true, message = res.Message });
+            return BadRequest(res.Message);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AcceptSwap(int swapRequestId)
+        {
+            string? idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(idClaim, out int accountId)) return BadRequest("Không xác định được nhân viên.");
+
+            var res = await _scheduleService.ConsentSwapRequest(swapRequestId, accountId);
+            if (res.Success) return Ok(new { success = true, message = res.Message });
+            return BadRequest(res.Message);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectSwap(int swapRequestId)
+        {
+            string? idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(idClaim, out int accountId)) return BadRequest("Không xác định được nhân viên.");
+
+            var res = await _scheduleService.RejectSwapRequestByTarget(swapRequestId, accountId);
+            if (res.Success) return Ok(new { success = true, message = res.Message });
+            return BadRequest(res.Message);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> LeaveRequest()
+        {
+            string? idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int.TryParse(idClaim, out int accountId);
+            string? name = User.Identity?.Name;
+
+            var viewModel = await _staffService.GetLeaveRequestViewModelAsync(accountId, name);
+            if (viewModel == null)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            ViewBag.EligibleSchedules = viewModel.EligibleSchedules;
+            ViewBag.RequestHistory = viewModel.RequestHistory;
+            ViewBag.Account = viewModel.Account;
+            ViewBag.WorkShifts = viewModel.WorkShifts;
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SubmitLeave(string requestedDateStr, int? shiftId, string reason)
+        {
+            string? idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(idClaim, out int accountId))
+            {
+                return BadRequest("Không xác định được danh tính nhân viên.");
+            }
+
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                return BadRequest("Vui lòng cung cấp lý do xin nghỉ.");
+            }
+
+            if (!DateOnly.TryParse(requestedDateStr, out var requestedDate))
+            {
+                return BadRequest("Ngày chọn không hợp lệ.");
+            }
+
+            int? targetShiftId = (shiftId == 0) ? null : shiftId;
+
+            var result = await _scheduleService.SubmitLeaveRequest(accountId, requestedDate, targetShiftId, reason);
+            if (result.Success)
+            {
+                return Ok(new { success = true, message = result.Message });
+            }
+
+            return BadRequest(result.Message);
         }
     }
 }

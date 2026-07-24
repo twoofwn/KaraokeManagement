@@ -76,9 +76,14 @@ namespace KaraokeManagement.Controllers
 
         // LEAVE ACTIONS
         [HttpPost]
-        public async Task<IActionResult> SubmitLeaveRequest(int accountId, int scheduleId, string reason)
+        public async Task<IActionResult> SubmitLeaveRequest(int accountId, string requestedDateStr, int? shiftId, string reason)
         {
-            var res = await _scheduleService.SubmitLeaveRequest(accountId, scheduleId, reason);
+            if (!DateOnly.TryParse(requestedDateStr, out var requestedDate))
+            {
+                return BadRequest("Ngày chọn không hợp lệ.");
+            }
+            int? targetShiftId = (shiftId == 0) ? null : shiftId;
+            var res = await _scheduleService.SubmitLeaveRequest(accountId, requestedDate, targetShiftId, reason);
             if (res.Success) return Ok(new { success = true, message = res.Message });
             return BadRequest(res.Message);
         }
@@ -149,6 +154,17 @@ namespace KaraokeManagement.Controllers
             var result = await _scheduleService.BatchUpdateSchedulesAsync(payload);
             if (result.Success) return Ok(new { success = true, message = result.Message });
             return BadRequest(result.Message);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AvailableStaffForShift(int shiftId, string date, string? role, string? status)
+        {
+            if (string.IsNullOrEmpty(date))
+            {
+                return BadRequest("Ngày không hợp lệ.");
+            }
+            var result = await _scheduleService.GetAvailableStaffForShiftAsync(shiftId, date, role, status);
+            return Json(result);
         }
     }
 }

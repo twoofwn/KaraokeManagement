@@ -9,13 +9,16 @@ public partial class LeaveRequest
 {
     public int LeaveRequestId { get; set; }
     public int AccountId { get; set; }
-    public int ScheduleId { get; set; }
+    public int? ScheduleId { get; set; }
     public string Reason { get; set; } = null!;
     public string Status { get; set; } = "Pending"; // Pending, Approved, Rejected
     public DateTime? CreatedAt { get; set; }
     public int? ApprovedById { get; set; }
+    public DateOnly? RequestedDate { get; set; }
+    public int? ShiftId { get; set; }
 
     public virtual Account Account { get; set; } = null!;
-    public virtual EmployeeSchedule Schedule { get; set; } = null!;
+    public virtual EmployeeSchedule? Schedule { get; set; }
     public virtual Account? ApprovedBy { get; set; }
+    public virtual WorkShift? Shift { get; set; }
 }

@@ -281,24 +281,27 @@
                                 <div class="badge-container">
                                     @foreach (var s in cellSchedules)
                                     {
-                                        <div class="staff-badge" id="badge-db-@s.ScheduleId" 
-                                             @(isPast ? "" : Html.Raw($"onclick=\"openEditStaffModal({s.ScheduleId}, 0, {shift.ShiftId}, '{dateStr}', {s.AccountId}, '{shift.ShiftName}')\""))>
-                                            <div class="text-truncate me-1">
-                                                <i class="fa-solid fa-user-check text-brand-vibrant-pink me-1" style="font-size: 0.75rem;"></i>
-                                                <span class="fw-semibold">@s.Account.FullName</span>
-                                                @if (s.Account.Role != null)
+                                        @if (s.Status != "Off")
+                                        {
+                                            <div class="staff-badge" id="badge-db-@s.ScheduleId" 
+                                                 @(isPast ? "" : Html.Raw($"onclick=\"openEditStaffModal({s.ScheduleId}, 0, {shift.ShiftId}, '{dateStr}', {s.AccountId}, '{shift.ShiftName}')\""))>
+                                                <div class="text-truncate me-1">
+                                                    <i class="fa-solid fa-user-check text-brand-vibrant-pink me-1" style="font-size: 0.75rem;"></i>
+                                                    <span class="fw-semibold">@s.Account.FullName</span>
+                                                    @if (s.Account.Role != null)
+                                                    {
+                                                        <span class="text-muted small ms-1" style="font-size: 0.7rem;">(@s.Account.Role.RoleName)</span>
+                                                    }
+                                                </div>
+                                                @if (!isPast)
                                                 {
-                                                    <span class="text-muted small ms-1" style="font-size: 0.7rem;">(@s.Account.Role.RoleName)</span>
+                                                    <button type="button" class="btn-remove-badge" title="Đánh dấu xóa" 
+                                                            onclick="event.stopPropagation(); deleteStaffBadge(@s.ScheduleId, 0)">
+                                                        <i class="fa-solid fa-xmark"></i>
+                                                    </button>
                                                 }
                                             </div>
-                                            @if (!isPast)
-                                            {
-                                                <button type="button" class="btn-remove-badge" title="Đánh dấu xóa" 
-                                                        onclick="event.stopPropagation(); deleteStaffBadge(@s.ScheduleId, 0)">
-                                                    <i class="fa-solid fa-xmark"></i>
-                                                </button>
-                                            }
-                                        </div>
+                                        }
                                     }
                                 </div>
 
@@ -321,39 +324,64 @@
 
 <!-- Modal: Assign / Edit Staff -->
 <div class="modal fade" id="staffAssignmentModal" tabindex="-1" aria-labelledby="staffModalTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow">
-            <div class="modal-header bg-light">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow" style="border-radius: 12px; border: none; overflow: hidden;">
+            <div class="modal-header text-white" style="background-color: var(--brand-pink); padding: 1rem 1.5rem;">
                 <h5 class="modal-title fw-bold" id="staffModalTitle">Phân Công Nhân Viên</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" style="padding: 1.5rem 1.5rem;">
                 <input type="hidden" id="modalTargetShiftId" />
                 <input type="hidden" id="modalTargetWorkDate" />
                 <input type="hidden" id="modalTargetScheduleId" />
                 <input type="hidden" id="modalTempRecordId" />
 
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Ca làm việc & Ngày:</label>
-                    <div id="modalCellInfo" class="form-control-plaintext fw-medium text-primary"></div>
+                <!-- Shift info -->
+                <div class="mb-3 p-3 rounded" style="background-color: #f8f9fa; border: 1px solid #e9ecef;">
+                    <strong>Ca làm việc & Ngày:</strong> <span id="modalCellInfo" class="text-primary fw-bold"></span>
                 </div>
 
-                <div class="mb-3">
-                    <label for="modalStaffSelect" class="form-label fw-semibold">Chọn Nhân Viên *</label>
-                    <select class="form-select" id="modalStaffSelect">
-                        <option value="">-- Chọn nhân viên --</option>
-                        @foreach (var staff in Model.StaffList)
-                        {
-                            <option value="@staff.AccountId">@staff.FullName (@(staff.Role?.RoleName ?? "NV"))</option>
-                        }
-                    </select>
+                <!-- Interactive Filters -->
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary">Chức vụ</label>
+                        <select class="form-select form-select-sm" id="modalStaffRoleFilter" onchange="loadAvailableStaff()">
+                            <option value="All">Tất cả chức vụ</option>
+                            <option value="Receptionist">Receptionist (Lễ tân)</option>
+                            <option value="Service Staff">Service Staff (Phục vụ)</option>
+                            <option value="Manager">Manager (Quản lý)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-secondary">Trạng thái</label>
+                        <select class="form-select form-select-sm" id="modalStaffStatusFilter" onchange="loadAvailableStaff()">
+                            <option value="On" selected>On (Có sẵn)</option>
+                            <option value="Off">Off (Không có sẵn)</option>
+                            <option value="All">Tất cả trạng thái</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bootstrap Modal Data Table -->
+                <div class="table-responsive rounded border" style="max-height: 250px; overflow-y: auto;">
+                    <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                        <thead class="text-white" style="background-color: var(--brand-pink);">
+                            <tr>
+                                <th class="py-2 px-3">Họ tên nhân viên</th>
+                                <th class="py-2">Chức vụ</th>
+                                <th class="py-2">Số điện thoại</th>
+                                <th class="py-2 text-center">Trạng thái ca</th>
+                                <th class="py-2 text-center" style="width: 100px;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalAvailableStaffTableBody">
+                            <!-- Injected dynamically via AJAX -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-primary btn-sm px-3" onclick="confirmStaffAssignment()">
-                    <i class="fa-solid fa-check me-1"></i> Xác Nhận
-                </button>
+            <div class="modal-footer bg-light py-2">
+                <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Đóng</button>
             </div>
         </div>
     </div>
@@ -393,11 +421,16 @@
             document.getElementById('modalTargetWorkDate').value = workDateStr;
             document.getElementById('modalTargetScheduleId').value = '0';
             document.getElementById('modalTempRecordId').value = '0';
-            document.getElementById('modalStaffSelect').value = '';
 
             const dateParts = workDateStr.split('-');
             const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
             document.getElementById('modalCellInfo').textContent = `${shiftName} - Ngày ${formattedDate}`;
+
+            // Reset filters
+            document.getElementById('modalStaffRoleFilter').value = 'All';
+            document.getElementById('modalStaffStatusFilter').value = 'On';
+
+            loadAvailableStaff();
 
             const modal = new bootstrap.Modal(document.getElementById('staffAssignmentModal'));
             modal.show();
@@ -409,71 +442,124 @@
             document.getElementById('modalTargetWorkDate').value = workDateStr;
             document.getElementById('modalTargetScheduleId').value = scheduleId;
             document.getElementById('modalTempRecordId').value = tempId;
-            document.getElementById('modalStaffSelect').value = currentAccountId;
 
             const dateParts = workDateStr.split('-');
             const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
-            document.getElementById('modalCellInfo').textContent = `Đổi nhân viên ca ${shiftName} - Ngày ${formattedDate}`;
+            document.getElementById('modalCellInfo').textContent = `Thay thế nhân sự ca ${shiftName} - Ngày ${formattedDate}`;
+
+            // Reset filters
+            document.getElementById('modalStaffRoleFilter').value = 'All';
+            document.getElementById('modalStaffStatusFilter').value = 'On';
+
+            loadAvailableStaff();
 
             const modal = new bootstrap.Modal(document.getElementById('staffAssignmentModal'));
             modal.show();
         }
 
-        // Confirm Modal Action
-        function confirmStaffAssignment() {
+        function loadAvailableStaff() {
+            const shiftId = document.getElementById('modalTargetShiftId').value;
+            const dateStr = document.getElementById('modalTargetWorkDate').value;
+            const role = document.getElementById('modalStaffRoleFilter').value;
+            const status = document.getElementById('modalStaffStatusFilter').value;
+
+            const tbody = document.getElementById('modalAvailableStaffTableBody');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3 text-muted"><i class="fa-solid fa-spinner fa-spin me-1"></i> Đang tải nhân viên...</td></tr>';
+
+            $.ajax({
+                url: `/ScheduleManagement/AvailableStaffForShift?shiftId=${shiftId}&date=${dateStr}&role=${role}&status=${status}`,
+                type: 'GET',
+                success: function(data) {
+                    tbody.innerHTML = '';
+                    if (!data || data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3 text-muted">Không tìm thấy nhân viên phù hợp.</td></tr>';
+                        return;
+                    }
+
+                    data.forEach(staff => {
+                        let badgeClass = 'bg-success bg-opacity-10 text-success border border-success';
+                        if (staff.currentStatus === 'Off') {
+                            badgeClass = 'bg-secondary bg-opacity-10 text-danger border border-danger';
+                        } else if (staff.currentStatus === 'Scheduled') {
+                            badgeClass = 'bg-primary bg-opacity-10 text-primary border border-primary';
+                        }
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td class="px-3 py-2 fw-semibold text-dark">${staff.fullName}</td>
+                            <td class="py-2"><span class="badge bg-light text-dark border px-2 py-0.5" style="font-size: 0.75rem;">${staff.roleName}</span></td>
+                            <td class="py-2 text-secondary font-monospace" style="font-size: 0.8rem;">${staff.phone}</td>
+                            <td class="py-2 text-center">
+                                <span class="badge px-2 py-0.5 ${badgeClass}" style="font-size: 0.75rem;">${staff.statusText}</span>
+                            </td>
+                            <td class="py-2 text-center">
+                                <button type="button" class="btn btn-brand-primary btn-sm px-3" style="font-size: 0.75rem;" onclick="assignStaffDirectly(${staff.accountId}, '${staff.fullName.replace(/'/g, "\\'")}', '${staff.roleName}')">
+                                    Phân ca
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                },
+                error: function() {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3 text-danger">Lỗi kết nối tải dữ liệu.</td></tr>';
+                }
+            });
+        }
+
+        function assignStaffDirectly(accountId, fullName, roleName) {
             const shiftId = parseInt(document.getElementById('modalTargetShiftId').value);
             const workDate = document.getElementById('modalTargetWorkDate').value;
             const scheduleId = parseInt(document.getElementById('modalTargetScheduleId').value);
             const tempId = parseInt(document.getElementById('modalTempRecordId').value);
-            const accountId = parseInt(document.getElementById('modalStaffSelect').value);
-
-            if (!accountId) {
-                alert('Vui lòng chọn nhân viên!');
-                return;
-            }
-
-            const staffInfo = staffMap.get(accountId);
-            const staffName = staffInfo ? staffInfo.FullName : 'Nhân viên';
 
             if (tempId > 0) {
                 // Editing a newly added unsaved record
                 const rec = batchTracker.addedRecords.find(r => r.tempId === tempId);
                 if (rec) {
                     rec.accountId = accountId;
-                    rec.accountName = staffName;
-                    updateBadgeDOM(null, tempId, accountId, staffName);
+                    rec.accountName = fullName;
+                    updateBadgeDOM(null, tempId, accountId, fullName);
                 }
             } else if (scheduleId > 0) {
                 // Editing an existing database record
                 const existingUpdate = batchTracker.updatedRecords.find(r => r.scheduleId === scheduleId);
                 if (existingUpdate) {
                     existingUpdate.accountId = accountId;
-                    existingUpdate.accountName = staffName;
+                    existingUpdate.accountName = fullName;
                 } else {
                     batchTracker.updatedRecords.push({
                         scheduleId: scheduleId,
                         accountId: accountId,
                         shiftId: shiftId,
                         workDate: workDate,
-                        accountName: staffName
+                        accountName: fullName
                     });
                 }
-                updateBadgeDOM(scheduleId, 0, accountId, staffName);
+                updateBadgeDOM(scheduleId, 0, accountId, fullName);
             } else {
-                // Adding a new record
+                // Check if this employee is already in batchTracker.addedRecords for this shift/date
+                const isAlreadyAdded = batchTracker.addedRecords.some(r => r.accountId === accountId && r.shiftId === shiftId && r.workDate === workDate);
+                if (isAlreadyAdded) {
+                    alert('Nhân viên này đã được thêm vào ca này!');
+                    return;
+                }
+
                 const newTempId = tempIdCounter++;
                 const newRecord = {
                     tempId: newTempId,
                     accountId: accountId,
                     shiftId: shiftId,
                     workDate: workDate,
-                    accountName: staffName
+                    accountName: fullName
                 };
                 batchTracker.addedRecords.push(newRecord);
                 renderNewBadgeDOM(newRecord);
             }
 
             updateUnsavedBadge();
+            
+            // Hide modal
             const modalEl = document.getElementById('staffAssignmentModal');
             const modal = bootstrap.Modal.getInstance(modalEl);
             modal.hide();

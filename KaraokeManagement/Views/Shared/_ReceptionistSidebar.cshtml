@@ -52,16 +52,22 @@
                 <span>Lịch sử hóa đơn</span>
             </a>
         </li>
-        <li class="menu-item @(currentPath.Contains("/Staff/Schedule") ? "active" : "")">
-            <a href="/Staff/Schedule">
+        <li class="menu-item @(currentPath.Contains("/Receptionist/Schedule") ? "active" : "")">
+            <a href="/Receptionist/Schedule">
                 <i class="fa-solid fa-calendar-week"></i>
                 <span>Lịch làm việc</span>
             </a>
         </li>
-        <li class="menu-item @(currentPath.Contains("/Staff/SwapRequests") ? "active" : "")">
-            <a href="/Staff/SwapRequests">
+        <li class="menu-item @(currentPath.Contains("/Receptionist/SwapRequests") ? "active" : "")">
+            <a href="/Receptionist/SwapRequests">
                 <i class="fa-solid fa-right-left"></i>
                 <span>Yêu cầu đổi ca</span>
+            </a>
+        </li>
+        <li class="menu-item @(currentPath.Contains("/Receptionist/LeaveRequest") ? "active" : "")">
+            <a href="/Receptionist/LeaveRequest">
+                <i class="fa-solid fa-calendar-minus"></i>
+                <span>Xin nghỉ phép</span>
             </a>
         </li>
     </ul>

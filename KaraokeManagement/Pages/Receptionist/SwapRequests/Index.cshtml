@@ -1,0 +1,248 @@
+@page
+@model KaraokeManagement.Pages.Receptionist.SwapRequests.IndexModel
+@{
+    ViewData["Title"] = "Quản lý yêu cầu đổi ca";
+    Layout = "~/Views/Shared/_StaffLayout.cshtml";
+    ViewData["ActiveNav"] = "schedule";
+}
+
+<div class="container-fluid py-4" style="max-width: 1200px;">
+    <!-- Alert Feedback -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4" role="alert" style="border-radius: 8px;">
+            <i class="fa-solid fa-circle-check me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 mb-4" role="alert" style="border-radius: 8px;">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Header Panel -->
+    <div class="card shadow-sm border-0 mb-4 bg-white rounded-3">
+        <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <h3 class="fw-bold text-primary mb-1"><i class="fa-solid fa-right-left me-2"></i>Yêu Cầu Đổi Ca Làm Việc</h3>
+                <p class="text-muted mb-0 small">Xem và quản lý các yêu cầu hoán đổi ca làm việc của bạn.</p>
+            </div>
+            <div>
+                <a href="/Receptionist/Schedule" class="btn btn-outline-secondary btn-sm fw-bold">
+                    <i class="fa-solid fa-chevron-left me-1"></i> Quay lại Lịch biểu
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white border-0 pt-3">
+            <ul class="nav nav-tabs card-header-tabs" id="swapRequestTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active fw-semibold text-primary" id="received-tab" data-bs-toggle="tab" data-bs-target="#received-pane" type="button" role="tab" aria-controls="received-pane" aria-selected="true">
+                        <i class="fa-solid fa-inbox me-1"></i> Yêu cầu nhận được (@Model.ReceivedRequests.Count)
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-semibold text-secondary" id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent-pane" type="button" role="tab" aria-controls="sent-pane" aria-selected="false">
+                        <i class="fa-solid fa-paper-plane me-1"></i> Yêu cầu đã gửi (@Model.SentRequests.Count)
+                    </button>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="card-body p-0">
+            <div class="tab-content" id="swapRequestTabContent">
+                
+                <!-- Tab 1: Received Requests -->
+                <div class="tab-pane fade show active" id="received-pane" role="tabpanel" aria-labelledby="received-tab" tabindex="0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-align-middle mb-0" style="font-size: 0.9rem; border-color: #e9ecef;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4 py-3">Người gửi yêu cầu</th>
+                                    <th class="py-3">Chức vụ</th>
+                                    <th class="py-3">Ngày làm việc</th>
+                                    <th class="py-3">Ca của họ</th>
+                                    <th class="py-3">Ca của bạn</th>
+                                    <th class="py-3">Trạng thái</th>
+                                    <th class="text-end pe-4 py-3" style="width: 220px;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.ReceivedRequests.Any())
+                                {
+                                    foreach (var req in Model.ReceivedRequests)
+                                    {
+                                        <tr>
+                                            <td class="ps-4 py-3 fw-semibold text-dark">@req.Requester.FullName</td>
+                                            <td class="py-3">
+                                                <span class="badge bg-secondary-subtle text-secondary">@req.Requester.Role.RoleName</span>
+                                            </td>
+                                            <td class="py-3">@req.RequesterSchedule.WorkDate.ToString("dd/MM/yyyy")</td>
+                                            <td class="py-3">
+                                                <div class="fw-bold">@req.RequesterSchedule.Shift.ShiftName</div>
+                                                <div class="text-muted small" style="font-size: 0.72rem;">@req.RequesterSchedule.Shift.StartTime.ToString(@"hh\:mm") - @req.RequesterSchedule.Shift.EndTime.ToString(@"hh\:mm")</div>
+                                            </td>
+                                            <td class="py-3">
+                                                <div class="fw-bold text-primary">@req.TargetSchedule.Shift.ShiftName</div>
+                                                <div class="text-muted small" style="font-size: 0.72rem;">@req.TargetSchedule.Shift.StartTime.ToString(@"hh\:mm") - @req.TargetSchedule.Shift.EndTime.ToString(@"hh\:mm")</div>
+                                            </td>
+                                            <td class="py-3">
+                                                @if (req.Status == "Pending")
+                                                {
+                                                    <span class="badge bg-warning text-dark"><i class="fa-solid fa-clock-rotate-left me-1"></i>Chờ duyệt</span>
+                                                }
+                                                else if (req.Status == "Approved" || req.Status == "Completed")
+                                                {
+                                                    <span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i>Đồng ý</span>
+                                                }
+                                                else if (req.Status == "Rejected")
+                                                {
+                                                    <span class="badge bg-danger"><i class="fa-solid fa-circle-xmark me-1"></i>Từ chối</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">@req.Status</span>
+                                                }
+                                            </td>
+                                            <td class="text-end pe-4 py-3">
+                                                @if (req.Status == "Pending")
+                                                {
+                                                    <div class="d-flex justify-content-end gap-2">
+                                                        <form method="post" asp-page-handler="Accept" asp-route-requestId="@req.SwapRequestId" onsubmit="return confirm('Bạn có chắc muốn ĐỒNG Ý hoán đổi ca làm việc này không?');">
+                                                            <button type="submit" class="btn btn-sm btn-success fw-semibold">
+                                                                <i class="fa-solid fa-check me-1"></i> Đồng ý
+                                                            </button>
+                                                        </form>
+                                                        <form method="post" asp-page-handler="Reject" asp-route-requestId="@req.SwapRequestId" onsubmit="return confirm('Bạn có chắc muốn TỪ CHỐI hoán đổi ca làm việc này không?');">
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger fw-semibold">
+                                                                <i class="fa-solid fa-xmark me-1"></i> Từ chối
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted small italic">Đã xử lý</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="7" class="text-center py-5 text-muted">
+                                            <i class="fa-solid fa-folder-open d-block fs-3 mb-2 opacity-50"></i>
+                                            Bạn chưa nhận được yêu cầu đổi ca nào.
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Tab 2: Sent Requests -->
+                <div class="tab-pane fade" id="sent-pane" role="tabpanel" aria-labelledby="sent-tab" tabindex="0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-align-middle mb-0" style="font-size: 0.9rem; border-color: #e9ecef;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4 py-3">Người nhận yêu cầu</th>
+                                    <th class="py-3">Chức vụ</th>
+                                    <th class="py-3">Ngày làm việc</th>
+                                    <th class="py-3">Ca của bạn</th>
+                                    <th class="py-3">Ca của họ</th>
+                                    <th class="py-3">Trạng thái</th>
+                                    <th class="text-end pe-4 py-3">Ngày gửi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.SentRequests.Any())
+                                {
+                                    foreach (var req in Model.SentRequests)
+                                    {
+                                        <tr>
+                                            <td class="ps-4 py-3 fw-semibold text-dark">@req.Target.FullName</td>
+                                            <td class="py-3">
+                                                <span class="badge bg-secondary-subtle text-secondary">@req.Target.Role.RoleName</span>
+                                            </td>
+                                            <td class="py-3">@req.RequesterSchedule.WorkDate.ToString("dd/MM/yyyy")</td>
+                                            <td class="py-3">
+                                                <div class="fw-bold text-primary">@req.RequesterSchedule.Shift.ShiftName</div>
+                                                <div class="text-muted small" style="font-size: 0.72rem;">@req.RequesterSchedule.Shift.StartTime.ToString(@"hh\:mm") - @req.RequesterSchedule.Shift.EndTime.ToString(@"hh\:mm")</div>
+                                            </td>
+                                            <td class="py-3">
+                                                <div class="fw-bold">@req.TargetSchedule.Shift.ShiftName</div>
+                                                <div class="text-muted small" style="font-size: 0.72rem;">@req.TargetSchedule.Shift.StartTime.ToString(@"hh\:mm") - @req.TargetSchedule.Shift.EndTime.ToString(@"hh\:mm")</div>
+                                            </td>
+                                            <td class="py-3">
+                                                @if (req.Status == "Pending")
+                                                {
+                                                    <span class="badge bg-warning text-dark"><i class="fa-solid fa-clock-rotate-left me-1"></i>Chờ duyệt</span>
+                                                }
+                                                else if (req.Status == "Approved" || req.Status == "Completed")
+                                                {
+                                                    <span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i>Đồng ý</span>
+                                                }
+                                                else if (req.Status == "Rejected")
+                                                {
+                                                    <span class="badge bg-danger"><i class="fa-solid fa-circle-xmark me-1"></i>Từ chối</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">@req.Status</span>
+                                                }
+                                            </td>
+                                            <td class="text-end pe-4 py-3 text-muted small">
+                                                @(req.CreatedAt.HasValue ? req.CreatedAt.Value.ToString("dd/MM/yyyy HH:mm") : "-")
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="7" class="text-center py-5 text-muted">
+                                            <i class="fa-solid fa-folder-open d-block fs-3 mb-2 opacity-50"></i>
+                                            Bạn chưa gửi yêu cầu đổi ca nào.
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            var activeTab = sessionStorage.getItem('activeSwapRequestTab');
+            if (activeTab) {
+                var triggerEl = document.querySelector('#swapRequestTabs button[data-bs-target="' + activeTab + '"]');
+                if (triggerEl) {
+                    $('#swapRequestTabs button').removeClass('active');
+                    $(triggerEl).addClass('active');
+                    $('.tab-pane').removeClass('show active');
+                    $(activeTab).addClass('show active');
+                }
+            }
+
+            $('#swapRequestTabs button').on('shown.bs.tab', function(e) {
+                var targetPane = $(e.target).data('bs-target');
+                sessionStorage.setItem('activeSwapRequestTab', targetPane);
+            });
+        });
+    </script>
+}

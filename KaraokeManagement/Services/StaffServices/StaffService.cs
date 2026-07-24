@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -179,6 +179,7 @@ namespace KaraokeManagement.Services.StaffServices
             if (account == null) return null;
 
             var today = DateOnly.FromDateTime(DateTime.Today);
+            var shifts = await _context.WorkShifts.ToListAsync();
 
             var activeLeaveReqScheduleIds = await _context.LeaveRequests
                 .Where(r => r.AccountId == account.AccountId && r.Status != "Rejected")
@@ -197,6 +198,7 @@ namespace KaraokeManagement.Services.StaffServices
 
             var requestHistory = await _context.LeaveRequests
                 .Include(r => r.Schedule).ThenInclude(s => s.Shift)
+                .Include(r => r.Shift)
                 .Include(r => r.ApprovedBy)
                 .Where(r => r.AccountId == account.AccountId)
                 .OrderByDescending(r => r.CreatedAt)
@@ -206,7 +208,8 @@ namespace KaraokeManagement.Services.StaffServices
             {
                 Account = account,
                 EligibleSchedules = eligibleSchedules,
-                RequestHistory = requestHistory
+                RequestHistory = requestHistory,
+                WorkShifts = shifts
             };
         }
 
