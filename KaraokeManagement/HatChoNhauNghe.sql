@@ -492,9 +492,10 @@ INSERT INTO [MembershipTier] (TierID, TierName, DiscountPercent, MinPoints) VALU
 INSERT INTO [MembershipTier] (TierID, TierName, DiscountPercent, MinPoints) VALUES (5, N'Kim Cương', 20.00, 15000);
 SET IDENTITY_INSERT [MembershipTier] OFF;
 
+SET IDENTITY_INSERT [MembershipTier] ON;
 INSERT INTO LoyalPointPolicy (AmountPerPoint, IsActive, Description)
 VALUES (10000, 1, N'Quy đổi 10,000 VNĐ = 1 điểm tích lũy');
-
+SET IDENTITY_INSERT [MembershipTier] OFF;
 
 SET IDENTITY_INSERT [RoomType] ON;
 INSERT INTO [RoomType] (RoomTypeID, TypeName, PricePerHour, Description, ImageURL, Capacity) VALUES (1, N'Phòng Thường', 150000.00, N'Sức chứa 5-8 người', 'https://noithatvieta.vn/upload/images/2021/tu-van-thiet-ke/phong-hat-binh-dan-03.jpg', 5);
