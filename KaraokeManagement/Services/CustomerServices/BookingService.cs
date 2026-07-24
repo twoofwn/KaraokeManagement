@@ -22,37 +22,8 @@ namespace KaraokeManagement.Services.CustomerServices
         {
             DateTime endDateTime = startDateTime.AddMinutes(duration);
             var roomTypeObj = await _context.RoomTypes.Include(rt => rt.RoomPrices).FirstOrDefaultAsync(rt => rt.TypeName == typeName);
-            decimal basePrice = 0;
-            decimal fallbackPrice = roomTypeObj?.PricePerHour ?? 0;
-
-            if (roomTypeObj != null && roomTypeObj.RoomPrices.Any())
-            {
-                DateTime currentCalcTime = startDateTime;
-                while (currentCalcTime < endDateTime)
-                {
-                    var timeOfDay = currentCalcTime.TimeOfDay;
-                    var activePrice = roomTypeObj.RoomPrices.FirstOrDefault(p => p.StartTime <= timeOfDay && p.EndTime > timeOfDay);
-                    decimal currentRate = activePrice?.PricePerHour ?? fallbackPrice;
-                    DateTime nextBlockEnd = activePrice != null ? currentCalcTime.Date.Add(activePrice.EndTime) : currentCalcTime.Date.AddDays(1);
-                    if (nextBlockEnd > endDateTime) nextBlockEnd = endDateTime;
-                    var minutesInBlock = (decimal)(nextBlockEnd - currentCalcTime).TotalMinutes;
-                    basePrice += (minutesInBlock / 60m) * currentRate;
-                    currentCalcTime = nextBlockEnd;
-                }
-            }
-            else { basePrice = (duration / 60m) * fallbackPrice; }
-
-            decimal surchargeAmount = 0;
-            string surchargeNote = "";
-            if (startDateTime.DayOfWeek == DayOfWeek.Saturday || startDateTime.DayOfWeek == DayOfWeek.Sunday)
-            {
-                var weekendPolicy = await _context.PricingPolicies.FirstOrDefaultAsync(p => p.IsActive && p.PolicyType == "Weekend");
-                if (weekendPolicy != null)
-                {
-                    surchargeAmount = basePrice * (weekendPolicy.Value / 100m);
-                    surchargeNote = $"{weekendPolicy.PolicyName} ({weekendPolicy.Value.ToString("0.##")}%)";
-                }
-            }
+            var (basePrice, priceBreakdowns) = CalculateBasePriceAndBreakdown(roomTypeObj, startDateTime, endDateTime, duration);
+            var (surchargeAmount, surchargeNote) = await CalculateSurchargeAsync(startDateTime, basePrice);
 
             return new BookingConfirmationViewModel
             {
@@ -67,8 +38,62 @@ namespace KaraokeManagement.Services.CustomerServices
                 BasePrice = basePrice,
                 SurchargeAmount = surchargeAmount,
                 SurchargeNote = surchargeNote,
-                EstimatedTotalPrice = basePrice + surchargeAmount
+                EstimatedTotalPrice = basePrice + surchargeAmount,
+                PriceBreakdowns = priceBreakdowns
             };
+        }
+
+        private (decimal BasePrice, List<PriceBreakdownItem> Breakdowns) CalculateBasePriceAndBreakdown(RoomType roomTypeObj, DateTime startDateTime, DateTime endDateTime, int duration)
+        {
+            decimal basePrice = 0;
+            var priceBreakdowns = new List<PriceBreakdownItem>();
+            decimal fallbackPrice = roomTypeObj?.PricePerHour ?? 0;
+
+            if (roomTypeObj != null && roomTypeObj.RoomPrices.Any())
+            {
+                DateTime currentCalcTime = startDateTime;
+                while (currentCalcTime < endDateTime)
+                {
+                    var timeOfDay = currentCalcTime.TimeOfDay;
+                    var activePrice = roomTypeObj.RoomPrices.FirstOrDefault(p => p.StartTime <= timeOfDay && p.EndTime > timeOfDay);
+                    decimal currentRate = activePrice?.PricePerHour ?? fallbackPrice;
+
+                    DateTime nextBlockEnd = activePrice != null ? currentCalcTime.Date.Add(activePrice.EndTime) : currentCalcTime.Date.AddDays(1);
+
+                    if (nextBlockEnd > endDateTime) nextBlockEnd = endDateTime;
+
+                    var hoursInBlock = (decimal)(nextBlockEnd - currentCalcTime).TotalMinutes / 60m;
+                    var blockPrice = hoursInBlock * currentRate;
+
+                    basePrice += blockPrice;
+
+                    priceBreakdowns.Add(new PriceBreakdownItem { TimeRange = $"{currentCalcTime:HH:mm} - {nextBlockEnd:HH:mm}", DurationHours = hoursInBlock, PricePerHour = currentRate, TotalPrice = blockPrice });
+                    currentCalcTime = nextBlockEnd;
+                }
+            }
+            else
+            {
+                decimal hours = duration / 60m;
+                basePrice = hours * fallbackPrice;
+                priceBreakdowns.Add(new PriceBreakdownItem { TimeRange = $"{startDateTime:HH:mm} - {endDateTime:HH:mm}", DurationHours = hours, PricePerHour = fallbackPrice, TotalPrice = basePrice });
+            }
+
+            return (basePrice, priceBreakdowns);
+        }
+
+        private async Task<(decimal SurchargeAmount, string SurchargeNote)> CalculateSurchargeAsync(DateTime startDateTime, decimal basePrice)
+        {
+            var holiday = await _context.Holidays.FirstOrDefaultAsync(h => h.IsActive && h.HolidayDate.Date == startDateTime.Date);
+
+            if (holiday != null) return (basePrice * (holiday.SurchargePercent / 100m), $"{holiday.HolidayName} ({holiday.SurchargePercent.ToString("0.##")}%)");
+
+            if (startDateTime.DayOfWeek == DayOfWeek.Saturday || startDateTime.DayOfWeek == DayOfWeek.Sunday)
+            {
+                var weekendPolicy = await _context.PricingPolicies.FirstOrDefaultAsync(p => p.IsActive && p.PolicyType == "Weekend");
+                if (weekendPolicy != null) return (basePrice * (weekendPolicy.Value / 100m), $"{weekendPolicy.PolicyName} ({weekendPolicy.Value.ToString("0.##")}%)");
+            }
+
+            return (0, "");
         }
 
         public async Task<(bool Success, string Message)> ConfirmAndSaveBookingAsync(Booking booking, int customerId)

@@ -1,425 +1,442 @@
 ﻿@{
-    ViewData["Title"] = "Xác nhận thông tin đặt phòng - Minh Tuấn Karaoke";
-    Layout = "~/Views/Customer/_CustomerLayout.cshtml";
-    ViewData["ActiveNav"] = "rooms";
+	ViewData["Title"] = "Xác nhận thông tin đặt phòng - Minh Tuấn Karaoke";
+	Layout = "~/Views/Customer/_CustomerLayout.cshtml";
+	ViewData["ActiveNav"] = "rooms";
 }
 
 <!-- Thêm SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
-    /* VARIABLES */
-    :root {
-        --bg-light: #F8F4EC;
-        --pink-soft: #FF8FB7;
-        --pink-bold: #E83C91;
-        --dark-purple: #43334C;
-        --border-color: #e0e0e0;
-    }
+	/* VARIABLES */
+	:root {
+		--bg-light: #F8F4EC;
+		--pink-soft: #FF8FB7;
+		--pink-bold: #E83C91;
+		--dark-purple: #43334C;
+		--border-color: #e0e0e0;
+	}
 
-    .t-checkout-container {
-        background-color: var(--bg-light);
-        font-family: 'Inter', sans-serif;
-        padding: 40px 20px;
-        min-height: 80vh;
-    }
+	.t-checkout-container {
+		background-color: var(--bg-light);
+		font-family: 'Inter', sans-serif;
+		padding: 40px 20px;
+		min-height: 80vh;
+	}
 
-    .t-checkout-wrapper {
-        max-width: 1100px;
-        margin: 0 auto;
-    }
+	.t-checkout-wrapper {
+		max-width: 1100px;
+		margin: 0 auto;
+	}
 
-    /* Header */
-    .t-checkout-header {
-        text-align: center;
-        margin-bottom: 40px;
-    }
+	/* Header */
+	.t-checkout-header {
+		text-align: center;
+		margin-bottom: 40px;
+	}
 
-        .t-checkout-header h1 {
-            font-size: 2.5rem;
-            color: var(--dark-purple);
-            font-weight: 800;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-        }
+		.t-checkout-header h1 {
+			font-size: 2.5rem;
+			color: var(--dark-purple);
+			font-weight: 800;
+			text-transform: uppercase;
+			margin-bottom: 10px;
+		}
 
-    .t-checkout-header-decorator {
-        display: inline-block;
-        width: 60px;
-        height: 4px;
-        background-color: var(--pink-bold);
-        border-radius: 2px;
-    }
+	.t-checkout-header-decorator {
+		display: inline-block;
+		width: 60px;
+		height: 4px;
+		background-color: var(--pink-bold);
+		border-radius: 2px;
+	}
 
-    /* Layout */
-    .t-checkout-layout {
-        display: flex;
-        gap: 30px;
-        align-items: flex-start;
-    }
+	/* Layout */
+	.t-checkout-layout {
+		display: flex;
+		gap: 30px;
+		align-items: flex-start;
+	}
 
-    .t-checkout-left {
-        flex: 1.5;
-        background: #fff;
-        padding: 30px;
-        border-radius: 1vw;
-        box-shadow: 0 5px 20px rgba(67, 51, 76, 0.08);
-        border: 1px solid var(--pink-soft);
-    }
+	.t-checkout-left {
+		flex: 1.5;
+		background: #fff;
+		padding: 30px;
+		border-radius: 1vw;
+		box-shadow: 0 5px 20px rgba(67, 51, 76, 0.08);
+		border: 1px solid var(--pink-soft);
+	}
 
-    .t-checkout-right {
-        flex: 1;
-        background: var(--dark-purple);
-        padding: 30px;
-        border-radius: 1vw;
-        color: #fff;
-        box-shadow: 0 10px 25px rgba(67, 51, 76, 0.15);
-        position: sticky;
-        top: 100px;
-    }
+	.t-checkout-right {
+		flex: 1;
+		background: var(--dark-purple);
+		padding: 30px;
+		border-radius: 1vw;
+		color: #fff;
+		box-shadow: 0 10px 25px rgba(67, 51, 76, 0.15);
+		position: sticky;
+		top: 100px;
+	}
 
-    /* Section Title */
-    .t-checkout-section-title {
-        font-size: 1.5rem;
-        color: var(--dark-purple);
-        margin-bottom: 25px;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
+	/* Section Title */
+	.t-checkout-section-title {
+		font-size: 1.5rem;
+		color: var(--dark-purple);
+		margin-bottom: 25px;
+		font-weight: 700;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
 
-        .t-checkout-section-title i {
-            color: var(--pink-bold);
-        }
+		.t-checkout-section-title i {
+			color: var(--pink-bold);
+		}
 
-    /* Form Styles */
-    .t-checkout-form-group {
-        margin-bottom: 20px;
-    }
+	/* Form Styles */
+	.t-checkout-form-group {
+		margin-bottom: 20px;
+	}
 
-        .t-checkout-form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--dark-purple);
-            font-size: 0.95rem;
-        }
+		.t-checkout-form-group label {
+			display: block;
+			font-weight: 600;
+			margin-bottom: 8px;
+			color: var(--dark-purple);
+			font-size: 0.95rem;
+		}
 
-    .t-checkout-input {
-        width: 100%;
-        padding: 14px 15px;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        font-size: 1rem;
-        color: var(--dark-purple);
-        transition: all 0.3s;
-        font-family: inherit;
-    }
+	.t-checkout-input {
+		width: 100%;
+		padding: 14px 15px;
+		border: 1px solid #d1d5db;
+		border-radius: 8px;
+		font-size: 1rem;
+		color: var(--dark-purple);
+		transition: all 0.3s;
+		font-family: inherit;
+	}
 
-        .t-checkout-input:focus {
-            outline: none;
-            border-color: var(--pink-bold);
-            box-shadow: 0 0 0 3px rgba(232, 60, 145, 0.15);
-        }
+		.t-checkout-input:focus {
+			outline: none;
+			border-color: var(--pink-bold);
+			box-shadow: 0 0 0 3px rgba(232, 60, 145, 0.15);
+		}
 
-    textarea.t-checkout-input {
-        resize: vertical;
-        min-height: 100px;
-    }
+	textarea.t-checkout-input {
+		resize: vertical;
+		min-height: 100px;
+	}
 
-    /* Right Column Details */
-    .t-checkout-summary-title {
-        font-size: 1.4rem;
-        font-weight: 700;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        padding-bottom: 15px;
-        margin-bottom: 20px;
-        color: var(--pink-soft);
-    }
+	/* Right Column Details */
+	.t-checkout-summary-title {
+		font-size: 1.4rem;
+		font-weight: 700;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+		padding-bottom: 15px;
+		margin-bottom: 20px;
+		color: var(--pink-soft);
+	}
 
-    .t-checkout-summary-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
+	.t-checkout-summary-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
 
-        .t-checkout-summary-list li {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 15px;
-            font-size: 1.05rem;
-            line-height: 1.5;
-        }
+		.t-checkout-summary-list li {
+			display: flex;
+			align-items: flex-start;
+			margin-bottom: 15px;
+			font-size: 1.05rem;
+			line-height: 1.5;
+		}
 
-            .t-checkout-summary-list li i {
-                width: 25px;
-                color: var(--pink-soft);
-                margin-top: 3px;
-            }
+			.t-checkout-summary-list li i {
+				width: 25px;
+				color: var(--pink-soft);
+				margin-top: 3px;
+			}
 
-            .t-checkout-summary-list li strong {
-                color: #fff;
-                margin-right: 5px;
-                font-weight: 600;
-            }
+			.t-checkout-summary-list li strong {
+				color: #fff;
+				margin-right: 5px;
+				font-weight: 600;
+			}
 
-            .t-checkout-summary-list li span {
-                opacity: 0.9;
-            }
+			.t-checkout-summary-list li span {
+				opacity: 0.9;
+			}
 
-    /* Action Buttons */
-    .t-checkout-actions {
-        display: flex;
-        gap: 15px;
-        margin-top: 40px;
-    }
+	/* Action Buttons */
+	.t-checkout-actions {
+		display: flex;
+		gap: 15px;
+		margin-top: 40px;
+	}
 
-    .t-btn {
-        flex: 1;
-        padding: 15px;
-        font-size: 1.1rem;
-        font-weight: 700;
-        border-radius: 25px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-align: center;
-        border: none;
-        font-family: inherit;
-    }
+	.t-btn {
+		flex: 1;
+		padding: 15px;
+		font-size: 1.1rem;
+		font-weight: 700;
+		border-radius: 25px;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		text-align: center;
+		border: none;
+		font-family: inherit;
+	}
 
-    .t-btn-cancel {
-        background-color: transparent;
-        color: var(--dark-purple);
-        border: 2px solid var(--border-color);
-    }
+	.t-btn-cancel {
+		background-color: transparent;
+		color: var(--dark-purple);
+		border: 2px solid var(--border-color);
+	}
 
-        .t-btn-cancel:hover {
-            background-color: #f3f4f6;
-            border-color: var(--dark-purple);
-        }
+		.t-btn-cancel:hover {
+			background-color: #f3f4f6;
+			border-color: var(--dark-purple);
+		}
 
-    .t-btn-confirm {
-        background-color: var(--pink-bold);
-        color: #fff;
-        box-shadow: 0 4px 15px rgba(232, 60, 145, 0.3);
-    }
+	.t-btn-confirm {
+		background-color: var(--pink-bold);
+		color: #fff;
+		box-shadow: 0 4px 15px rgba(232, 60, 145, 0.3);
+	}
 
-        .t-btn-confirm:hover {
-            background-color: #d1307d;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(232, 60, 145, 0.4);
-        }
+		.t-btn-confirm:hover {
+			background-color: #d1307d;
+			transform: translateY(-2px);
+			box-shadow: 0 6px 20px rgba(232, 60, 145, 0.4);
+		}
 </style>
 
 <div class="t-checkout-container">
-    <div class="t-checkout-wrapper">
+	<div class="t-checkout-wrapper">
 
-        <div class="t-checkout-header">
-            <h1>Xác nhận đặt phòng</h1>
-            <div class="t-checkout-header-decorator"></div>
-            <p style="color: var(--dark-purple); opacity: 0.8; margin-top: 10px;">Vui lòng kiểm tra lại thông tin. Dữ liệu liên hệ được lấy tự động từ tài khoản của bạn.</p>
-        </div>
+		<div class="t-checkout-header">
+			<h1>Xác nhận đặt phòng</h1>
+			<div class="t-checkout-header-decorator"></div>
+			<p style="color: var(--dark-purple); opacity: 0.8; margin-top: 10px;">Vui lòng kiểm tra lại thông tin. Dữ liệu liên hệ được lấy tự động từ tài khoản của bạn.</p>
+		</div>
 
-        <form onsubmit="handleFinalBooking(event)">
-            <div class="t-checkout-layout">
+		<form onsubmit="handleFinalBooking(event)">
+			<div class="t-checkout-layout">
 
-                <!-- Cột trái: Thông tin khách hàng -->
-                <div class="t-checkout-left">
-                    <h2 class="t-checkout-section-title"><i class="fa-solid fa-address-card"></i> Thông tin người đặt</h2>
+				<!-- Cột trái: Thông tin khách hàng -->
+				<div class="t-checkout-left">
+					<h2 class="t-checkout-section-title"><i class="fa-solid fa-address-card"></i> Thông tin người đặt</h2>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div class="t-checkout-form-group">
-                            <label>Họ và tên *</label>
-                            <input type="text" class="t-checkout-input" id="custName" value="@Model.CustomerName" readonly />
-                        </div>
-                        <div class="t-checkout-form-group">
-                            <label>Số điện thoại *</label>
-                            <input type="tel" class="t-checkout-input" id="custPhone" value="@Model.Phone" readonly />
-                        </div>
-                    </div>
+					<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+						<div class="t-checkout-form-group">
+							<label>Họ và tên *</label>
+							<input type="text" class="t-checkout-input" id="custName" value="@Model.CustomerName" readonly />
+						</div>
+						<div class="t-checkout-form-group">
+							<label>Số điện thoại *</label>
+							<input type="tel" class="t-checkout-input" id="custPhone" value="@Model.Phone" readonly />
+						</div>
+					</div>
 
-                    <div class="t-checkout-form-group">
-                        <label>Email</label>
-                        <input type="email" class="t-checkout-input" value="@Model.Email" readonly />
-                    </div>
+					<div class="t-checkout-form-group">
+						<label>Email</label>
+						<input type="email" class="t-checkout-input" value="@Model.Email" readonly />
+					</div>
 
-                    <div class="t-checkout-form-group">
-                        <label>Yêu cầu đặc biệt (Tùy chọn)</label>
-                        <textarea id="custNote" class="t-checkout-input" placeholder="Ví dụ: Cần trang trí sinh nhật, chuẩn bị sẵn tháp bia..."></textarea>
-                    </div>
+					<div class="t-checkout-form-group">
+						<label>Yêu cầu đặc biệt (Tùy chọn)</label>
+						<textarea id="custNote" class="t-checkout-input" placeholder="Ví dụ: Cần trang trí sinh nhật, chuẩn bị sẵn tháp bia..."></textarea>
+					</div>
 
-                    <!-- Nút bấm -->
-                    <div class="t-checkout-actions">
-                        <button type="button" class="t-btn t-btn-cancel" onclick="window.history.back()">
-                            <i class="fa-solid fa-arrow-left"></i> Quay lại sửa
-                        </button>
-                        <button type="submit" class="t-btn t-btn-confirm">
-                            HOÀN TẤT ĐẶT PHÒNG <i class="fa-solid fa-check"></i>
-                        </button>
-                    </div>
-                </div>
+					<!-- Nút bấm -->
+					<div class="t-checkout-actions">
+						<button type="button" class="t-btn t-btn-cancel" onclick="window.history.back()">
+							<i class="fa-solid fa-arrow-left"></i> Quay lại sửa
+						</button>
+						<button type="submit" class="t-btn t-btn-confirm">
+							HOÀN TẤT ĐẶT PHÒNG <i class="fa-solid fa-check"></i>
+						</button>
+					</div>
+				</div>
 
-                <!-- Cột phải: Tóm tắt đơn hàng -->
-                <div class="t-checkout-right">
-                    <h3 class="t-checkout-summary-title">Tóm tắt dịch vụ</h3>
+				<!-- Cột phải: Tóm tắt đơn hàng -->
+				<div class="t-checkout-right">
+					<h3 class="t-checkout-summary-title">Tóm tắt dịch vụ</h3>
 
-                    <ul class="t-checkout-summary-list">
-                        <li>
-                            <i class="fa-solid fa-crown"></i>
-                            <div>
-                                <strong>Loại phòng:</strong>
-                                <span>@Model.TypeName</span>
-                            </div>
-                        </li>
-                        <li>
-                            <i class="fa-solid fa-door-open"></i>
-                            <div>
-                                <strong>Phòng chọn:</strong>
-                                <span>@Model.RoomName</span>
-                            </div>
-                        </li>
-                        <li>
-                            <i class="fa-regular fa-calendar"></i>
-                            <div>
-                                <strong>Ngày nhận:</strong>
-                                @{
-                                    DateTime parsedDate = DateTime.MinValue;
-                                    if (!string.IsNullOrEmpty(Model.BookingDate) && DateTime.TryParse(Model.BookingDate, out parsedDate))
-                                    {
-                                        <span>@parsedDate.ToString("dd/MM/yyyy")</span>
-                                    }
-                                    else
-                                    {
-                                        <span>@Model.BookingDate</span>
-                                    }
-                                }
-                            </div>
-                        </li>
-                        <li>
-                            <i class="fa-regular fa-clock"></i>
-                            <div>
-                                <strong>Giờ bắt đầu:</strong>
-                                <span>@Model.StartTime</span>
-                            </div>
-                        </li>
-                        <li>
-                            <i class="fa-solid fa-hourglass-half"></i>
-                            <div>
-                                <strong>Thời lượng:</strong>
-                                <span>@Model.Duration phút</span>
-                            </div>
-                        </li>
-                        <li>
-                            <i class="fa-solid fa-money-bill-wave"></i>
-                            <div class="t-price-box">
-                                <div class="t-price-row">
-                                    <span>Tạm tính tiền phòng:</span>
-                                    <span>@Model.BasePrice.ToString("N0") ₫</span>
-                                </div>
+					<ul class="t-checkout-summary-list">
+						<li>
+							<i class="fa-solid fa-crown"></i>
+							<div>
+								<strong>Loại phòng:</strong>
+								<span>@Model.TypeName</span>
+							</div>
+						</li>
+						<li>
+							<i class="fa-solid fa-door-open"></i>
+							<div>
+								<strong>Phòng chọn:</strong>
+								<span>@Model.RoomName</span>
+							</div>
+						</li>
+						<li>
+							<i class="fa-regular fa-calendar"></i>
+							<div>
+								<strong>Ngày nhận:</strong>
+								@{
+									DateTime parsedDate = DateTime.MinValue;
+									if (!string.IsNullOrEmpty(Model.BookingDate) && DateTime.TryParse(Model.BookingDate, out parsedDate))
+									{
+										<span>@parsedDate.ToString("dd/MM/yyyy")</span>
+									}
+									else
+									{
+										<span>@Model.BookingDate</span>
+									}
+								}
+							</div>
+						</li>
+						<li>
+							<i class="fa-regular fa-clock"></i>
+							<div>
+								<strong>Giờ bắt đầu:</strong>
+								<span>@Model.StartTime</span>
+							</div>
+						</li>
+						<li>
+							<i class="fa-solid fa-hourglass-half"></i>
+							<div>
+								<strong>Thời lượng:</strong>
+								<span>@Model.Duration phút</span>
+							</div>
+						</li>
+						<li style="display: block; margin-bottom: 0;">
+							<div style="display: flex; align-items: center; margin-bottom: 15px;">
+								<i class="fa-solid fa-money-bill-wave" style="margin-top:0;"></i>
+								<strong style="color: #fff; margin-left: 5px;">Chi tiết tính tiền:</strong>
+							</div>
 
-                                @if (Model.SurchargeAmount > 0)
-                                {
-                                    <div class="t-price-row" style="color: var(--pink-soft);">
-                                        <span>Phụ thu (@Model.SurchargeNote):</span>
-                                        <span>+ @Model.SurchargeAmount.ToString("N0") ₫</span>
-                                    </div>
-                                }
+							<div class="t-price-box" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
 
-                                <div class="t-price-total">
-                                    <span>TỔNG CỘNG:</span>
-                                    <span>@Model.EstimatedTotalPrice.ToString("N0") ₫</span>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
+								@foreach (var item in Model.PriceBreakdowns)
+								{
+									<div class="t-price-row" style="display: flex; justify-content: space-between; font-size: 0.95rem; margin-bottom: 10px;">
+										<span>
+											@item.TimeRange
+											<br />
+											<small style="opacity: 0.7;">(@item.DurationHours.ToString("0.##")h x @item.PricePerHour.ToString("N0") ₫)</small>
+										</span>
+										<span style="font-weight: 500;">@item.TotalPrice.ToString("N0") ₫</span>
+									</div>
+								}
 
-                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed rgba(255,255,255,0.3);">
-                        <p style="font-size: 0.9rem; opacity: 0.8; margin: 0; line-height: 1.5; text-align: center;">
-                            * Giá phòng và dịch vụ sẽ được tính dựa trên thời gian sử dụng thực tế và bảng giá tại thời điểm hát.
-                        </p>
-                    </div>
-                </div>
+								<div class="t-price-row" style="display: flex; justify-content: space-between; border-top: 1px dashed rgba(255,255,255,0.3); padding-top: 12px; margin-top: 10px; font-weight: 600;">
+									<span>Tạm tính tiền phòng:</span>
+									<span>@Model.BasePrice.ToString("N0") ₫</span>
+								</div>
 
-            </div>
-        </form>
-    </div>
+								@if (Model.SurchargeAmount > 0)
+								{
+									<div class="t-price-row" style="display: flex; justify-content: space-between; color: var(--pink-soft); margin-top: 8px;">
+										<span>Phụ thu (@Model.SurchargeNote):</span>
+										<span>+ @Model.SurchargeAmount.ToString("N0") ₫</span>
+									</div>
+								}
+
+								<div class="t-price-total" style="font-size: 1.2rem; font-weight: 700; color: #fff; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 15px; margin-top: 15px; display: flex; justify-content: space-between;">
+									<span>TỔNG CỘNG:</span>
+									<span style="color: var(--pink-soft);">@Model.EstimatedTotalPrice.ToString("N0") ₫</span>
+								</div>
+							</div>
+						</li>
+					</ul>
+
+					<div style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed rgba(255,255,255,0.3);">
+						<p style="font-size: 0.9rem; opacity: 0.8; margin: 0; line-height: 1.5; text-align: center;">
+							* Giá phòng và dịch vụ sẽ được tính dựa trên thời gian sử dụng thực tế và bảng giá tại thời điểm hát.
+						</p>
+					</div>
+				</div>
+
+			</div>
+		</form>
+	</div>
 </div>
 
 @section Scripts {
-    <script>
-        async function handleFinalBooking(e) {
-            e.preventDefault();
+	<script>
+		async function handleFinalBooking(e) {
+			e.preventDefault();
 
-            const name = document.getElementById('custName').value;
-            const phone = document.getElementById('custPhone').value;
-            const noteElement = document.getElementById('custNote');
-            const note = noteElement ? noteElement.value : "";
+			const name = document.getElementById('custName').value;
+			const phone = document.getElementById('custPhone').value;
+			const noteElement = document.getElementById('custNote');
+			const note = noteElement ? noteElement.value : "";
 
-            Swal.fire({
-                title: 'Đang xử lý...',
-                text: 'Vui lòng chờ trong giây lát',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+			Swal.fire({
+				title: 'Đang xử lý...',
+				text: 'Vui lòng chờ trong giây lát',
+				allowOutsideClick: false,
+				didOpen: () => {
+					Swal.showLoading();
+				}
+			});
 
-            // Lấy ID và GuestCount an toàn từ ViewBag
-            const roomId = parseInt("@ViewBag.RoomId") || 0;
-            const guestCount = parseInt("@ViewBag.GuestCount") || 2;
+			// Lấy ID và GuestCount an toàn từ ViewBag
+			const roomId = parseInt("@ViewBag.RoomId") || 0;
+			const guestCount = parseInt("@ViewBag.GuestCount") || 2;
 
-            if (roomId === 0) {
-                Swal.fire('Lỗi', 'Không tìm thấy thông tin phòng đặt. Vui lòng quay lại chọn phòng!', 'error');
-                return;
-            }
+			if (roomId === 0) {
+				Swal.fire('Lỗi', 'Không tìm thấy thông tin phòng đặt. Vui lòng quay lại chọn phòng!', 'error');
+				return;
+			}
 
-            // Lấy luôn DateTime chuẩn ISO từ C# xử lý sẵn (không cần tự parse bằng JS nữa)
-            const startTimeIso = "@ViewBag.StartDateTimeISO";
-            const endTimeIso = "@ViewBag.EndDateTimeISO";
+			// Lấy luôn DateTime chuẩn ISO từ C# xử lý sẵn (không cần tự parse bằng JS nữa)
+			const startTimeIso = "@ViewBag.StartDateTimeISO";
+			const endTimeIso = "@ViewBag.EndDateTimeISO";
 
-            try {
-                // Đóng gói JSON
-                const payload = {
-                    RoomId: roomId,
-                    StartTime: startTimeIso,
-                    EndTime: endTimeIso,
-                    GuestCount: guestCount,
-                    Note: note
-                };
+			try {
+				// Đóng gói JSON
+				const payload = {
+					RoomId: roomId,
+					StartTime: startTimeIso,
+					EndTime: endTimeIso,
+					GuestCount: guestCount,
+					Note: note
+				};
 
-                const response = await fetch('/Customer/ConfirmAndSaveBooking', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+				const response = await fetch('/Customer/ConfirmAndSaveBooking', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(payload)
+				});
 
-                // Bẫy lỗi nếu Server trả về 400 Bad Request hoặc 500 Internal Error
-                if (!response.ok) {
-                    throw new Error(`Mã lỗi HTTP: ${response.status}`);
-                }
+				// Bẫy lỗi nếu Server trả về 400 Bad Request hoặc 500 Internal Error
+				if (!response.ok) {
+					throw new Error(`Mã lỗi HTTP: ${response.status}`);
+				}
 
-                const data = await response.json();
+				const data = await response.json();
 
-                if (data.success) {
-                    Swal.fire({
-                        title: 'Đặt phòng thành công!',
-                        html: `Cảm ơn <b>${name}</b> đã lựa chọn Minh Tuấn Karaoke.<br/>Chúng tôi sẽ gọi lại số <b>${phone}</b> để xác nhận trong ít phút tới.`,
-                        icon: 'success',
-                        confirmButtonColor: '#E83C91',
-                        confirmButtonText: 'Về trang chủ'
-                    }).then((result) => {
-                        if (result.isConfirmed || result.isDismissed) {
-                            window.location.href = '/Customer/Index';
-                        }
-                    });
-                } else {
-                    Swal.fire('Lỗi đặt phòng!', data.message, 'error');
-                }
-            } catch (error) {
-                console.error("Lỗi Booking:", error);
-                Swal.fire('Lỗi hệ thống', 'Không thể kết nối đến máy chủ hoặc dữ liệu gửi đi không hợp lệ. Vui lòng thử lại!', 'error');
-            }
-        }
-    </script>
+				if (data.success) {
+					Swal.fire({
+						title: 'Đặt phòng thành công!',
+						html: `Cảm ơn <b>${name}</b> đã lựa chọn Minh Tuấn Karaoke.<br/>Chúng tôi sẽ gọi lại số <b>${phone}</b> để xác nhận trong ít phút tới.`,
+						icon: 'success',
+						confirmButtonColor: '#E83C91',
+						confirmButtonText: 'Về trang chủ'
+					}).then((result) => {
+						if (result.isConfirmed || result.isDismissed) {
+							window.location.href = '/Customer/Index';
+						}
+					});
+				} else {
+					Swal.fire('Lỗi đặt phòng!', data.message, 'error');
+				}
+			} catch (error) {
+				console.error("Lỗi Booking:", error);
+				Swal.fire('Lỗi hệ thống', 'Không thể kết nối đến máy chủ hoặc dữ liệu gửi đi không hợp lệ. Vui lòng thử lại!', 'error');
+			}
+		}
+	</script>
 }

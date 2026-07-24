@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -263,13 +263,17 @@ namespace KaraokeManagement.Services.StaffServices
         public async Task<bool> FulfillServiceItemAsync(int invoiceDetailId)
         {
             var detail = await _context.InvoiceDetails.FindAsync(invoiceDetailId);
-            if (detail != null && !detail.IsFulFilled)
-            {
-                detail.IsFulFilled = true;
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            return false;
+
+            if (detail == null || detail.IsFulFilled)return false;
+            var serviceItem = await _context.ServiceItems.FindAsync(detail.ServiceId);
+            if (serviceItem == null)return false;
+            if (serviceItem.StockQuantity < detail.Quantity)return false;
+            detail.IsFulFilled = true;
+            serviceItem.StockQuantity -= detail.Quantity;
+
+            await _context.SaveChangesAsync();
+
+            return true;
         }
     }
 }

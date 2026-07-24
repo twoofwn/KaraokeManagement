@@ -1,5 +1,6 @@
 ﻿namespace KaraokeManagement.ViewModel
 {
+
     public class BookingConfirmationViewModel
     {
         public string CustomerName { get; set; } = null!;
@@ -14,5 +15,14 @@
         public decimal SurchargeAmount { get; set; }
         public string? SurchargeNote { get; set; }
         public decimal EstimatedTotalPrice { get; set; }
+        public List<PriceBreakdownItem> PriceBreakdowns { get; set; } = new List<PriceBreakdownItem>();
+    }
+
+    public class PriceBreakdownItem
+    {
+        public string TimeRange { get; set; } = string.Empty;
+        public decimal DurationHours { get; set; }
+        public decimal PricePerHour { get; set; }
+        public decimal TotalPrice { get; set; }
     }
 }
