@@ -59,28 +59,48 @@ public class RoomBookingService
         return (true, "Thanh toán hóa đơn thành công!");
     }
 
-    public async Task<(bool success, string message)> ChangeRoomAsync(ChangeRoomRequest request, int staffId)
+    public async Task<(bool success, string message)> ChangeRoomAsync(
+        ChangeRoomRequest request,
+        int staffId,
+        int? assignedStaffId = null)
     {
         if (string.IsNullOrWhiteSpace(request.Reason)) return (false, "Vui lòng nhập đầy đủ lý do đổi phòng.");
+        if (request.Reason.Trim().Length > 255) return (false, "Lý do đổi phòng không được vượt quá 255 ký tự.");
+        if (request.OldRoomStatus != "Available" && request.OldRoomStatus != "Maintenance")
+            return (false, "Trạng thái phòng cũ không hợp lệ.");
 
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            var invoice = await _context.Invoices.FindAsync(request.InvoiceId);
-            if (invoice == null) return (false, "Không tìm thấy hóa đơn.");
+            var invoice = await _context.Invoices
+                .Include(i => i.Booking)
+                .FirstOrDefaultAsync(i => i.InvoiceId == request.InvoiceId && i.Status == "Unpaid");
+            if (invoice == null) return (false, "Không tìm thấy hóa đơn đang hoạt động.");
+
+            if (invoice.BookingId is not int bookingId || invoice.Booking == null)
+                return (false, "Hóa đơn không gắn với đơn đặt phòng hợp lệ.");
+
+            if (assignedStaffId.HasValue
+                && (invoice.Booking.StaffId != assignedStaffId.Value
+                    || invoice.Booking.Status != "CheckedIn"))
+            {
+                return (false, "Bạn chỉ được đổi phòng đang được phân công phục vụ.");
+            }
 
             var oldRoom = await _context.Rooms.FindAsync(invoice.RoomId);
             var newRoom = await _context.Rooms.FindAsync(request.NewRoomId);
 
+            if (oldRoom == null) return (false, "Không tìm thấy phòng hiện tại.");
+            if (oldRoom.RoomId == request.NewRoomId) return (false, "Phòng mới phải khác phòng hiện tại.");
             if (newRoom == null || newRoom.Status != "Available") return (false, "Phòng mới không tồn tại hoặc không sẵn sàng.");
 
             _context.RoomTransferHistories.Add(new RoomTransferHistory
             {
-                BookingId = invoice.BookingId.Value,
+                BookingId = bookingId,
                 FromRoomId = invoice.RoomId,
                 ToRoomId = request.NewRoomId,
                 TransferredAt = DateTime.Now,
-                Reason = request.Reason,
+                Reason = request.Reason.Trim(),
                 ProcessedById = staffId
             });
 
@@ -93,7 +113,7 @@ public class RoomBookingService
                     {
                         EquipmentId = 1,
                         ReportedById = staffId,
-                        IssueDescription = request.Reason,
+                        IssueDescription = request.Reason.Trim(),
                         LogDate = DateTime.Now,
                         RepairCost = 0
                     });
@@ -102,6 +122,7 @@ public class RoomBookingService
 
             newRoom.Status = "InUse";
             invoice.RoomId = request.NewRoomId;
+            invoice.Booking.RoomId = request.NewRoomId;
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
@@ -114,6 +135,20 @@ public class RoomBookingService
             return (false, "Có lỗi xảy ra: " + ex.Message);
         }
     }
+
+    public async Task<(bool found, int roomId, string? status)> GetInvoiceRoomStateAsync(int invoiceId)
+    {
+        var invoice = await _context.Invoices
+            .AsNoTracking()
+            .Where(i => i.InvoiceId == invoiceId)
+            .Select(i => new { i.RoomId, i.Status })
+            .FirstOrDefaultAsync();
+
+        return invoice == null
+            ? (false, 0, null)
+            : (true, invoice.RoomId, invoice.Status);
+    }
+
     public async Task<bool> ProcessCheckInAsync(CheckInViewModel model, string? userName)
     {
         var room = await _context.Rooms.FindAsync(model.RoomId);

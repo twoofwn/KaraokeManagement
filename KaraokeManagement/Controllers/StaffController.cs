@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using KaraokeManagement.Models;
 using KaraokeManagement.ViewModel;
 using KaraokeManagement.Services;
+using KaraokeManagement.Services.ReceptionistServices;
 using KaraokeManagement.Services.StaffServices;
 
 namespace KaraokeManagement.Controllers
@@ -17,11 +18,16 @@ namespace KaraokeManagement.Controllers
     {
         private readonly StaffService _staffService;
         private readonly IScheduleService _scheduleService;
+        private readonly RoomBookingService _roomBookingService;
 
-        public StaffController(StaffService staffService, IScheduleService scheduleService)
+        public StaffController(
+            StaffService staffService,
+            IScheduleService scheduleService,
+            RoomBookingService roomBookingService)
         {
             _staffService = staffService;
             _scheduleService = scheduleService;
+            _roomBookingService = roomBookingService;
         }
 
         [HttpGet]
@@ -201,6 +207,24 @@ namespace KaraokeManagement.Controllers
             }
 
             return View(model);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Service Staff")]
+        public async Task<IActionResult> ChangeRoom([FromBody] ChangeRoomRequest request)
+        {
+            string? idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(idClaim, out int accountId) || accountId <= 0)
+            {
+                return Json(new { success = false, message = "Không xác định được nhân viên thực hiện." });
+            }
+
+            var result = await _roomBookingService.ChangeRoomAsync(
+                request,
+                accountId,
+                assignedStaffId: accountId);
+
+            return Json(new { success = result.success, message = result.message });
         }
 
         [HttpPost]

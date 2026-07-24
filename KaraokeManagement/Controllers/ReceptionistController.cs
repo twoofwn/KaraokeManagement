@@ -90,6 +90,18 @@ namespace KaraokeManagement.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> GetInvoiceRoomState(int invoiceId)
+        {
+            var state = await _bookingService.GetInvoiceRoomStateAsync(invoiceId);
+            return Json(new
+            {
+                success = state.found,
+                roomId = state.roomId,
+                status = state.status
+            });
+        }
+
+        [HttpGet]
         public async Task<IActionResult> CheckIn(int? roomId)
         {
             var vm = await _bookingService.GetCheckInViewModelAsync(roomId, User.Identity?.Name ?? "Nhân viên");

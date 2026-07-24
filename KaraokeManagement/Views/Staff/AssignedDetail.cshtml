@@ -152,6 +152,29 @@
             transform: translateY(-2px);
         }
 
+    .btn-change-room {
+        background-color: var(--accent-strong);
+        color: #fff;
+        border: none;
+        padding: 0.65rem 1rem;
+        border-radius: 8px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+
+        .btn-change-room:hover:not(:disabled) {
+            background-color: var(--text-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-change-room:disabled {
+            cursor: not-allowed;
+            opacity: 0.55;
+        }
+
     @@keyframes pulse-soft {
         0% {
             box-shadow: 0 0 0 0 rgba(232, 60, 145, 0.3);
@@ -194,6 +217,16 @@
                     <i class="fas fa-hourglass-half" style="color: var(--accent-strong);"></i>
                     Đã hát: @($"{(int)timeInRoom.TotalHours:D2}:{timeInRoom.Minutes:D2}")
                 </div>
+                <button type="button"
+                        class="btn-change-room"
+                        data-bs-toggle="modal"
+                        data-bs-target="#changeRoomModal"
+                        disabled="@(!Model.CanChangeRoom || !Model.AvailableRooms.Any())">
+                    <i class="fas fa-right-left"></i>
+                    @(!Model.CanChangeRoom
+                        ? "Hóa đơn đã đóng"
+                        : Model.AvailableRooms.Any() ? "Đổi phòng" : "Không có phòng trống")
+                </button>
             </div>
         </div>
 
@@ -271,3 +304,125 @@
         }
     </div>
 </div>
+
+<div class="modal fade" id="changeRoomModal" tabindex="-1" aria-labelledby="changeRoomModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="changeRoomModalLabel">
+                    <i class="fas fa-right-left me-2" style="color: var(--accent-strong);"></i>
+                    Chuyển / Đổi phòng hát
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <div id="change-room-error" class="alert alert-danger d-none" role="alert"></div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Phòng hiện tại</label>
+                    <input type="text"
+                           class="form-control"
+                           value="@Model.RoomName (@Model.RoomTypeName) - Đang sử dụng"
+                           disabled />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" for="staff-new-room">Chọn phòng muốn chuyển đến</label>
+                    <select class="form-select" id="staff-new-room">
+                        @foreach (var room in Model.AvailableRooms)
+                        {
+                            <option value="@room.RoomId">
+                                @room.RoomName - @room.RoomTypeName (@room.PricePerHour.ToString("N0") đ/giờ)
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" for="staff-old-room-status">Trạng thái phòng cũ sau khi đổi</label>
+                    <select class="form-select" id="staff-old-room-status">
+                        <option value="Available">Trống (Sẵn sàng đón khách mới)</option>
+                        <option value="Maintenance">Bảo trì (Tạo nhật ký sự cố)</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" for="staff-transfer-reason">Lý do đổi phòng</label>
+                    <textarea class="form-control"
+                              id="staff-transfer-reason"
+                              rows="3"
+                              maxlength="255"
+                              placeholder="Nhập lý do đổi phòng..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                <button type="button" class="btn-change-room" id="confirm-change-room" onclick="submitRoomChange()">
+                    <i class="fas fa-check"></i>
+                    Xác nhận đổi
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function submitRoomChange() {
+            const newRoomId = Number(document.getElementById('staff-new-room').value);
+            const oldRoomStatus = document.getElementById('staff-old-room-status').value;
+            const reason = document.getElementById('staff-transfer-reason').value.trim();
+            const errorBox = document.getElementById('change-room-error');
+            const submitButton = document.getElementById('confirm-change-room');
+
+            errorBox.classList.add('d-none');
+            errorBox.textContent = '';
+
+            if (!newRoomId) {
+                errorBox.textContent = 'Vui lòng chọn phòng trống.';
+                errorBox.classList.remove('d-none');
+                return;
+            }
+
+            if (!reason) {
+                errorBox.textContent = 'Vui lòng nhập lý do đổi phòng.';
+                errorBox.classList.remove('d-none');
+                return;
+            }
+
+            submitButton.disabled = true;
+
+            try {
+                const response = await fetch('/Staff/ChangeRoom', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        invoiceId: @Model.InvoiceId,
+                        newRoomId,
+                        oldRoomStatus,
+                        reason
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Máy chủ không thể xử lý yêu cầu.');
+                }
+
+                const result = await response.json();
+                if (!result.success) {
+                    errorBox.textContent = result.message || 'Không thể đổi phòng.';
+                    errorBox.classList.remove('d-none');
+                    return;
+                }
+
+                alert(result.message);
+                window.location.href = '@Url.Action("AssignedDetail", "Staff", new { bookingId = Model.BookingId })';
+            } catch (error) {
+                errorBox.textContent = error.message || 'Không thể kết nối đến máy chủ.';
+                errorBox.classList.remove('d-none');
+            } finally {
+                submitButton.disabled = false;
+            }
+        }
+    </script>
+}
