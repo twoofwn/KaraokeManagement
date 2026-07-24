@@ -199,10 +199,10 @@
         </p>
 
         <form id="passwordVerifyForm">
-            <label for="adminPasswordInput" class="admin-modal-label">Mật khẩu Admin</label>
+            <label for="legacyAdminPasswordInput" class="admin-modal-label">Mật khẩu Admin</label>
             <div class="admin-password-control">
                 <i class="fa-solid fa-lock"></i>
-                <input id="adminPasswordInput"
+                <input id="legacyAdminPasswordInput"
                        type="password"
                        autocomplete="current-password"
                        placeholder="Nhập mật khẩu của bạn" />
@@ -237,7 +237,7 @@
 
     const passwordModal = document.getElementById('passwordVerifyModal');
     const passwordForm = document.getElementById('passwordVerifyForm');
-    const passwordInput = document.getElementById('adminPasswordInput');
+    const passwordInput = document.getElementById('legacyAdminPasswordInput');
     const passwordError = document.getElementById('passwordVerifyError');
     const passwordButton = document.getElementById('passwordVerifyButton');
     const togglePasswordButton = document.getElementById('toggleAdminPassword');
