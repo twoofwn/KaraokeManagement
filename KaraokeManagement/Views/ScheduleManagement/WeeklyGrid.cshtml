@@ -64,15 +64,22 @@
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
     <h2 class="fw-bold mb-0 text-brand-deep-purple">Lịch Làm Việc Tuần</h2>
     
-    <!-- Left Controls -->
-    <div class="d-flex align-items-center gap-2 shadow-sm p-1 bg-white rounded border">
-        <a href="/ScheduleManagement/WeeklyGrid?startDate=@startOfWeek.AddDays(-7).ToString("yyyy-MM-dd")" class="btn btn-outline-secondary btn-sm border-0"><i class="fa-solid fa-chevron-left"></i></a>
-        <select class="form-select form-select-sm fw-medium border-0" style="width: auto; background-color: transparent;" onchange="window.location.href='/ScheduleManagement/WeeklyGrid?startDate='+this.value">
-            <option value="@startOfWeek.ToString("yyyy-MM-dd")" selected>@startOfWeek.ToString("dd/MM/yyyy") -> @endOfWeek.ToString("dd/MM/yyyy") (Tuần này)</option>
-            <option value="@startOfWeek.AddDays(-7).ToString("yyyy-MM-dd")">@startOfWeek.AddDays(-7).ToString("dd/MM/yyyy") -> @startOfWeek.AddDays(-1).ToString("dd/MM/yyyy")</option>
-            <option value="@startOfWeek.AddDays(7).ToString("yyyy-MM-dd")">@startOfWeek.AddDays(7).ToString("dd/MM/yyyy") -> @startOfWeek.AddDays(13).ToString("dd/MM/yyyy")</option>
-        </select>
-        <a href="/ScheduleManagement/WeeklyGrid?startDate=@startOfWeek.AddDays(7).ToString("yyyy-MM-dd")" class="btn btn-outline-secondary btn-sm border-0"><i class="fa-solid fa-chevron-right"></i></a>
+    <!-- Week Navigation Controls -->
+    <div class="d-flex align-items-center gap-2">
+        <div class="btn-group shadow-sm" role="group">
+            <a href="/ScheduleManagement/WeeklyGrid?startDate=@startOfWeek.AddDays(-7).ToString("yyyy-MM-dd")" class="btn btn-outline-secondary btn-sm" title="Tuần trước">
+                <i class="fa-solid fa-chevron-left"></i>
+            </a>
+            <input type="date" class="form-control form-control-sm fw-semibold text-center border-secondary" 
+                   style="width: 140px;" value="@startOfWeek.ToString("yyyy-MM-dd")" 
+                   onchange="window.location.href='/ScheduleManagement/WeeklyGrid?startDate='+this.value" title="Chọn ngày trong tuần" />
+            <a href="/ScheduleManagement/WeeklyGrid?startDate=@startOfWeek.AddDays(7).ToString("yyyy-MM-dd")" class="btn btn-outline-secondary btn-sm" title="Tuần sau">
+                <i class="fa-solid fa-chevron-right"></i>
+            </a>
+        </div>
+        <span class="badge bg-light text-dark border ms-1 py-2 px-3 fw-medium">
+            Tuần: @startOfWeek.ToString("dd/MM") - @endOfWeek.ToString("dd/MM/yyyy")
+        </span>
     </div>
 
     <!-- Right Controls -->

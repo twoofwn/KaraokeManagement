@@ -68,13 +68,8 @@ public partial class KaraokeManagementDbContext : DbContext
     public virtual DbSet<EmployeeSchedule> EmployeeSchedules { get; set; }
     public virtual DbSet<Attendance> Attendances { get; set; }
     public virtual DbSet<EmployeeProfile> EmployeeProfiles { get; set; }
-    public virtual DbSet<TrainingRecord> TrainingRecords { get; set; }
-    public virtual DbSet<EmployeeTask> EmployeeTasks { get; set; }
     public virtual DbSet<NotificationLog> NotificationLogs { get; set; }
     public virtual DbSet<CustomerReview> CustomerReviews { get; set; }
-    public virtual DbSet<MarketingCampaign> MarketingCampaigns { get; set; }
-    public virtual DbSet<CustomerCareLog> CustomerCareLogs { get; set; }
-    public virtual DbSet<CustomerAutomationRule> CustomerAutomationRules { get; set; }
     public virtual DbSet<ShiftSwapRequest> ShiftSwapRequests { get; set; }
     public virtual DbSet<LeaveRequest> LeaveRequests { get; set; }
 
@@ -672,17 +667,6 @@ public partial class KaraokeManagementDbContext : DbContext
             entity.ToTable("EmployeeProfile");
         });
 
-        modelBuilder.Entity<TrainingRecord>(entity =>
-        {
-            entity.HasKey(e => e.TrainingId);
-            entity.ToTable("TrainingRecord");
-        });
-
-        modelBuilder.Entity<EmployeeTask>(entity =>
-        {
-            entity.HasKey(e => e.TaskId);
-            entity.ToTable("EmployeeTask");
-        });
 
         modelBuilder.Entity<NotificationLog>(entity =>
         {
@@ -715,23 +699,7 @@ public partial class KaraokeManagementDbContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CustomerReview_Booking");
         });
-        modelBuilder.Entity<MarketingCampaign>(entity =>
-        {
-            entity.HasKey(e => e.CampaignId);
-            entity.ToTable("MarketingCampaign");
-        });
 
-        modelBuilder.Entity<CustomerCareLog>(entity =>
-        {
-            entity.HasKey(e => e.LogId);
-            entity.ToTable("CustomerCareLog");
-        });
-
-        modelBuilder.Entity<CustomerAutomationRule>(entity =>
-        {
-            entity.HasKey(e => e.RuleId);
-            entity.ToTable("CustomerAutomationRule");
-        });
 
         modelBuilder.Entity<ShiftSwapRequest>(entity =>
         {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -104,7 +104,17 @@ namespace KaraokeManagement.Services.StaffServices
             DateOnly monDate = DateOnly.FromDateTime(monday);
             DateOnly sunDate = DateOnly.FromDateTime(sunday);
 
-            var shifts = await _context.WorkShifts.ToListAsync();
+            var rawShifts = await _context.WorkShifts.ToListAsync();
+            var shifts = rawShifts.OrderBy(s => {
+                var name = s.ShiftName.ToLower();
+                if (name.Contains("khuya") || name.Contains("đêm") || name.Contains("night"))
+                    return 1;
+                if (name.Contains("sáng") || name.Contains("morning"))
+                    return 2;
+                if (name.Contains("chiều") || name.Contains("tối") || name.Contains("afternoon") || name.Contains("evening"))
+                    return 3;
+                return s.StartTime.Hours;
+            }).ThenBy(s => s.StartTime).ToList();
             var rawSchedules = await _context.EmployeeSchedules
                 .Include(s => s.Shift)
                 .Where(s => s.AccountId == account.AccountId && s.WorkDate >= monDate && s.WorkDate <= sunDate && s.IsActive && s.Status != "Off")
@@ -150,25 +160,36 @@ namespace KaraokeManagement.Services.StaffServices
             if (mySched == null || mySched.AccountId != currentAccountId)
                 return (false, "Lịch làm việc không hợp lệ.", null);
 
-            // Target employees must share the EXACT SAME Role and have an active schedule on the same day
-            var targets = await _context.EmployeeSchedules
+            var now = DateTime.Now;
+
+            // Target employees must share the EXACT SAME Role and have an active schedule on any date that HAS NOT STARTED YET
+            var eligibleSchedules = await _context.EmployeeSchedules
                 .Include(s => s.Account).ThenInclude(a => a.Role)
                 .Include(s => s.Shift)
-                .Where(s => s.WorkDate == mySched.WorkDate 
-                            && s.AccountId != currentAccountId 
+                .Where(s => s.AccountId != currentAccountId 
                             && s.Account.RoleId == mySched.Account.RoleId
                             && s.IsActive
                             && s.Status != "Off"
                             && s.Account.IsActive == true)
+                .ToListAsync();
+
+            var targets = eligibleSchedules
+                .Where(s => {
+                    var startDateTime = ScheduleService.GetShiftStartDateTime(s.WorkDate, s.Shift.StartTime);
+                    return startDateTime > now;
+                })
+                .OrderBy(s => s.WorkDate)
+                .ThenBy(s => s.Shift.StartTime)
                 .Select(s => new {
                     scheduleId = s.ScheduleId,
                     accountId = s.AccountId,
                     fullName = s.Account.FullName,
+                    workDate = s.WorkDate.ToString("dd/MM/yyyy"),
                     shiftName = s.Shift.ShiftName,
                     startTime = s.Shift.StartTime.ToString(@"hh\:mm"),
                     endTime = s.Shift.EndTime.ToString(@"hh\:mm")
                 })
-                .ToListAsync();
+                .ToList();
 
             return (true, null, targets.Cast<object>().ToList());
         }
@@ -179,7 +200,17 @@ namespace KaraokeManagement.Services.StaffServices
             if (account == null) return null;
 
             var today = DateOnly.FromDateTime(DateTime.Today);
-            var shifts = await _context.WorkShifts.ToListAsync();
+            var rawShifts = await _context.WorkShifts.ToListAsync();
+            var shifts = rawShifts.OrderBy(s => {
+                var name = s.ShiftName.ToLower();
+                if (name.Contains("khuya") || name.Contains("đêm") || name.Contains("night"))
+                    return 1;
+                if (name.Contains("sáng") || name.Contains("morning"))
+                    return 2;
+                if (name.Contains("chiều") || name.Contains("tối") || name.Contains("afternoon") || name.Contains("evening"))
+                    return 3;
+                return s.StartTime.Hours;
+            }).ThenBy(s => s.StartTime).ToList();
 
             var activeLeaveReqScheduleIds = await _context.LeaveRequests
                 .Where(r => r.AccountId == account.AccountId && r.Status != "Rejected")

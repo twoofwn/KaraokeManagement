@@ -134,32 +134,39 @@
     </div>
 </div>
 
-<!-- Modal 2: Shift Swap Selection -->
+<!-- Modal 2: Shift Swap Selection Table -->
 <div class="modal fade" id="shiftSwapModal" tabindex="-1" aria-labelledby="shiftSwapModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-3">
             <div class="modal-header bg-danger text-white py-3">
                 <h5 class="modal-title fw-bold" id="shiftSwapModalLabel"><i class="fa-solid fa-rotate me-2"></i>Yêu Cầu Đổi Ca Làm Việc</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
-                <p class="text-muted small mb-4">
-                    <i class="fa-solid fa-triangle-exclamation text-warning me-1"></i> 
-                    Chọn đồng nghiệp cùng chức vụ (Role) đang được phân lịch trực vào cùng ngày để đổi ca làm việc của bạn.
+                <p class="text-muted small mb-3">
+                    <i class="fa-solid fa-circle-info text-primary me-1"></i> 
+                    Danh sách các ca làm việc khả dụng của đồng nghiệp cùng chức vụ (Role). Bạn có thể chọn bất kỳ ca làm việc nào chưa diễn ra để gửi yêu cầu đổi ca.
                 </p>
 
-                <div class="mb-3">
-                    <label for="swapTargetSelect" class="form-label fw-bold text-dark">Chọn đồng nghiệp muốn đổi ca</label>
-                    <select id="swapTargetSelect" class="form-select border-2" style="border-radius: 8px;" required>
-                        <option value="" disabled selected>-- Chọn đồng nghiệp --</option>
-                    </select>
+                <div class="table-responsive rounded border" style="max-height: 340px; overflow-y: auto;">
+                    <table class="table table-hover align-middle mb-0 text-center" style="font-size: 0.88rem;">
+                        <thead class="table-dark sticky-top">
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Ngày làm việc</th>
+                                <th>Ca làm việc</th>
+                                <th>Đồng nghiệp</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="swapTargetsTbody">
+                            <!-- JS injected -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
             <div class="modal-footer p-3 border-0 bg-light">
                 <button type="button" class="btn btn-outline-secondary" onclick="backToDetails()">Quay lại</button>
-                <button type="button" class="btn btn-danger fw-bold px-4" onclick="submitSwapRequest()">
-                    Gửi yêu cầu đổi ca
-                </button>
             </div>
         </div>
     </div>
@@ -221,25 +228,35 @@
         }
 
         function openSwapSelection() {
-            // Load swap targets
-            $('#swapTargetSelect').html('<option value="" disabled selected>Đang tải danh sách đồng nghiệp...</option>');
+            $('#swapTargetsTbody').html('<tr><td colspan="5" class="py-4 text-muted"><i class="fa-solid fa-spinner fa-spin me-1"></i> Đang tải danh sách ca làm việc khả dụng...</td></tr>');
             
             $.get('/Receptionist/GetEligibleSwapTargets', { scheduleId: currentScheduleId }, function(data) {
                 if (data && data.length > 0) {
-                    let html = '<option value="" disabled selected>-- Chọn đồng nghiệp --</option>';
-                    data.forEach(function(item) {
+                    let html = '';
+                    data.forEach(function(item, index) {
                         html += `
-                            <option value="${item.accountId}" data-target-sched="${item.scheduleId}">
-                                ${item.fullName} (${item.shiftName}: ${item.startTime} - ${item.endTime})
-                            </option>
+                            <tr>
+                                <td class="fw-bold">${index + 1}</td>
+                                <td><span class="badge bg-primary-subtle text-primary fw-bold px-2 py-1">${item.workDate}</span></td>
+                                <td>
+                                    <div class="fw-bold text-dark">${item.shiftName}</div>
+                                    <div class="text-muted small">${item.startTime} - ${item.endTime}</div>
+                                </td>
+                                <td class="fw-semibold text-danger">${item.fullName}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-danger fw-bold px-3" onclick="submitSwapForTarget(${item.accountId}, ${item.scheduleId})">
+                                        <i class="fa-solid fa-rotate me-1"></i> Chọn đổi ca
+                                    </button>
+                                </td>
+                            </tr>
                         `;
                     });
-                    $('#swapTargetSelect').html(html);
+                    $('#swapTargetsTbody').html(html);
                 } else {
-                    $('#swapTargetSelect').html('<option value="" disabled selected>Không tìm thấy nhân viên cùng chức vụ trực ngày này</option>');
+                    $('#swapTargetsTbody').html('<tr><td colspan="5" class="py-4 text-muted">Không tìm thấy ca làm việc khả dụng của đồng nghiệp cùng chức vụ.</td></tr>');
                 }
             }).fail(function() {
-                $('#swapTargetSelect').html('<option value="" disabled selected>Lỗi tải danh sách.</option>');
+                $('#swapTargetsTbody').html('<tr><td colspan="5" class="py-4 text-danger">Lỗi tải danh sách ca làm việc.</td></tr>');
             });
 
             detailsModalObj.hide();
@@ -251,14 +268,8 @@
             detailsModalObj.show();
         }
 
-        function submitSwapRequest() {
-            let targetAccountId = $('#swapTargetSelect').val();
-            let targetSchedId = $('#swapTargetSelect').find(':selected').data('target-sched');
-
-            if (!targetAccountId || !targetSchedId) {
-                alert('Vui lòng chọn đồng nghiệp muốn đổi ca!');
-                return;
-            }
+        function submitSwapForTarget(targetAccountId, targetSchedId) {
+            if (!confirm('Bạn có chắc chắn muốn gửi yêu cầu đổi ca làm việc này?')) return;
 
             $.post('/Receptionist/SubmitSwap', {
                 requesterScheduleId: currentScheduleId,
@@ -269,7 +280,10 @@
                 swapModalObj.hide();
                 location.reload();
             }).fail(function(err) {
-                alert('Lỗi: ' + (err.responseText || 'Không thể tạo yêu cầu đổi ca.'));
+                let msg = 'Không thể tạo yêu cầu đổi ca.';
+                if (err.responseJSON && err.responseJSON.message) msg = err.responseJSON.message;
+                else if (err.responseText) msg = err.responseText;
+                alert('Lỗi: ' + msg);
             });
         }
     </script>
