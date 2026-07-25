@@ -19,6 +19,8 @@ public partial class KaraokeManagementDbContext : DbContext
 
     public virtual DbSet<Booking> Bookings { get; set; }
 
+    public virtual DbSet<CancellationReason> CancellationReasons { get; set; }
+
     public virtual DbSet<Category> Categories { get; set; }
 
     public virtual DbSet<Customer> Customers { get; set; }
@@ -139,6 +141,12 @@ public partial class KaraokeManagementDbContext : DbContext
                 .HasColumnType("datetime");
             entity.Property(e => e.CreatedById).HasColumnName("CreatedByID");
             entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
+            entity.Property(e => e.CancellationReasonId).HasColumnName("CancellationReasonID");
+            entity.Property(e => e.CancellationReasonDetail).HasMaxLength(500);
+            entity.Property(e => e.CancelledAt).HasColumnType("datetime2");
+            entity.Property(e => e.CancelledByType).HasMaxLength(20).IsUnicode(false);
+            entity.Property(e => e.CancelledByAccountId).HasColumnName("CancelledByAccountID");
+            entity.Property(e => e.CancelledByCustomerId).HasColumnName("CancelledByCustomerID");
             entity.Property(e => e.EndTime).HasColumnType("datetime");
             entity.Property(e => e.RoomId).HasColumnName("RoomID");
             entity.Property(e => e.StartTime).HasColumnType("datetime");
@@ -163,10 +171,41 @@ public partial class KaraokeManagementDbContext : DbContext
                 .HasForeignKey(d => d.CustomerId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(d => d.Room)
-                .WithMany(p => p.Bookings)
-                .HasForeignKey(d => d.RoomId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+              entity.HasOne(d => d.Room)
+                  .WithMany(p => p.Bookings)
+                  .HasForeignKey(d => d.RoomId)
+                  .OnDelete(DeleteBehavior.ClientSetNull);
+
+              entity.HasOne(d => d.CancellationReason)
+                  .WithMany(p => p.Bookings)
+                  .HasForeignKey(d => d.CancellationReasonId)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_Booking_CancellationReason");
+
+              entity.HasOne(d => d.CancelledByAccount)
+                  .WithMany()
+                  .HasForeignKey(d => d.CancelledByAccountId)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_Booking_CancelledByAccount");
+
+              entity.HasOne(d => d.CancelledByCustomer)
+                  .WithMany()
+                  .HasForeignKey(d => d.CancelledByCustomerId)
+                  .OnDelete(DeleteBehavior.ClientSetNull)
+                  .HasConstraintName("FK_Booking_CancelledByCustomer");
+          });
+
+        modelBuilder.Entity<CancellationReason>(entity =>
+        {
+            entity.HasKey(e => e.CancellationReasonId);
+            entity.ToTable("CancellationReason");
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.Property(e => e.CancellationReasonId).HasColumnName("CancellationReasonID");
+            entity.Property(e => e.Code).HasMaxLength(50).IsUnicode(false);
+            entity.Property(e => e.ReasonName).HasMaxLength(200);
+            entity.Property(e => e.AppliesTo).HasMaxLength(20).IsUnicode(false);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.SortOrder).HasDefaultValue(0);
         });
 
         modelBuilder.Entity<Category>(entity =>

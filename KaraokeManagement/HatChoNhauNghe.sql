@@ -179,6 +179,18 @@ CREATE TABLE [Promotion] (
     EndDate DATETIME NOT NULL
 );
 
+CREATE TABLE [CancellationReason] (
+    CancellationReasonID INT IDENTITY(1,1) PRIMARY KEY,
+    Code VARCHAR(50) NOT NULL UNIQUE,
+    ReasonName NVARCHAR(200) NOT NULL,
+    AppliesTo VARCHAR(20) NOT NULL DEFAULT 'Both',
+    RequiresDetail BIT NOT NULL DEFAULT 0,
+    IsActive BIT NOT NULL DEFAULT 1,
+    SortOrder INT NOT NULL DEFAULT 0,
+    CONSTRAINT CK_CancellationReason_AppliesTo
+        CHECK (AppliesTo IN ('Customer', 'Receptionist', 'Both'))
+);
+
 CREATE TABLE [Booking] (
     BookingID INT IDENTITY(1,1) PRIMARY KEY,
     CustomerID INT NOT NULL, 
@@ -191,11 +203,26 @@ CREATE TABLE [Booking] (
 	StaffId INT NULL,
     GuestCount INT NULL DEFAULT 1,
     Note NVARCHAR(255) NULL,
+    CancellationReasonID INT NULL,
+    CancellationReasonDetail NVARCHAR(500) NULL,
+    CancelledAt DATETIME2 NULL,
+    CancelledByType VARCHAR(20) NULL,
+    CancelledByAccountID INT NULL,
+    CancelledByCustomerID INT NULL,
     FOREIGN KEY (CustomerID) REFERENCES [Customer](CustomerID),
 	FOREIGN KEY (StaffId) REFERENCES [Account](AccountID),
     FOREIGN KEY (CreatedByID) REFERENCES [Account](AccountID),
-    FOREIGN KEY (RoomID) REFERENCES [Room](RoomID)
+    FOREIGN KEY (RoomID) REFERENCES [Room](RoomID),
+    CONSTRAINT FK_Booking_CancellationReason FOREIGN KEY (CancellationReasonID) REFERENCES [CancellationReason](CancellationReasonID),
+    CONSTRAINT FK_Booking_CancelledByAccount FOREIGN KEY (CancelledByAccountID) REFERENCES [Account](AccountID),
+    CONSTRAINT FK_Booking_CancelledByCustomer FOREIGN KEY (CancelledByCustomerID) REFERENCES [Customer](CustomerID),
+    CONSTRAINT CK_Booking_CancelledByType
+        CHECK (CancelledByType IS NULL OR CancelledByType IN ('Customer', 'Receptionist'))
 );
+
+CREATE INDEX IX_Booking_Status_CancelledAt
+ON [Booking] (Status, CancelledAt)
+INCLUDE (CancellationReasonID, RoomID);
 
 CREATE TABLE [Invoice] (
     InvoiceID INT IDENTITY(1,1) PRIMARY KEY,
@@ -432,6 +459,19 @@ INSERT INTO [Role] (RoleID, RoleName) VALUES (2, N'Manager');
 INSERT INTO [Role] (RoleID, RoleName) VALUES (3, N'Receptionist');
 INSERT INTO [Role] (RoleID, RoleName) VALUES (4, N'Service Staff');
 SET IDENTITY_INSERT [Role] OFF;
+
+-- 9.2 CANCELLATION REASON
+INSERT INTO [CancellationReason] (Code, ReasonName, AppliesTo, RequiresDetail, IsActive, SortOrder)
+VALUES
+('CUSTOMER_CHANGED_PLAN', N'Thay đổi kế hoạch', 'Customer', 0, 1, 10),
+('CUSTOMER_WRONG_BOOKING', N'Đặt nhầm phòng hoặc thời gian', 'Customer', 0, 1, 20),
+('CUSTOMER_COST', N'Chi phí không phù hợp', 'Customer', 0, 1, 30),
+('CUSTOMER_NO_NEED', N'Không còn nhu cầu', 'Customer', 0, 1, 40),
+('RECEPTIONIST_CUSTOMER_REQUEST', N'Khách hàng yêu cầu hủy', 'Receptionist', 0, 1, 50),
+('RECEPTIONIST_ROOM_ISSUE', N'Phòng gặp sự cố hoặc bảo trì', 'Receptionist', 0, 1, 60),
+('RECEPTIONIST_SCHEDULE_CONFLICT', N'Trùng lịch hoặc không thể phục vụ', 'Receptionist', 0, 1, 70),
+('RECEPTIONIST_NO_SHOW', N'Khách không đến', 'Receptionist', 0, 1, 80),
+('OTHER', N'Khác', 'Both', 1, 1, 999);
 
 -- 9.2 WORK SHIFT
 SET IDENTITY_INSERT [WorkShift] ON;

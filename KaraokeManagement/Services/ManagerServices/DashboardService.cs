@@ -68,6 +68,14 @@ namespace KaraokeManagement.Services.ManagerServices
             decimal revenueToday = await _context.Invoices.Where(i => i.Status == "Paid" && i.CheckOutTime >= todayStart && i.CheckOutTime <= todayEnd).SumAsync(i => i.GrandTotal ?? 0);
             int customersThisMonth = await _context.Invoices.Where(i => i.CheckInTime >= monthStart && i.CheckInTime <= monthEnd && i.BookingId != null).Select(i => i.Booking!.CustomerId).Distinct().CountAsync();
             decimal revenueThisMonth = await _context.Invoices.Where(i => i.Status == "Paid" && i.CheckOutTime >= monthStart && i.CheckOutTime <= monthEnd).SumAsync(i => i.GrandTotal ?? 0);
+            int cancelledBookingsToday = await _context.Bookings.CountAsync(b =>
+                b.Status == "Cancelled" &&
+                b.CancelledAt >= todayStart &&
+                b.CancelledAt <= todayEnd);
+            int cancelledBookingsThisMonth = await _context.Bookings.CountAsync(b =>
+                b.Status == "Cancelled" &&
+                b.CancelledAt >= monthStart &&
+                b.CancelledAt <= monthEnd);
 
             decimal totalRevenue = await _context.Invoices.Where(i => i.Status == "Paid").SumAsync(i => i.GrandTotal ?? 0);
             decimal totalExpenses = await _context.Expenses.SumAsync(e => e.Amount) + await _context.PurchaseOrders.SumAsync(po => po.TotalAmount ?? 0);
@@ -80,6 +88,8 @@ namespace KaraokeManagement.Services.ManagerServices
                 RevenueToday = revenueToday,
                 CustomersThisMonth = customersThisMonth,
                 RevenueThisMonth = revenueThisMonth,
+                CancelledBookingsToday = cancelledBookingsToday,
+                CancelledBookingsThisMonth = cancelledBookingsThisMonth,
                 TotalRevenue = totalRevenue,
                 TotalExpenses = totalExpenses,
                 NetProfit = totalRevenue - totalExpenses,
