@@ -109,14 +109,11 @@ namespace KaraokeManagement.Controllers
             var accountIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("AccountId");
             if (!int.TryParse(accountIdClaim, out int accountId) || accountId <= 0)
             {
-                return Json(new { success = false, message = "Phiên làm việc hết hạn hoặc không xác định được tài khoản thao tác." });
+                return Json(new { success = false, message = "Phiên làm việc hết hạn." });
             }
-
-            // 1. Gọi service xử lý trước
             var result = await _recepBookingService.UpdateBookingStatusAsync(request, accountId);
 
-            // 2. Kiểm tra kết quả trả về từ service
-            if (result.success) // Lưu ý: giữ đúng chữ hoa/thường theo kiểu trả về của hàm UpdateBookingStatusAsync (Tuple hoặc DTO)
+            if (result.success)
             {
                 TempData["SuccessMessage"] = request.Status == "Confirmed"
                     ? "Xác nhận đặt phòng thành công!"
@@ -124,8 +121,6 @@ namespace KaraokeManagement.Controllers
 
                 return Json(new { success = true, message = result.message });
             }
-
-            // 3. Thất bại: Gán ErrorMessage vào TempData và trả về kết quả
             TempData["ErrorMessage"] = result.message;
             return Json(new { success = false, message = result.message });
         }
@@ -160,7 +155,7 @@ namespace KaraokeManagement.Controllers
             var accountIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("AccountId");
             if (!int.TryParse(accountIdClaim, out int accountId) || accountId <= 0)
             {
-                return Json(new { success = false, message = "Phiên làm việc hết hạn hoặc không xác định được tài khoản thao tác." });
+                return Json(new { success = false, message = "Phiên làm việc hết hạn." });
             }
 
             bool success = await _recepBookingService.ConfirmCheckInAsync(model, accountId);
