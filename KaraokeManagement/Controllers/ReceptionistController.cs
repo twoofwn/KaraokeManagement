@@ -43,6 +43,7 @@ namespace KaraokeManagement.Controllers
             _scheduleService = scheduleService;
         }
 
+        // Dashboard
         [HttpGet]
         public async Task<IActionResult> Index(string searchString, string roomType, string status)
         {
@@ -50,6 +51,122 @@ namespace KaraokeManagement.Controllers
             return View(vm);
         }
 
+        // Tim khach hang qua sdt
+        [HttpGet]
+        public async Task<IActionResult> GetCustomerByPhone(string phone)
+        {
+            return Json(await _customerService.GetCustomerByPhoneAsync(phone));
+        }
+
+        // Tao khach hang moi
+        [HttpPost]
+        public async Task<IActionResult> CreateCustomer([FromBody] CreateCustomerRequest request)
+        {
+            var result = await _customerService.CreateCustomerAsync(request);
+            if (!result.success) return Json(new { success = false, message = result.message });
+            return Json(new { success = true, data = result.data });
+        }
+
+
+        // Check-in
+        [HttpGet]
+        public async Task<IActionResult> CheckIn(int? roomId)
+        {
+            var vm = await _bookingService.GetCheckInViewModelAsync(roomId, User.Identity?.Name ?? "Nhân viên");
+            return View(vm);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CheckIn(CheckInViewModel model)
+        {
+            var success = await _bookingService.ProcessCheckInAsync(model, User.Identity?.Name);
+            if (!success)
+            {
+                ModelState.AddModelError("", "Phòng được chọn không tồn tại.");
+                var freshModel = await _bookingService.GetCheckInViewModelAsync(model.RoomId, User.Identity?.Name ?? "Nhân viên");
+                return View(freshModel);
+            }
+            return RedirectToAction("Index");
+        }
+
+        // List pending booking
+        [HttpGet]
+        public async Task<IActionResult> ListBooking(
+        string searchString,
+        string customerFilter,
+        string dateRange = "all",
+        string status = "Pending",
+        int page = 1)
+        {
+            var viewModel = await _recepBookingService.GetListBookingAsync(searchString, customerFilter, dateRange, status, page);
+            return View(viewModel);
+        }
+
+        // Update room status
+        [HttpPost]
+        public async Task<IActionResult> UpdateBookingStatus([FromBody] UpdateBookingStatusRequest request)
+        {
+            var accountIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("AccountId");
+            if (!int.TryParse(accountIdClaim, out int accountId) || accountId <= 0)
+            {
+                return Json(new { success = false, message = "Phiên làm việc hết hạn hoặc không xác định được tài khoản thao tác." });
+            }
+
+            var result = await _recepBookingService.UpdateBookingStatusAsync(request, accountId);
+            return Json(new { success = result.success, message = result.message });
+        }
+
+
+        // Lay confirmed booking list
+        [HttpGet]
+        public async Task<IActionResult> BookingConfirm(string search = "")
+        {
+            var pendingBookings = await _recepBookingService.GetBookingConfirmListAsync(search);
+            return View(pendingBookings);
+        }
+
+        // Lay confirmed booking detail
+        [HttpGet]
+        public async Task<IActionResult> BookingConfirmDetail(int id)
+        {
+            var viewModel = await _recepBookingService.GetBookingConfirmDetailAsync(id);
+            if (viewModel == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy thông tin đơn đặt phòng này!";
+                return RedirectToAction("BookingConfirm");
+            }
+
+            return View(viewModel);
+        }
+
+        // Chuyen trang thai tu confirmed sang checkedIn
+        [HttpPost]
+        public async Task<IActionResult> ConfirmCheckIn(CheckInDetailViewModel model)
+        {
+            var accountIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("AccountId");
+            if (!int.TryParse(accountIdClaim, out int accountId) || accountId <= 0)
+            {
+                return Json(new { success = false, message = "Phiên làm việc hết hạn hoặc không xác định được tài khoản thao tác." });
+            }
+
+            bool success = await _recepBookingService.ConfirmCheckInAsync(model, accountId);
+            if (!success) return NotFound();
+
+            TempData["SuccessMessage"] = "Check-in thành công!";
+            return RedirectToAction("Index");
+        }
+
+        // Huy booking
+        [HttpPost]
+        public async Task<IActionResult> CancelBooking(int bookingId)
+        {
+            await _recepBookingService.CancelBookingAsync(bookingId);
+            TempData["SuccessMessage"] = "Đã hủy đơn đặt phòng thành công.";
+            return RedirectToAction("BookingConfirm");
+        }
+
+
+        // Chi tiet phong
         [HttpGet]
         public async Task<IActionResult> Detail(int roomId)
         {
@@ -57,7 +174,9 @@ namespace KaraokeManagement.Controllers
             if (vm == null) return RedirectToAction("Index");
             return View(vm);
         }
+        
 
+        // CRUD service item
         [HttpPost]
         public async Task<IActionResult> AddServiceItem([FromBody] AddServiceRequest request)
         {
@@ -79,6 +198,7 @@ namespace KaraokeManagement.Controllers
             return Json(new { success = result.success, message = result.message });
         }
 
+        // Change room
         [HttpPost]
         public async Task<IActionResult> ChangeRoom([FromBody] ChangeRoomRequest request)
         {
@@ -89,26 +209,7 @@ namespace KaraokeManagement.Controllers
             return Json(new { success = result.success, message = result.message });
         }
 
-        [HttpGet]
-        public async Task<IActionResult> CheckIn(int? roomId)
-        {
-            var vm = await _bookingService.GetCheckInViewModelAsync(roomId, User.Identity?.Name ?? "Nhân viên");
-            return View(vm);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> CheckIn(CheckInViewModel model)
-        {
-            var success = await _bookingService.ProcessCheckInAsync(model, User.Identity?.Name);
-            if (!success)
-            {
-                ModelState.AddModelError("", "Phòng được chọn không tồn tại.");
-                var freshModel = await _bookingService.GetCheckInViewModelAsync(model.RoomId, User.Identity?.Name ?? "Nhân viên");
-                return View(freshModel);
-            }
-            return RedirectToAction("Index");
-        }
-
+        // Check-out
         [HttpGet]
         public async Task<IActionResult> Checkout(int invoiceId)
         {
@@ -125,20 +226,7 @@ namespace KaraokeManagement.Controllers
             return RedirectToAction("Index");
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetCustomerByPhone(string phone)
-        {
-            return Json(await _customerService.GetCustomerByPhoneAsync(phone));
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> CreateCustomer([FromBody] CreateCustomerRequest request)
-        {
-            var result = await _customerService.CreateCustomerAsync(request);
-            if (!result.success) return Json(new { success = false, message = result.message });
-            return Json(new { success = true, data = result.data });
-        }
-
+        // Lich su hoa don
         [HttpGet]
         public async Task<IActionResult> InvoiceHistory(string searchString, string customerFilter, DateTime? fromDate, DateTime? toDate, string status = "All", int page = 1)
         {
@@ -146,84 +234,13 @@ namespace KaraokeManagement.Controllers
             return View(vm);
         }
 
+        // Chi tiet lich su hoa don
         [HttpGet]
         public async Task<IActionResult> GetInvoiceDetail(int invoiceId)
         {
             var vm = await _invoiceService.GetInvoiceDetailAsync(invoiceId);
             if (vm == null) return NotFound("Không tìm thấy thông tin hóa đơn.");
             return PartialView("_InvoiceDetailModal", vm);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> ListBooking(
-        string searchString,
-        string customerFilter,
-        string dateRange = "all",
-        string status = "Pending",
-        int page = 1)
-        {
-            var viewModel = await _recepBookingService.GetListBookingAsync(searchString, customerFilter, dateRange, status, page);
-            return View(viewModel);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> UpdateBookingStatus([FromBody] UpdateBookingStatusRequest request)
-        {
-            var accountIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("AccountId");
-            if (!int.TryParse(accountIdClaim, out int accountId) || accountId <= 0)
-            {
-                return Json(new { success = false, message = "Phiên làm việc hết hạn hoặc không xác định được tài khoản thao tác." });
-            }
-
-            var result = await _recepBookingService.UpdateBookingStatusAsync(request, accountId);
-            return Json(new { success = result.success, message = result.message });
-        }
-
-        // Đổi tên CheckIn -> BookingConfirm
-        [HttpGet]
-        public async Task<IActionResult> BookingConfirm(string search = "")
-        {
-            var pendingBookings = await _recepBookingService.GetBookingConfirmListAsync(search);
-            return View(pendingBookings);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> BookingConfirmDetail(int id)
-        {
-            var viewModel = await _recepBookingService.GetBookingConfirmDetailAsync(id);
-            if (viewModel == null)
-            {
-                TempData["ErrorMessage"] = "Không tìm thấy thông tin đơn đặt phòng này!";
-                return RedirectToAction("BookingConfirm");
-            }
-
-            return View(viewModel); 
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ConfirmCheckIn(CheckInDetailViewModel model)
-        {
-            var accountIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("AccountId");
-            if (!int.TryParse(accountIdClaim, out int accountId) || accountId <= 0)
-            {
-                return Json(new { success = false, message = "Phiên làm việc hết hạn hoặc không xác định được tài khoản thao tác." });
-            }
-
-            bool success = await _recepBookingService.ConfirmCheckInAsync(model, accountId);
-            if (!success) return NotFound();
-
-            TempData["SuccessMessage"] = "Check-in thành công!";
-            return RedirectToAction("Index");
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CancelBooking(int bookingId)
-        {
-            await _recepBookingService.CancelBookingAsync(bookingId);
-            TempData["SuccessMessage"] = "Đã hủy đơn đặt phòng thành công.";
-            return RedirectToAction("BookingConfirm");
         }
 
         [HttpGet]
