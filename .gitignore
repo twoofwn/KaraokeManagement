@@ -3,3 +3,4 @@ bin/
 obj/
 **/appsettings.Development.json
 PROJECT_CONTEXT.md
+Present.MD
