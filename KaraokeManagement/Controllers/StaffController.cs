@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -239,6 +239,23 @@ namespace KaraokeManagement.Controllers
             else
             {
                 TempData["ErrorMessage"] = "Có lỗi xảy ra, không tìm thấy món hoặc món đã được giao.";
+            }
+
+            return RedirectToAction("AssignedDetail", new { bookingId = bookingId });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CancelServiceItem(int invoiceDetailId, int bookingId)
+        {
+            var success = await _staffService.CancelServiceItemAsync(invoiceDetailId);
+
+            if (success)
+            {
+                TempData["SuccessMessage"] = "Đã hủy món và hoàn trả kho thành công!";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Không thể hủy món này (có thể món đã được giao hoặc không tồn tại).";
             }
 
             return RedirectToAction("AssignedDetail", new { bookingId = bookingId });

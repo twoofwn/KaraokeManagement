@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -297,11 +297,18 @@ namespace KaraokeManagement.Services.StaffServices
         public async Task<bool> FulfillServiceItemAsync(int invoiceDetailId)
         {
             var detail = await _context.InvoiceDetails.FindAsync(invoiceDetailId);
-
             if (detail == null || detail.IsFulFilled)return false;
-
             detail.IsFulFilled = true;
+            await _context.SaveChangesAsync();
+            return true;
+        }
 
+        public async Task<bool> CancelServiceItemAsync(int invoiceDetailId)
+        {
+            var detail = await _context.InvoiceDetails.Include(d => d.Service).FirstOrDefaultAsync(d => d.InvoiceDetailId == invoiceDetailId);
+            if (detail == null || detail.IsFulFilled) return false;
+            if (detail.Service != null) detail.Service.StockQuantity -= detail.Quantity;
+            _context.InvoiceDetails.Remove(detail);
             await _context.SaveChangesAsync();
 
             return true;

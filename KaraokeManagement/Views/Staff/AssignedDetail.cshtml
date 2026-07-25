@@ -175,6 +175,27 @@
             opacity: 0.55;
         }
 
+    .btn-cancel {
+        background-color: #fff;
+        color: #dc3545;
+        border: 1px solid #dc3545;
+        padding: 0.5rem 0.8rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+        .btn-cancel:hover {
+            background-color: #dc3545;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
     @@keyframes pulse-soft {
         0% {
             box-shadow: 0 0 0 0 rgba(232, 60, 145, 0.3);
@@ -287,6 +308,14 @@
                                             <input type="hidden" name="bookingId" value="@Model.BookingId" />
                                             <button type="submit" class="btn-fulfill">
                                                 <i class="fas fa-concierge-bell"></i> Giao đồ
+                                            </button>
+                                        </form>
+                                        <br />
+                                        <form asp-action="CancelServiceItem" asp-controller="Staff" method="post" class="m-0 p-0" onsubmit="return confirm('Bạn có chắc chắn muốn hủy món này và hoàn trả kho không?');">
+                                            <input type="hidden" name="invoiceDetailId" value="@item.InvoiceDetailId" />
+                                            <input type="hidden" name="bookingId" value="@Model.BookingId" />
+                                            <button type="submit" class="btn-cancel" title="Hủy món">
+                                                <i class="fas fa-times"></i> Hủy
                                             </button>
                                         </form>
                                     }
