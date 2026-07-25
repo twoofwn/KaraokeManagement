@@ -301,26 +301,6 @@ CREATE TABLE [EmployeeProfile] (
     FOREIGN KEY (AccountID) REFERENCES [Account](AccountID)
 );
 
-CREATE TABLE [TrainingRecord] (
-    TrainingID INT IDENTITY(1,1) PRIMARY KEY,
-    AccountID INT NOT NULL,
-    CourseName NVARCHAR(150) NOT NULL,
-    CompletionDate DATE NULL,
-    Result NVARCHAR(50) NULL DEFAULT 'Passed',
-    FOREIGN KEY (AccountID) REFERENCES [Account](AccountID)
-);
-
-CREATE TABLE [EmployeeTask] (
-    TaskID INT IDENTITY(1,1) PRIMARY KEY,
-    AssignedToID INT NOT NULL,
-    CreatedByID INT NOT NULL,
-    Title NVARCHAR(150) NOT NULL,
-    Description NVARCHAR(500) NULL,
-    DueDate DATETIME NOT NULL,
-    Status NVARCHAR(30) NULL DEFAULT 'Pending',
-    FOREIGN KEY (AssignedToID) REFERENCES [Account](AccountID),
-    FOREIGN KEY (CreatedByID) REFERENCES [Account](AccountID)
-);
 
 CREATE TABLE [LeaveRequest] (
     LeaveRequestId INT IDENTITY(1,1) PRIMARY KEY,
@@ -380,37 +360,6 @@ CREATE TABLE [CustomerReview] (
     FOREIGN KEY (BookingID) REFERENCES Booking(BookingID)
 );
 
-CREATE TABLE [MarketingCampaign] (
-    CampaignID INT IDENTITY(1,1) PRIMARY KEY,
-    PromotionID INT NULL,
-    CampaignName NVARCHAR(150) NOT NULL,
-    Channel VARCHAR(30) NOT NULL,
-    TargetTierID INT NULL,
-    MessageTemplate NVARCHAR(MAX) NOT NULL,
-    StartDate DATETIME NOT NULL,
-    Status NVARCHAR(30) NULL DEFAULT 'Draft',
-    FOREIGN KEY (PromotionID) REFERENCES [Promotion](PromotionID),
-    FOREIGN KEY (TargetTierID) REFERENCES [MembershipTier](TierID)
-);
-
-CREATE TABLE [CustomerCareLog] (
-    LogID INT IDENTITY(1,1) PRIMARY KEY,
-    CustomerID INT NOT NULL,
-    AccountID INT NOT NULL,
-    InteractionType NVARCHAR(50) NOT NULL,
-    Notes NVARCHAR(MAX) NOT NULL,
-    LoggedDate DATETIME NULL DEFAULT GETDATE(),
-    FOREIGN KEY (CustomerID) REFERENCES [Customer](CustomerID),
-    FOREIGN KEY (AccountID) REFERENCES [Account](AccountID)
-);
-
-CREATE TABLE [CustomerAutomationRule] (
-    RuleID INT IDENTITY(1,1) PRIMARY KEY,
-    RuleName NVARCHAR(100) NOT NULL,
-    EventType VARCHAR(50) NOT NULL,
-    ActionPayload NVARCHAR(MAX) NOT NULL,
-    IsActive BIT NULL DEFAULT 1
-);
 
 CREATE TABLE LoyalPointPolicy (
     PolicyId INT IDENTITY(1,1) PRIMARY KEY,
@@ -556,10 +505,6 @@ INSERT INTO [PricingPolicy] (PolicyID, PolicyName, PolicyType, Value, IsActive) 
 INSERT INTO [PricingPolicy] (PolicyID, PolicyName, PolicyType, Value, IsActive) VALUES (2, N'Phụ thu Ngày lễ chung', N'Holiday', 30.00, 1);
 SET IDENTITY_INSERT [PricingPolicy] OFF;
 
-SET IDENTITY_INSERT [CustomerAutomationRule] ON;
-INSERT INTO [CustomerAutomationRule] (RuleID, RuleName, EventType, ActionPayload, IsActive) VALUES (1, N'Tự động lên hạng', N'OnPointsEarned', N'{"Threshold": 1000, "NewTier": 2}', NULL);
-INSERT INTO [CustomerAutomationRule] (RuleID, RuleName, EventType, ActionPayload, IsActive) VALUES (2, N'Chúc mừng sinh nhật', N'OnBirthday', N'{"TemplateID": 1, "Discount": 20}', NULL);
-SET IDENTITY_INSERT [CustomerAutomationRule] OFF;
 
 SET IDENTITY_INSERT [Account] ON;
 
@@ -942,30 +887,12 @@ INSERT INTO [EmployeeProfile] (ProfileID, AccountID, IdentityCardNumber, DateOfB
 INSERT INTO [EmployeeProfile] (ProfileID, AccountID, IdentityCardNumber, DateOfBirth, Address, HireDate, BaseHourlyRate) VALUES (7, 9, N'052094556677', '1997-01-30 00:00:00', N'12 Cần Thơ, Ninh Kiều', '2023-05-12 00:00:00', 35000.00);
 SET IDENTITY_INSERT [EmployeeProfile] OFF;
 
-SET IDENTITY_INSERT [TrainingRecord] ON;
-INSERT INTO [TrainingRecord] (TrainingID, AccountID, CourseName, CompletionDate, Result) VALUES (1, 1, N'Kỹ năng PCCC', '2023-05-10 00:00:00', N'Passed');
-INSERT INTO [TrainingRecord] (TrainingID, AccountID, CourseName, CompletionDate, Result) VALUES (2, 3, N'Kỹ năng Giao tiếp khách hàng', '2023-06-15 00:00:00', N'Passed');
-SET IDENTITY_INSERT [TrainingRecord] OFF;
-
-SET IDENTITY_INSERT [EmployeeTask] ON;
-INSERT INTO [EmployeeTask] (TaskID, AssignedToID, CreatedByID, Title, Description, DueDate, Status) VALUES (1, 3, 1, N'Dọn dẹp phòng VIP 1', N'Lau chùi bàn ghế, kiểm tra micro', '2026-07-21 17:07:43', N'Pending');
-INSERT INTO [EmployeeTask] (TaskID, AssignedToID, CreatedByID, Title, Description, DueDate, Status) VALUES (2, 4, 1, N'Kiểm kê kho bia', N'Đếm số lượng bia Tiger và Heineken', '2026-07-22 15:07:43', N'InProgress');
-SET IDENTITY_INSERT [EmployeeTask] OFF;
 
 SET IDENTITY_INSERT [NotificationLog] ON;
 INSERT INTO [NotificationLog] (NotificationID, BookingID, CustomerID, Channel, Recipient, MessageContent, SentStatus, SentAt) VALUES (1, 1, 1, N'SMS', N'0901234567', N'Cảm ơn quý khách đã đặt phòng tại Karaoke Management. Mã đặt phòng: #1', N'Sent', '2026-07-21 15:07:43');
 INSERT INTO [NotificationLog] (NotificationID, BookingID, CustomerID, Channel, Recipient, MessageContent, SentStatus, SentAt) VALUES (2, 2, 2, N'Email', N'khachhang2@gmail.com', N'Phòng VIP 2 của quý khách đã sẵn sàng lúc 19:00', N'Sent', '2026-07-21 15:07:43');
 SET IDENTITY_INSERT [NotificationLog] OFF;
 
-SET IDENTITY_INSERT [MarketingCampaign] ON;
-INSERT INTO [MarketingCampaign] (CampaignID, PromotionID, CampaignName, Channel, TargetTierID, MessageTemplate, StartDate, Status) VALUES (1, NULL, N'Chúc mừng sinh nhật VIP', N'SMS', 3, N'Chúc mừng sinh nhật! Tặng bạn voucher giảm 20%', '2026-07-21 15:07:43', N'Active');
-INSERT INTO [MarketingCampaign] (CampaignID, PromotionID, CampaignName, Channel, TargetTierID, MessageTemplate, StartDate, Status) VALUES (2, NULL, N'Khuyến mãi Hè sôi động', N'Email', 2, N'Giảm 10% tiền phòng cho khách hàng Gold', '2026-07-26 15:07:43', N'Draft');
-SET IDENTITY_INSERT [MarketingCampaign] OFF;
-
-SET IDENTITY_INSERT [CustomerCareLog] ON;
-INSERT INTO [CustomerCareLog] (LogID, CustomerID, AccountID, InteractionType, Notes, LoggedDate) VALUES (1, 1, 1, N'Gọi điện thoại', N'Hỏi thăm sự hài lòng về dịch vụ sinh nhật tối qua', '2026-07-21 15:07:43');
-INSERT INTO [CustomerCareLog] (LogID, CustomerID, AccountID, InteractionType, Notes, LoggedDate) VALUES (2, 2, 3, N'Nhắn tin', N'Gửi thông báo chương trình khuyến mãi', '2026-07-21 15:07:43');
-SET IDENTITY_INSERT [CustomerCareLog] OFF;
 
 SET IDENTITY_INSERT [RoomImage] ON;
 INSERT INTO [RoomImage] (RoomImageId, RoomTypeId, ImageUrl) 
