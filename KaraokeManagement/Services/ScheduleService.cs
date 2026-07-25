@@ -90,13 +90,13 @@ namespace KaraokeManagement.Services
             var shifts = await _context.WorkShifts.ToListAsync();
             if (!shifts.Any()) return false;
 
-            // Fetch all active staff accounts (not customer) who have a default shift
-            var activeStaff = await _context.Accounts
+            // Fetch all active employees accounts (not customer) who have a default shift
+            var activeEmp = await _context.Accounts
                 .Include(a => a.Role)
                 .Where(a => a.Role.RoleName != "Customer" && a.DefaultShiftId != null && a.IsActive == true)
                 .ToListAsync();
 
-            if (!activeStaff.Any()) return false;
+            if (!activeEmp.Any()) return false;
 
             bool addedAny = false;
             for (int dayIndex = 0; dayIndex < 7; dayIndex++)
@@ -109,7 +109,7 @@ namespace KaraokeManagement.Services
                     continue;
                 }
 
-                foreach (var emp in activeStaff)
+                foreach (var emp in activeEmp)
                 {
                     int shiftId = emp.DefaultShiftId!.Value;
 
