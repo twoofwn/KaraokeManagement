@@ -208,6 +208,7 @@ namespace KaraokeManagement.Controllers
             return Json(new { success = result.success, message = result.message });
         }
 
+        // Check-out
         [HttpGet]
         public async Task<IActionResult> GetInvoiceRoomState(int invoiceId)
         {
@@ -220,27 +221,6 @@ namespace KaraokeManagement.Controllers
             });
         }
 
-        [HttpGet]
-        public async Task<IActionResult> CheckIn(int? roomId)
-        {
-            var vm = await _bookingService.GetCheckInViewModelAsync(roomId, User.Identity?.Name ?? "Nhân viên");
-            return View(vm);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> CheckIn(CheckInViewModel model)
-        {
-            var success = await _bookingService.ProcessCheckInAsync(model, User.Identity?.Name);
-            if (!success)
-            {
-                ModelState.AddModelError("", "Phòng được chọn không tồn tại.");
-                var freshModel = await _bookingService.GetCheckInViewModelAsync(model.RoomId, User.Identity?.Name ?? "Nhân viên");
-                return View(freshModel);
-            }
-            return RedirectToAction("Index");
-        }
-
-        // Check-out
         [HttpGet]
         public async Task<IActionResult> Checkout(int invoiceId)
         {
