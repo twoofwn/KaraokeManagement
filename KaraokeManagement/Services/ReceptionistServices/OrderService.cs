@@ -23,29 +23,10 @@ public class OrderService
             .ThenInclude(id => id.Service)
             .FirstOrDefaultAsync(i => i.RoomId == roomId && i.Status == "Unpaid");
 
-        if (invoice == null)
-        {
-            var receptionist = await _context.Accounts.FirstOrDefaultAsync(a => a.FullName == userName || a.Username == userName)
-                               ?? await _context.Accounts.FirstOrDefaultAsync();
-
-            int receptionistId = receptionist?.AccountId ?? 1;
-
-            invoice = new Invoice
-            {
-                RoomId = roomId,
-                ReceptionistId = receptionistId,
-                CheckInTime = DateTime.Now,
-                Status = "Unpaid",
-                RoomTotal = 0,
-                ServiceTotal = 0,
-                DiscountAmount = 0,
-                GrandTotal = 0
-            };
-
-            _context.Invoices.Add(invoice);
-            if (room.Status != "InUse") room.Status = "InUse";
-            await _context.SaveChangesAsync();
-        }
+        // Trang chi tiết chỉ được đọc hóa đơn do luồng check-in tạo ra.
+        // Không tự tạo hóa đơn tại đây vì tab cũ có thể mở lại phòng vừa được chuyển,
+        // làm phòng cũ bị đặt thành InUse lần nữa và sinh hóa đơn không có Booking.
+        if (invoice == null) return null;
 
         var categories = await _context.Categories.Select(c => new CategoryViewModel { CategoryId = c.CategoryId, CategoryName = c.CategoryName }).ToListAsync();
         var serviceItems = await _context.ServiceItems.Include(s => s.Category)

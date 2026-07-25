@@ -215,6 +215,14 @@
                 });
             }, 1000);
 
+            // Đồng bộ sơ đồ phòng khi lễ tân hoặc nhân viên đổi phòng ở một tab/máy khác.
+            setInterval(() => {
+                if (document.visibilityState === 'visible'
+                    && document.activeElement?.tagName !== 'SELECT') {
+                    window.location.reload();
+                }
+            }, 5000);
+
             // redirect detail
             const usingCards = document.querySelectorAll('.room-card.status-using');
             usingCards.forEach(card => {

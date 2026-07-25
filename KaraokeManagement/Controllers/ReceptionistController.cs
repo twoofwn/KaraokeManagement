@@ -211,6 +211,19 @@ namespace KaraokeManagement.Controllers
 
         // Check-out
         [HttpGet]
+        public async Task<IActionResult> GetInvoiceRoomState(int invoiceId)
+        {
+            var state = await _bookingService.GetInvoiceRoomStateAsync(invoiceId);
+            return Json(new
+            {
+                success = state.found,
+                roomId = state.roomId,
+                status = state.status
+            });
+        }
+
+
+        [HttpGet]
         public async Task<IActionResult> Checkout(int invoiceId)
         {
             var vm = await _paymentService.GetCheckoutViewModelAsync(invoiceId);
