@@ -112,8 +112,22 @@ namespace KaraokeManagement.Controllers
                 return Json(new { success = false, message = "Phiên làm việc hết hạn hoặc không xác định được tài khoản thao tác." });
             }
 
+            // 1. Gọi service xử lý trước
             var result = await _recepBookingService.UpdateBookingStatusAsync(request, accountId);
-            return Json(new { success = result.success, message = result.message });
+
+            // 2. Kiểm tra kết quả trả về từ service
+            if (result.success) // Lưu ý: giữ đúng chữ hoa/thường theo kiểu trả về của hàm UpdateBookingStatusAsync (Tuple hoặc DTO)
+            {
+                TempData["SuccessMessage"] = request.Status == "Confirmed"
+                    ? "Xác nhận đặt phòng thành công!"
+                    : "Đã hủy đơn đặt phòng thành công!";
+
+                return Json(new { success = true, message = result.message });
+            }
+
+            // 3. Thất bại: Gán ErrorMessage vào TempData và trả về kết quả
+            TempData["ErrorMessage"] = result.message;
+            return Json(new { success = false, message = result.message });
         }
 
 
