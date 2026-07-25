@@ -7,6 +7,8 @@
     var invoice = ViewBag.Invoice as KaraokeManagement.Models.Invoice;
     var existingReview = ViewBag.ExistingReview as KaraokeManagement.Models.CustomerReview;
     var reports = ViewBag.Reports as List<KaraokeManagement.Models.NotificationLog> ?? new List<KaraokeManagement.Models.NotificationLog>();
+    var cancellationReasons = ViewBag.CancellationReasons as List<KaraokeManagement.Models.CancellationReason>
+        ?? new List<KaraokeManagement.Models.CancellationReason>();
 
     var statusClass = Model.Status switch
     {
@@ -112,8 +114,50 @@
                     </div>
                 </div>
             }
+            @if (Model.Status == "Cancelled" && Model.CancellationReason != null)
+            {
+                <div class="detail-info-cell" style="grid-column: span 2;">
+                    <div class="info-cell-icon"><i class="fa-solid fa-ban"></i></div>
+                    <div class="info-cell-text">
+                        <span class="info-label">Lý do hủy</span>
+                        <span class="info-value">
+                            @(Model.CancellationReason.RequiresDetail
+                                ? Model.CancellationReasonDetail
+                                : Model.CancellationReason.ReasonName)
+                        </span>
+                        @if (Model.CancelledAt.HasValue)
+                        {
+                            <small>Hủy lúc @Model.CancelledAt.Value.ToString("HH:mm dd/MM/yyyy")</small>
+                        }
+                    </div>
+                </div>
+            }
         </div>
     </div>
+
+    @if (TempData["CancellationSuccess"] != null)
+    {
+        <div class="alert-box alert-success">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>@TempData["CancellationSuccess"]</span>
+        </div>
+    }
+    @if (TempData["CancellationError"] != null)
+    {
+        <div class="alert-box alert-error">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>@TempData["CancellationError"]</span>
+        </div>
+    }
+
+    @if ((Model.Status == "Pending" || Model.Status == "Confirmed") && Model.StartTime > DateTime.Now)
+    {
+        <div class="booking-cancel-actions">
+            <button type="button" class="btn-cancel-customer" onclick="document.getElementById('customerCancellationDialog').showModal()">
+                <i class="fa-solid fa-ban"></i> Hủy đặt phòng
+            </button>
+        </div>
+    }
 
     <!-- Invoice Section (if exists) -->
     @if (invoice != null)
@@ -338,7 +382,115 @@
     }
 </div>
 
+<dialog id="customerCancellationDialog" class="customer-cancellation-dialog">
+    <form method="post" action="/Customer/CancelBooking">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="bookingId" value="@Model.BookingId" />
+
+        <div class="cancel-dialog-header">
+            <div>
+                <h3>Hủy đặt phòng</h3>
+                <p>Đơn #BK-@Model.BookingId.ToString("D4")</p>
+            </div>
+            <button type="button" onclick="document.getElementById('customerCancellationDialog').close()" aria-label="Đóng">&times;</button>
+        </div>
+
+        <div class="cancel-dialog-body">
+            <label for="customerCancellationReasonId">Lý do hủy <span>*</span></label>
+            <select name="cancellationReasonId" id="customerCancellationReasonId"
+                    onchange="toggleCustomerCancellationDetail()" required>
+                <option value="">-- Chọn lý do hủy --</option>
+                @foreach (var reason in cancellationReasons)
+                {
+                    <option value="@reason.CancellationReasonId"
+                            data-requires-detail="@reason.RequiresDetail.ToString().ToLowerInvariant()">
+                        @reason.ReasonName
+                    </option>
+                }
+            </select>
+
+            <div id="customerCancellationDetailGroup" hidden>
+                <label for="customerCancellationReasonDetail">Lý do cụ thể <span>*</span></label>
+                <textarea name="cancellationReasonDetail" id="customerCancellationReasonDetail"
+                          maxlength="500" rows="4" placeholder="Nhập lý do hủy phòng..."></textarea>
+                <small>Tối đa 500 ký tự.</small>
+            </div>
+        </div>
+
+        <div class="cancel-dialog-actions">
+            <button type="button" class="btn-cancel-back" onclick="document.getElementById('customerCancellationDialog').close()">Quay lại</button>
+            <button type="submit" class="btn-cancel-confirm">
+                <i class="fa-solid fa-ban"></i> Xác nhận hủy
+            </button>
+        </div>
+    </form>
+</dialog>
+
 <style>
+    .booking-cancel-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin: -4px 0 24px;
+    }
+    .btn-cancel-customer {
+        border: 1px solid #d32f2f;
+        background: #fff;
+        color: #c62828;
+        border-radius: 12px;
+        padding: 11px 18px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .btn-cancel-customer:hover {
+        background: #ffebee;
+    }
+    .customer-cancellation-dialog {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        margin: 0;
+        width: min(520px, calc(100vw - 32px));
+        max-height: calc(100vh - 32px);
+        overflow-y: auto;
+        border: 0;
+        border-radius: 18px;
+        padding: 0;
+        box-shadow: 0 24px 70px rgba(31, 21, 46, .25);
+        color: #2b2036;
+    }
+    .customer-cancellation-dialog::backdrop {
+        background: rgba(20, 12, 28, .55);
+        backdrop-filter: blur(2px);
+    }
+    .cancel-dialog-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 22px 24px;
+        border-bottom: 1px solid #eee7f1;
+    }
+    .cancel-dialog-header h3 { margin: 0; font-size: 1.2rem; }
+    .cancel-dialog-header p { margin: 5px 0 0; color: #7d7185; font-size: .85rem; }
+    .cancel-dialog-header button { border: 0; background: transparent; font-size: 1.7rem; line-height: 1; cursor: pointer; color: #74677c; }
+    .cancel-dialog-body { display: grid; gap: 10px; padding: 22px 24px; }
+    .cancel-dialog-body label { font-weight: 700; margin-top: 4px; }
+    .cancel-dialog-body label span { color: #c62828; }
+    .cancel-dialog-body select, .cancel-dialog-body textarea {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d9cfde;
+        border-radius: 10px;
+        padding: 11px 12px;
+        font: inherit;
+        background: white;
+    }
+    .cancel-dialog-body small { color: #7d7185; }
+    .cancel-dialog-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px 22px; }
+    .btn-cancel-back, .btn-cancel-confirm { border: 0; border-radius: 10px; padding: 10px 16px; font-weight: 700; cursor: pointer; }
+    .btn-cancel-back { background: #eee9f1; color: #493d50; }
+    .btn-cancel-confirm { background: #c62828; color: white; }
+
     /* ===== DETAIL PAGE ===== */
     .detail-page {
         max-width: 850px;
@@ -907,6 +1059,17 @@
 
 @section Scripts {
 <script>
+    function toggleCustomerCancellationDetail() {
+        var select = document.getElementById('customerCancellationReasonId');
+        var option = select.options[select.selectedIndex];
+        var requiresDetail = option && option.dataset.requiresDetail === 'true';
+        var group = document.getElementById('customerCancellationDetailGroup');
+        var detail = document.getElementById('customerCancellationReasonDetail');
+        group.hidden = !requiresDetail;
+        detail.required = requiresDetail;
+        if (!requiresDetail) detail.value = '';
+    }
+
     // Character count for report textarea
     var reportMsg = document.getElementById('reportMessage');
     var charCount = document.getElementById('charCount');

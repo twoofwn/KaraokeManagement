@@ -29,10 +29,28 @@ public partial class Booking
 
     public int? StaffId { get; set; }
 
+    public int? CancellationReasonId { get; set; }
+
+    public string? CancellationReasonDetail { get; set; }
+
+    public DateTime? CancelledAt { get; set; }
+
+    public string? CancelledByType { get; set; }
+
+    public int? CancelledByAccountId { get; set; }
+
+    public int? CancelledByCustomerId { get; set; }
+
     public virtual Account CreatedBy { get; set; } = null!;
     public virtual Account? Staff { get; set; }
 
     public virtual Customer Customer { get; set; } = null!;
+
+    public virtual CancellationReason? CancellationReason { get; set; }
+
+    public virtual Account? CancelledByAccount { get; set; }
+
+    public virtual Customer? CancelledByCustomer { get; set; }
 
     public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
 

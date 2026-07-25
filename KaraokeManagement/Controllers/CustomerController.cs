@@ -279,8 +279,34 @@ namespace KaraokeManagement.Controllers
             ViewBag.Invoice = invoice;
             ViewBag.ExistingReview = invoice != null ? await _feedbackService.GetReviewByBookingIdAsync(booking.BookingId) : null;
             ViewBag.Reports = await _feedbackService.GetReportsByBookingIdAsync(booking.BookingId, customerId.Value);
+            ViewBag.CancellationReasons = await _bookingService.GetCancellationReasonsAsync();
 
             return View(booking);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Customer")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelBooking(
+            int bookingId,
+            int cancellationReasonId,
+            string? cancellationReasonDetail)
+        {
+            var customerId = GetCurrentCustomerId();
+            if (!customerId.HasValue) return RedirectToAction("CustomerLogin", "Auth");
+
+            var result = await _bookingService.CancelBookingAsync(
+                bookingId,
+                customerId.Value,
+                cancellationReasonId,
+                cancellationReasonDetail);
+
+            if (result.Success)
+                TempData["CancellationSuccess"] = result.Message;
+            else
+                TempData["CancellationError"] = result.Message;
+
+            return RedirectToAction("BookingDetail", new { id = bookingId });
         }
 
         [HttpPost]

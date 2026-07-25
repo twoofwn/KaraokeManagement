@@ -17,6 +17,15 @@
     public class UpdateBookingStatusRequest
     {
         public int BookingId { get; set; }
-        public string Status { get; set; } = string.Empty; 
+        public string Status { get; set; } = string.Empty;
+        public int? CancellationReasonId { get; set; }
+        public string? CancellationReasonDetail { get; set; }
+    }
+
+    public class CancelBookingRequest
+    {
+        public int BookingId { get; set; }
+        public int CancellationReasonId { get; set; }
+        public string? CancellationReasonDetail { get; set; }
     }
 }

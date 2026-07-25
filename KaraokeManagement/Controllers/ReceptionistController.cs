@@ -99,6 +99,7 @@ namespace KaraokeManagement.Controllers
         int page = 1)
         {
             var viewModel = await _recepBookingService.GetListBookingAsync(searchString, customerFilter, dateRange, status, page);
+            ViewBag.CancellationReasons = await _recepBookingService.GetCancellationReasonsAsync();
             return View(viewModel);
         }
 
@@ -145,6 +146,7 @@ namespace KaraokeManagement.Controllers
                 return RedirectToAction("BookingConfirm");
             }
 
+            ViewBag.CancellationReasons = await _recepBookingService.GetCancellationReasonsAsync();
             return View(viewModel);
         }
 
@@ -167,10 +169,32 @@ namespace KaraokeManagement.Controllers
 
         // Huy booking
         [HttpPost]
-        public async Task<IActionResult> CancelBooking(int bookingId)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelBooking(
+            int bookingId,
+            int cancellationReasonId,
+            string? cancellationReasonDetail)
         {
-            await _recepBookingService.CancelBookingAsync(bookingId);
-            TempData["SuccessMessage"] = "Đã hủy đơn đặt phòng thành công.";
+            var accountIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("AccountId");
+            if (!int.TryParse(accountIdClaim, out int accountId) || accountId <= 0)
+            {
+                TempData["ErrorMessage"] = "Không xác định được tài khoản lễ tân.";
+                return RedirectToAction("BookingConfirmDetail", new { id = bookingId });
+            }
+
+            var result = await _recepBookingService.CancelBookingAsync(
+                bookingId,
+                cancellationReasonId,
+                cancellationReasonDetail,
+                accountId);
+
+            if (!result.success)
+            {
+                TempData["ErrorMessage"] = result.message;
+                return RedirectToAction("BookingConfirmDetail", new { id = bookingId });
+            }
+
+            TempData["SuccessMessage"] = result.message;
             return RedirectToAction("BookingConfirm");
         }
 
@@ -183,7 +207,6 @@ namespace KaraokeManagement.Controllers
             if (vm == null) return RedirectToAction("Index");
             return View(vm);
         }
-        
 
         // CRUD service item
         [HttpPost]
@@ -230,7 +253,6 @@ namespace KaraokeManagement.Controllers
                 status = state.status
             });
         }
-
 
         [HttpGet]
         public async Task<IActionResult> Checkout(int invoiceId)

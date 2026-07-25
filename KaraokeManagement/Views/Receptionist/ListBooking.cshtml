@@ -3,6 +3,10 @@
     Layout = null;
 }
 @using System.Security.Claims
+@using KaraokeManagement.Models
+@{
+    var cancellationReasons = ViewBag.CancellationReasons as List<CancellationReason> ?? new List<CancellationReason>();
+}
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -174,7 +178,7 @@
                                                     <button type="button" class="btn-action btn-confirm" onclick="updateBookingStatus(@booking.BookingId, 'Confirmed')" title="Xác nhận Booking">
                                                         <i class="fa-solid fa-check"></i>
                                                     </button>
-                                                    <button type="button" class="btn-action btn-cancel-booking" onclick="updateBookingStatus(@booking.BookingId, 'Cancelled')" title="Hủy Booking">
+                                                    <button type="button" class="btn-action btn-cancel-booking" onclick="openCancellationDialog(@booking.BookingId)" title="Hủy Booking">
                                                         <i class="fa-solid fa-xmark"></i>
                                                     </button>
                                                 }
@@ -235,7 +239,67 @@
         </form>
     </div>
 
+    <dialog id="cancellationDialog" class="cancellation-dialog">
+        <div class="cancellation-dialog-header">
+            <div>
+                <strong>Hủy đơn đặt phòng</strong>
+                <div id="cancellationBookingCode" class="cancellation-dialog-code"></div>
+            </div>
+            <button type="button" class="cancellation-dialog-close" onclick="closeCancellationDialog()" aria-label="Đóng">&times;</button>
+        </div>
+        <div class="cancellation-dialog-body">
+            <label for="cancellationReasonId">Lý do hủy <span class="required">*</span></label>
+            <select id="cancellationReasonId" onchange="toggleCancellationDetail()" required>
+                <option value="">-- Chọn lý do hủy --</option>
+                @foreach (var reason in cancellationReasons)
+                {
+                    <option value="@reason.CancellationReasonId"
+                            data-requires-detail="@reason.RequiresDetail.ToString().ToLowerInvariant()">
+                        @reason.ReasonName
+                    </option>
+                }
+            </select>
+
+            <div id="cancellationDetailGroup" hidden>
+                <label for="cancellationReasonDetail">Lý do cụ thể <span class="required">*</span></label>
+                <textarea id="cancellationReasonDetail" maxlength="500" rows="4"
+                          placeholder="Nhập lý do hủy phòng..."></textarea>
+                <small>Tối đa 500 ký tự.</small>
+            </div>
+            <div id="cancellationError" class="cancellation-error" hidden></div>
+        </div>
+        <div class="cancellation-dialog-actions">
+            <button type="button" class="btn-dialog-secondary" onclick="closeCancellationDialog()">Quay lại</button>
+            <button type="button" class="btn-dialog-danger" id="submitCancellationButton" onclick="submitCancellation()">
+                <i class="fa-solid fa-ban"></i> Xác nhận hủy
+            </button>
+        </div>
+    </dialog>
+
+    <style>
+        .cancellation-dialog { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); margin: 0; width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow-y: auto; border: 0; border-radius: 18px; padding: 0; box-shadow: 0 24px 70px rgba(31, 21, 46, .25); color: #2b2036; }
+        .cancellation-dialog::backdrop { background: rgba(20, 12, 28, .55); backdrop-filter: blur(2px); }
+        .cancellation-dialog-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 22px 24px; border-bottom: 1px solid #eee7f1; }
+        .cancellation-dialog-header strong { font-size: 1.15rem; }
+        .cancellation-dialog-code { color: #7d7185; font-size: .85rem; margin-top: 4px; }
+        .cancellation-dialog-close { border: 0; background: transparent; font-size: 1.7rem; line-height: 1; cursor: pointer; color: #74677c; }
+        .cancellation-dialog-body { display: grid; gap: 10px; padding: 22px 24px; }
+        .cancellation-dialog-body label { font-weight: 700; margin-top: 4px; }
+        .cancellation-dialog-body select, .cancellation-dialog-body textarea { width: 100%; box-sizing: border-box; border: 1px solid #d9cfde; border-radius: 10px; padding: 11px 12px; font: inherit; background: white; }
+        .cancellation-dialog-body select:focus, .cancellation-dialog-body textarea:focus { outline: 2px solid rgba(182, 0, 86, .18); border-color: #b60056; }
+        .cancellation-dialog-body small { color: #7d7185; }
+        .required, .cancellation-error { color: #c62828; }
+        .cancellation-error { background: #ffebee; border-radius: 8px; padding: 10px 12px; font-size: .9rem; }
+        .cancellation-dialog-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px 22px; }
+        .btn-dialog-secondary, .btn-dialog-danger { border: 0; border-radius: 10px; padding: 10px 16px; font-weight: 700; cursor: pointer; }
+        .btn-dialog-secondary { background: #eee9f1; color: #493d50; }
+        .btn-dialog-danger { background: #c62828; color: white; }
+        .btn-dialog-danger:disabled { opacity: .6; cursor: wait; }
+    </style>
+
     <script>
+        let cancellationBookingId = null;
+
         function submitForm(page) {
             document.getElementById('pageNumberInput').value = page;
             document.getElementById('bookingForm').submit();
@@ -260,8 +324,7 @@
         }
 
         function updateBookingStatus(bookingId, status) {
-            const actionText = status === 'Confirmed' ? 'XÁC NHẬN' : 'HỦY';
-            if (!confirm(`Bạn có chắc chắn muốn ${actionText} đơn đặt phòng ?`)) {
+            if (!confirm(`Bạn có chắc chắn muốn XÁC NHẬN đơn đặt phòng #BK-${String(bookingId).padStart(4, '0')}?`)) {
                 return;
             }
 
@@ -286,19 +349,86 @@
             });
         }
 
+        function openCancellationDialog(bookingId) {
+            cancellationBookingId = bookingId;
+            document.getElementById('cancellationBookingCode').textContent =
+                `Đơn #BK-${String(bookingId).padStart(4, '0')}`;
+            document.getElementById('cancellationReasonId').value = '';
+            document.getElementById('cancellationReasonDetail').value = '';
+            document.getElementById('cancellationError').hidden = true;
+            toggleCancellationDetail();
+            document.getElementById('cancellationDialog').showModal();
+        }
+
+        function closeCancellationDialog() {
+            document.getElementById('cancellationDialog').close();
+            cancellationBookingId = null;
+        }
+
+        function toggleCancellationDetail() {
+            const select = document.getElementById('cancellationReasonId');
+            const option = select.options[select.selectedIndex];
+            const requiresDetail = option?.dataset.requiresDetail === 'true';
+            const group = document.getElementById('cancellationDetailGroup');
+            const detail = document.getElementById('cancellationReasonDetail');
+            group.hidden = !requiresDetail;
+            detail.required = requiresDetail;
+            if (!requiresDetail) detail.value = '';
+        }
+
+        async function submitCancellation() {
+            const reasonId = Number(document.getElementById('cancellationReasonId').value);
+            const detail = document.getElementById('cancellationReasonDetail').value.trim();
+            const select = document.getElementById('cancellationReasonId');
+            const requiresDetail = select.options[select.selectedIndex]?.dataset.requiresDetail === 'true';
+            const errorBox = document.getElementById('cancellationError');
+
+            if (!reasonId || (requiresDetail && !detail)) {
+                errorBox.textContent = !reasonId ? 'Vui lòng chọn lý do hủy.' : 'Vui lòng nhập lý do hủy cụ thể.';
+                errorBox.hidden = false;
+                return;
+            }
+
+            const button = document.getElementById('submitCancellationButton');
+            button.disabled = true;
+            errorBox.hidden = true;
+
+            try {
+                const response = await fetch('/Receptionist/UpdateBookingStatus', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        bookingId: cancellationBookingId,
+                        status: 'Cancelled',
+                        cancellationReasonId: reasonId,
+                        cancellationReasonDetail: detail
+                    })
+                });
+                const data = await response.json();
+                if (!data.success) throw new Error(data.message || 'Không thể hủy đơn đặt phòng.');
+                location.reload();
+            } catch (error) {
+                errorBox.textContent = error.message || 'Có lỗi xảy ra khi gửi yêu cầu.';
+                errorBox.hidden = false;
+                button.disabled = false;
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const quickSearch = document.getElementById('quickSearchInput');
             let timeout = null;
-            quickSearch.addEventListener('input', () => {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                    submitForm(1);
-                }, 800);
-            });
+            if (quickSearch) {
+                quickSearch.addEventListener('input', () => {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => {
+                        submitForm(1);
+                    }, 800);
+                });
 
-            if (quickSearch.value) {
-                quickSearch.focus();
-                quickSearch.setSelectionRange(quickSearch.value.length, quickSearch.value.length);
+                if (quickSearch.value) {
+                    quickSearch.focus();
+                    quickSearch.setSelectionRange(quickSearch.value.length, quickSearch.value.length);
+                }
             }
         });
     </script>

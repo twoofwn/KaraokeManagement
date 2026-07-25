@@ -9,6 +9,8 @@ namespace KaraokeManagement.ViewModel
         public decimal RevenueToday { get; set; }
         public int CustomersThisMonth { get; set; }
         public decimal RevenueThisMonth { get; set; }
+        public int CancelledBookingsToday { get; set; }
+        public int CancelledBookingsThisMonth { get; set; }
 
         public decimal TotalRevenue { get; set; }
         public decimal TotalExpenses { get; set; }

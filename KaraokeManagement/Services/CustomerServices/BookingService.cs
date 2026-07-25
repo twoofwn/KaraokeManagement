@@ -124,10 +124,65 @@ namespace KaraokeManagement.Services.CustomerServices
                 .ToListAsync();
         }
 
+        public async Task<List<CancellationReason>> GetCancellationReasonsAsync()
+        {
+            return await _context.CancellationReasons
+                .Where(r => r.IsActive && (r.AppliesTo == "Customer" || r.AppliesTo == "Both"))
+                .OrderBy(r => r.SortOrder)
+                .ThenBy(r => r.ReasonName)
+                .ToListAsync();
+        }
+
+        public async Task<(bool Success, string Message)> CancelBookingAsync(
+            int bookingId,
+            int customerId,
+            int cancellationReasonId,
+            string? cancellationReasonDetail)
+        {
+            var booking = await _context.Bookings.FirstOrDefaultAsync(b =>
+                b.BookingId == bookingId && b.CustomerId == customerId);
+
+            if (booking == null)
+                return (false, "Không tìm thấy đơn đặt phòng.");
+
+            if (booking.Status != "Pending" && booking.Status != "Confirmed")
+                return (false, "Đơn đặt phòng này không thể hủy.");
+
+            if (booking.StartTime <= DateTime.Now)
+                return (false, "Không thể hủy đơn sau thời gian bắt đầu.");
+
+            var reason = await _context.CancellationReasons.FirstOrDefaultAsync(r =>
+                r.CancellationReasonId == cancellationReasonId &&
+                r.IsActive &&
+                (r.AppliesTo == "Customer" || r.AppliesTo == "Both"));
+
+            if (reason == null)
+                return (false, "Lý do hủy không hợp lệ.");
+
+            var detail = cancellationReasonDetail?.Trim();
+            if (reason.RequiresDetail && string.IsNullOrWhiteSpace(detail))
+                return (false, "Vui lòng nhập lý do hủy cụ thể.");
+
+            if (detail?.Length > 500)
+                return (false, "Lý do hủy chi tiết không được vượt quá 500 ký tự.");
+
+            booking.Status = "Cancelled";
+            booking.CancellationReasonId = reason.CancellationReasonId;
+            booking.CancellationReasonDetail = reason.RequiresDetail ? detail : null;
+            booking.CancelledAt = DateTime.Now;
+            booking.CancelledByType = "Customer";
+            booking.CancelledByCustomerId = customerId;
+            booking.CancelledByAccountId = null;
+
+            await _context.SaveChangesAsync();
+            return (true, "Đã hủy đơn đặt phòng thành công.");
+        }
+
         public async Task<Booking> GetBookingDetailAsync(int bookingId, int customerId)
         {
             return await _context.Bookings
                 .Include(b => b.Room).ThenInclude(r => r.RoomType)
+                .Include(b => b.CancellationReason)
                 .Include(b => b.Invoices).ThenInclude(i => i.InvoiceDetails).ThenInclude(d => d.Service)
                 .Include(b => b.Invoices).ThenInclude(i => i.PaymentTransactions)
                 .FirstOrDefaultAsync(b => b.BookingId == bookingId && b.CustomerId == customerId);

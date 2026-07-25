@@ -20,6 +20,15 @@ public class ReceptionistBookingService
         _emailService = emailService;
     }
 
+    public async Task<List<CancellationReason>> GetCancellationReasonsAsync()
+    {
+        return await _context.CancellationReasons
+            .Where(r => r.IsActive && (r.AppliesTo == "Receptionist" || r.AppliesTo == "Both"))
+            .OrderBy(r => r.SortOrder)
+            .ThenBy(r => r.ReasonName)
+            .ToListAsync();
+    }
+
     public async Task<ListBookingViewModel> GetListBookingAsync(
         string searchString,
         string customerFilter,
@@ -112,6 +121,15 @@ public class ReceptionistBookingService
 
         if (request.Status != "Confirmed" && request.Status != "Cancelled")
             return (false, "Trạng thái cập nhật không hợp lệ.");
+
+        if (request.Status == "Cancelled")
+        {
+            return await CancelBookingInternalAsync(
+                booking,
+                request.CancellationReasonId,
+                request.CancellationReasonDetail,
+                accountId);
+        }
 
         booking.Status = request.Status;
         booking.CreatedById = accountId;
@@ -329,14 +347,78 @@ public class ReceptionistBookingService
         return true;
     }
 
-    public async Task<bool> CancelBookingAsync(int bookingId)
+    public async Task<(bool success, string message)> CancelBookingAsync(
+        int bookingId,
+        int? cancellationReasonId,
+        string? cancellationReasonDetail,
+        int accountId)
     {
-        var booking = await _context.Bookings.FirstOrDefaultAsync(b => b.BookingId == bookingId);
-        if (booking == null) return false;
+        var booking = await _context.Bookings
+            .Include(b => b.Customer)
+            .FirstOrDefaultAsync(b => b.BookingId == bookingId);
+
+        if (booking == null)
+            return (false, "Không tìm thấy thông tin đặt phòng.");
+
+        return await CancelBookingInternalAsync(
+            booking,
+            cancellationReasonId,
+            cancellationReasonDetail,
+            accountId);
+    }
+
+    private async Task<(bool success, string message)> CancelBookingInternalAsync(
+        Booking booking,
+        int? cancellationReasonId,
+        string? cancellationReasonDetail,
+        int accountId)
+    {
+        if (booking.Status != "Pending" && booking.Status != "Confirmed")
+            return (false, "Chỉ có thể hủy đơn đang chờ xử lý hoặc đã xác nhận.");
+
+        if (!cancellationReasonId.HasValue)
+            return (false, "Vui lòng chọn lý do hủy phòng.");
+
+        var reason = await _context.CancellationReasons.FirstOrDefaultAsync(r =>
+            r.CancellationReasonId == cancellationReasonId.Value &&
+            r.IsActive &&
+            (r.AppliesTo == "Receptionist" || r.AppliesTo == "Both"));
+
+        if (reason == null)
+            return (false, "Lý do hủy không hợp lệ.");
+
+        var detail = cancellationReasonDetail?.Trim();
+        if (reason.RequiresDetail && string.IsNullOrWhiteSpace(detail))
+            return (false, "Vui lòng nhập lý do hủy cụ thể.");
+
+        if (detail?.Length > 500)
+            return (false, "Lý do hủy chi tiết không được vượt quá 500 ký tự.");
 
         booking.Status = "Cancelled";
-        _context.Bookings.Update(booking);
+        booking.CancellationReasonId = reason.CancellationReasonId;
+        booking.CancellationReasonDetail = reason.RequiresDetail ? detail : null;
+        booking.CancelledAt = DateTime.Now;
+        booking.CancelledByType = "Receptionist";
+        booking.CancelledByAccountId = accountId;
+        booking.CancelledByCustomerId = null;
         await _context.SaveChangesAsync();
-        return true;
+
+        if (!string.IsNullOrWhiteSpace(booking.Customer?.Email))
+        {
+            try
+            {
+                var reasonText = reason.RequiresDetail ? detail : reason.ReasonName;
+                await _emailService.SendEmailAsync(
+                    booking.Customer.Email,
+                    $"[Minh Tuấn Karaoke] Đơn đặt phòng #{booking.BookingId} đã được hủy",
+                    $"Đơn đặt phòng #{booking.BookingId} đã được lễ tân hủy.<br/><b>Lý do:</b> {System.Net.WebUtility.HtmlEncode(reasonText)}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Gửi email hủy phòng thất bại: {ex.Message}");
+            }
+        }
+
+        return (true, "Đã hủy đơn đặt phòng thành công.");
     }
 }
