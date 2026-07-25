@@ -105,16 +105,7 @@ namespace KaraokeManagement.Services.StaffServices
             DateOnly sunDate = DateOnly.FromDateTime(sunday);
 
             var rawShifts = await _context.WorkShifts.ToListAsync();
-            var shifts = rawShifts.OrderBy(s => {
-                var name = s.ShiftName.ToLower();
-                if (name.Contains("khuya") || name.Contains("đêm") || name.Contains("night"))
-                    return 1;
-                if (name.Contains("sáng") || name.Contains("morning"))
-                    return 2;
-                if (name.Contains("chiều") || name.Contains("tối") || name.Contains("afternoon") || name.Contains("evening"))
-                    return 3;
-                return s.StartTime.Hours;
-            }).ThenBy(s => s.StartTime).ToList();
+            var shifts = rawShifts.OrderBy(s => s.ShiftId).ThenBy(s => s.StartTime).ToList();
             var rawSchedules = await _context.EmployeeSchedules
                 .Include(s => s.Shift)
                 .Where(s => s.AccountId == account.AccountId && s.WorkDate >= monDate && s.WorkDate <= sunDate && s.IsActive && s.Status != "Off")
@@ -201,16 +192,7 @@ namespace KaraokeManagement.Services.StaffServices
 
             var today = DateOnly.FromDateTime(DateTime.Today);
             var rawShifts = await _context.WorkShifts.ToListAsync();
-            var shifts = rawShifts.OrderBy(s => {
-                var name = s.ShiftName.ToLower();
-                if (name.Contains("khuya") || name.Contains("đêm") || name.Contains("night"))
-                    return 1;
-                if (name.Contains("sáng") || name.Contains("morning"))
-                    return 2;
-                if (name.Contains("chiều") || name.Contains("tối") || name.Contains("afternoon") || name.Contains("evening"))
-                    return 3;
-                return s.StartTime.Hours;
-            }).ThenBy(s => s.StartTime).ToList();
+            var shifts = rawShifts.OrderBy(s => s.ShiftId).ThenBy(s => s.StartTime).ToList();
 
             var activeLeaveReqScheduleIds = await _context.LeaveRequests
                 .Where(r => r.AccountId == account.AccountId && r.Status != "Rejected")

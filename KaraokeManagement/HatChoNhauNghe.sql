@@ -994,24 +994,25 @@ SET IDENTITY_INSERT [ShiftSwapRequest] OFF;
 
 -- 9.26 BOOKING (Đơn đặt phòng)
 SET IDENTITY_INSERT [Booking] ON;
--- Đã hoàn thành (Past)
+-- 3 Booking trạng thái Pending
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (1, 1, 3, 5, '2026-06-24 21:58:47', '2026-06-25 21:58:47', '2026-06-26 01:58:47', N'Completed', 11, 4, N'Khách gọi đặt trước');
+VALUES (1, 1, 3, 5, '2026-07-25 10:00:00', '2026-07-25 13:00:00', '2026-07-25 15:00:00', N'Pending', 11, 4, N'Khách gọi đặt trước');
 
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (2, 2, 4, 8, '2026-06-26 21:58:47', '2026-06-26 21:58:47', '2026-06-27 00:58:47', N'Completed', 12, 10, N'Sinh nhật');
+VALUES (2, 2, 4, 8, '2026-07-25 10:30:00', '2026-07-25 13:30:00', '2026-07-25 15:30:00', N'Pending', 12, 10, N'Sinh nhật');
 
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (3, 3, 3, 4, '2026-06-27 21:58:47', '2026-06-27 21:58:47', '2026-06-27 23:58:47', N'Completed', 13, 2, N'Khách vãng lai');
+VALUES (3, 3, 3, 4, '2026-07-25 11:00:00', '2026-07-25 14:00:00', '2026-07-25 16:00:00', N'Pending', 13, 2, N'Khách vãng lai');
+
+-- 3 Booking trạng thái Confirmed
+INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
+VALUES (4, 1, 3, 1, '2026-07-25 11:30:00', '2026-07-25 15:00:00', '2026-07-25 17:00:00', N'Confirmed', 14, 5, N'Họp nhóm');
 
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (4, 1, 3, 1, '2026-06-12 21:58:47', '2026-06-13 21:58:47', '2026-06-13 23:58:47', N'Completed', 14, 5, N'Họp nhóm');
+VALUES (9, 1, 3, 7, '2026-07-25 12:00:00', '2026-07-25 15:30:00', '2026-07-25 17:30:00', N'Confirmed', 13, 15, N'Liên hoan công ty');
 
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (9, 1, 3, 7, '2026-06-17 21:58:47', '2026-06-18 21:58:47', '2026-06-18 23:58:47', N'Completed', 13, 15, N'Liên hoan công ty');
-
-INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
-VALUES (10, 2, 4, 8, '2026-06-18 21:58:47', '2026-06-19 21:58:47', '2026-06-20 00:58:47', N'Completed', 14, 4, N'Tiệc nhỏ');
+VALUES (10, 2, 4, 8, '2026-07-25 12:30:00', '2026-07-25 16:00:00', '2026-07-25 18:00:00', N'Confirmed', 14, 4, N'Tiệc nhỏ');
 
 INSERT INTO [Booking] (BookingID, CustomerID, CreatedByID, RoomID, BookingTime, StartTime, EndTime, Status, StaffId, GuestCount, Note) 
 VALUES (11, 3, 4, 9, '2026-06-19 21:58:47', '2026-06-20 21:58:47', '2026-06-21 01:58:47', N'Completed', 11, 8, N'Bạn bè họp mặt');
@@ -1058,8 +1059,8 @@ INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID
 INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (8, 13, 1, 3, 2, '2026-06-22 21:58:47', '2026-06-23 00:58:47', 450000.00, 260000.00, 0.00, 710000.00, N'Paid');
 INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (9, 14, 2, 4, 2, '2026-06-23 21:58:47', '2026-06-23 23:58:47', 300000.00, 140000.00, 0.00, 440000.00, N'Paid');
 INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (10, 15, 5, 4, 2, '2026-06-24 21:58:47', '2026-06-25 01:58:47', 1200000.00, 600000.00, 180000.00, 1620000.00, N'Paid');
-INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (11, 6, 4, 4, 2, '2026-07-25 09:00:00', NULL, 360000.00, 190000.00, 0.00, 550000.00, N'Unpaid');
-INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (12, 8, 6, 3, 3, '2026-07-25 09:30:00', NULL, 1200000.00, 450000.00, 247500.00, 1402500.00, N'Unpaid');
+INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (11, 6, 4, 4, 2, '2026-07-25 09:00:00', NULL, 360000.00, 190000.00, 0.00, 550000.00, N'Paid');
+INSERT INTO [Invoice] (InvoiceID, BookingID, RoomID, ReceptionistID, PromotionID, CheckInTime, CheckOutTime, RoomTotal, ServiceTotal, DiscountAmount, GrandTotal, Status) VALUES (12, 8, 6, 3, 3, '2026-07-25 09:30:00', NULL, 1200000.00, 450000.00, 247500.00, 1402500.00, N'Paid');
 SET IDENTITY_INSERT [Invoice] OFF;
 
 -- 9.28 INVOICE DETAIL (Chi tiết dịch vụ hóa đơn)
