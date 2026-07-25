@@ -250,16 +250,37 @@ namespace KaraokeManagement.Services.StaffServices
 
             if (booking == null) return null;
 
-            var activeInvoice = booking.Invoices.OrderByDescending(i => i.CheckInTime).FirstOrDefault();
+            var activeInvoice = booking.Invoices
+                .OrderByDescending(i => i.CheckInTime)
+                .FirstOrDefault();
             if (activeInvoice == null) return null;
+
+            var canChangeRoom = activeInvoice.Status == "Unpaid";
+            var availableRooms = canChangeRoom
+                ? await _context.Rooms
+                    .Include(r => r.RoomType)
+                    .Where(r => r.Status == "Available" && r.RoomId != booking.RoomId)
+                    .Select(r => new PosRoomItem
+                    {
+                        RoomId = r.RoomId,
+                        RoomName = r.RoomName,
+                        RoomTypeName = r.RoomType.TypeName,
+                        PricePerHour = r.RoomType.PricePerHour
+                    })
+                    .ToListAsync()
+                : new List<PosRoomItem>();
 
             var viewModel = new AssignedDetailViewModel
             {
                 BookingId = booking.BookingId,
+                RoomId = booking.RoomId,
+                InvoiceId = activeInvoice.InvoiceId,
+                CanChangeRoom = canChangeRoom,
                 RoomName = booking.Room.RoomName,
                 RoomTypeName = booking.Room.RoomType.TypeName,
                 CheckInTime = activeInvoice.CheckInTime,
                 Note = booking.Note,
+                AvailableRooms = availableRooms,
                 Services = activeInvoice.InvoiceDetails.Select(d => new ServiceItemDetail
                 {
                     InvoiceDetailId = d.InvoiceDetailId,

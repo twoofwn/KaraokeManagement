@@ -304,7 +304,32 @@
 
             initCategoryFilter();
             initSearchFilter();
+
+            if (invoiceId) {
+                setInterval(syncInvoiceRoomState, 3000);
+            }
         });
+
+        async function syncInvoiceRoomState() {
+            try {
+                const response = await fetch(`/Receptionist/GetInvoiceRoomState?invoiceId=${invoiceId}`, {
+                    cache: 'no-store'
+                });
+                if (!response.ok) return;
+
+                const state = await response.json();
+                if (!state.success || state.status !== 'Unpaid') {
+                    window.location.href = '/Receptionist/Index';
+                    return;
+                }
+
+                if (state.roomId && state.roomId !== roomId) {
+                    window.location.href = `/Receptionist/Detail?roomId=${state.roomId}`;
+                }
+            } catch {
+                // Lỗi mạng tạm thời: giữ nguyên trang và thử lại ở chu kỳ tiếp theo.
+            }
+        }
 
         // Đếm thời gian sử dụng phòng và tính tiền phòng
         function initSingingTimer() {
