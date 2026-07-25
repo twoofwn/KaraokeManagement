@@ -1,4 +1,4 @@
-USE master;
+﻿USE master;
 GO
 
 IF EXISTS (SELECT name FROM sys.databases WHERE name = N'KaraokeManagementDB')
@@ -568,7 +568,7 @@ VALUES (10000.00, 1, N'Quy đổi 10,000 VNĐ = 1 điểm tích lũy');
 -- 9.7 CUSTOMER (Danh sách khách hàng)
 SET IDENTITY_INSERT [Customer] ON;
 INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, PasswordHash, LoyaltyPoints, CreatedAt, OtpCode, OtpExpiry, IsEmailVerified) 
-VALUES (1, 5, N'Lê Minh Tuấn (VIP)', '0911111111', 'tuanvip@gmail.com', '123456', 16500, '2026-06-01 10:00:00', NULL, NULL, 1);
+VALUES (1, 5, N'Lê Minh Tuấn (VIP)', '0911111111', 'tuanbumchiu@gmail.com', '123456', 16500, '2026-06-01 10:00:00', NULL, NULL, 1);
 
 INSERT INTO [Customer] (CustomerID, TierID, FullName, Phone, Email, PasswordHash, LoyaltyPoints, CreatedAt, OtpCode, OtpExpiry, IsEmailVerified) 
 VALUES (2, 4, N'Nguyễn Việt Hoàng', '0922222222', 'hoangnv@gmail.com', '123456', 8200, '2026-06-01 10:00:00', NULL, NULL, 1);
