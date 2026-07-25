@@ -7,6 +7,7 @@ public class InvoiceService
     private readonly KaraokeManagementDbContext _context;
     public InvoiceService(KaraokeManagementDbContext context) => _context = context;
 
+    // Lay list invoice
     public async Task<InvoiceHistoryViewModel> GetInvoiceHistoryAsync(string searchString, string customerFilter, DateTime? fromDate, DateTime? toDate, string status, int page)
     {
         var query = _context.Invoices.Include(i => i.Room).Include(i => i.Booking).ThenInclude(b => b.Customer).Include(i => i.Receptionist).AsQueryable();
@@ -55,6 +56,7 @@ public class InvoiceService
         return new InvoiceHistoryViewModel { Invoices = invoices, SearchString = searchString ?? string.Empty, CustomerFilter = customerFilter ?? string.Empty, FromDate = fromDate, ToDate = toDate, SelectedStatus = status, CurrentPage = page, TotalPages = totalPages, TotalCount = totalCount, PageSize = pageSize };
     }
 
+    // Chi tiet invoice theo id
     public async Task<CheckoutViewModel?> GetInvoiceDetailAsync(int invoiceId)
     {
         var invoice = await _context.Invoices.Include(i => i.Room)

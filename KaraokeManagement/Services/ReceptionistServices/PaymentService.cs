@@ -8,6 +8,7 @@ public class PaymentService
     private readonly KaraokeManagementDbContext _context;
     public PaymentService(KaraokeManagementDbContext context) => _context = context;
 
+    // Tong hop thong tin de check-out
     public async Task<CheckoutViewModel?> GetCheckoutViewModelAsync(int invoiceId)
     {
         var invoice = await _context.Invoices.Include(i => i.Room).ThenInclude(r => r.RoomType).Include(i => i.InvoiceDetails).ThenInclude(id => id.Service).Include(i => i.Booking).ThenInclude(b => b.Customer).ThenInclude(c => c.Tier).Include(i => i.Booking)
@@ -50,6 +51,7 @@ public class PaymentService
         };
     }
 
+    // Xac nhan check-out
     public async Task<bool> ProcessCheckoutAsync(CheckoutViewModel model)
     {
         var invoice = await _context.Invoices.Include(i => i.Room).Include(i => i.Booking).FirstOrDefaultAsync(i => i.InvoiceId == model.InvoiceId);
@@ -70,6 +72,7 @@ public class PaymentService
         return true;
     }
 
+    // Tinh phu thu
     private async Task<(decimal SurchargeAmount, string SurchargeNote)> CalculateSurchargeAsync(DateTime startDateTime, decimal basePrice)
     {
         var holiday = await _context.Holidays.FirstOrDefaultAsync(h => h.IsActive && h.HolidayDate.Date == startDateTime.Date);
@@ -91,6 +94,7 @@ public class PaymentService
         return (0, "");
     }
 
+    // Update hang khach hang
     private async Task CheckAndUpdateCustomerTierAsync(int? customerId, decimal paidAmount)
     {
         if (!customerId.HasValue) return;

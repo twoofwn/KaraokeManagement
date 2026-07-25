@@ -17,7 +17,6 @@ public class AuthController : Controller
 
     // Nhan vien dang nhap
     [HttpGet]
-    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public IActionResult Login()
     {
         if (User.Identity?.IsAuthenticated == true)

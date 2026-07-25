@@ -20,6 +20,7 @@ public class ReceptionistBookingService
         _emailService = emailService;
     }
 
+    // Lay list reason
     public async Task<List<CancellationReason>> GetCancellationReasonsAsync()
     {
         return await _context.CancellationReasons
@@ -29,6 +30,7 @@ public class ReceptionistBookingService
             .ToListAsync();
     }
 
+    // Lay list pending booking
     public async Task<ListBookingViewModel> GetListBookingAsync(
         string searchString,
         string customerFilter,
@@ -106,6 +108,7 @@ public class ReceptionistBookingService
         };
     }
 
+    // Xac nhan pending booking
     public async Task<(bool success, string message)> UpdateBookingStatusAsync(UpdateBookingStatusRequest request, int accountId)
     {
         if (request == null || request.BookingId <= 0)
@@ -172,6 +175,7 @@ public class ReceptionistBookingService
         return (true, $"Đã cập nhật trạng thái đơn đặt phòng thành {request.Status}.");
     }
 
+    // Lay list Confirmed booking
     public async Task<List<Booking>> GetBookingConfirmListAsync(string search)
     {
         DateTime todayStart = DateTime.Today;
@@ -195,6 +199,7 @@ public class ReceptionistBookingService
         return await query.OrderBy(b => b.StartTime).ToListAsync();
     }
 
+    // Lay chi tiet Confirmed booking
     public async Task<CheckInDetailViewModel?> GetBookingConfirmDetailAsync(int id)
     {
         var booking = await _context.Bookings
@@ -296,6 +301,7 @@ public class ReceptionistBookingService
         };
     }
 
+    // Check-in confirmed booking
     public async Task<bool> ConfirmCheckInAsync(CheckInDetailViewModel model, int accountId)
     {
         var booking = await _context.Bookings.FirstOrDefaultAsync(b => b.BookingId == model.BookingId);
@@ -347,6 +353,7 @@ public class ReceptionistBookingService
         return true;
     }
 
+    // Huy booking
     public async Task<(bool success, string message)> CancelBookingAsync(
         int bookingId,
         int? cancellationReasonId,
@@ -366,6 +373,7 @@ public class ReceptionistBookingService
             cancellationReasonDetail,
             accountId);
     }
+
 
     private async Task<(bool success, string message)> CancelBookingInternalAsync(
         Booking booking,

@@ -8,6 +8,7 @@ public class OrderService
     private readonly KaraokeManagementDbContext _context;
     public OrderService(KaraokeManagementDbContext context) => _context = context;
 
+    // Lay chi tiet phong
     public async Task<RoomDetailPosViewModel?> GetRoomDetailAsync(int roomId, string? userName)
     {
         var room = await _context.Rooms
@@ -16,6 +17,7 @@ public class OrderService
 
         if (room == null) return null;
 
+        // Lay invoice
         var invoice = await _context.Invoices
             .Include(i => i.Booking).ThenInclude(b => b.Staff)
             .Include(i => i.Booking).ThenInclude(b => b.Customer)
@@ -23,17 +25,16 @@ public class OrderService
             .ThenInclude(id => id.Service)
             .FirstOrDefaultAsync(i => i.RoomId == roomId && i.Status == "Unpaid");
 
-        // Trang chi tiết chỉ được đọc hóa đơn do luồng check-in tạo ra.
-        // Không tự tạo hóa đơn tại đây vì tab cũ có thể mở lại phòng vừa được chuyển,
-        // làm phòng cũ bị đặt thành InUse lần nữa và sinh hóa đơn không có Booking.
         if (invoice == null) return null;
 
+        // Lay service category
         var categories = await _context.Categories.Select(c => new CategoryViewModel { CategoryId = c.CategoryId, CategoryName = c.CategoryName }).ToListAsync();
         var serviceItems = await _context.ServiceItems.Include(s => s.Category)
             .Select(s => new PosProductItem { ServiceId = s.ServiceId, CategoryId = s.CategoryId, ServiceName = s.ServiceName, SellingPrice = s.SellingPrice, Unit = s.Unit, StockQuantity = s.StockQuantity ?? 0, CategoryName = s.Category.CategoryName , imageURL = s.ImageUrl ?? "/img/Reception_img/dia_trai_cay.jpg" }).ToListAsync();
 
         var orderItems = invoice.InvoiceDetails.Select(id => new PosOrderItem { InvoiceDetailId = id.InvoiceDetailId, ServiceId = id.ServiceId, ServiceName = id.Service.ServiceName, Unit = id.Service.Unit, Quantity = id.Quantity, UnitPrice = id.UnitPrice }).ToList();
 
+        // Available room de doi phong
         var availableRooms = await _context.Rooms.Include(r => r.RoomType).Where(r => r.Status == "Available" && r.RoomId != roomId)
             .Select(r => new PosRoomItem { RoomId = r.RoomId, RoomName = r.RoomName, RoomTypeName = r.RoomType.TypeName, PricePerHour = r.RoomType.PricePerHour }).ToListAsync();
 
@@ -116,6 +117,8 @@ public class OrderService
 
         return (true, string.Empty);
     }
+
+
 
     private async Task RecalculateInvoiceTotalsAsync(int invoiceId)
     {
