@@ -299,11 +299,8 @@ namespace KaraokeManagement.Services.StaffServices
             var detail = await _context.InvoiceDetails.FindAsync(invoiceDetailId);
 
             if (detail == null || detail.IsFulFilled)return false;
-            var serviceItem = await _context.ServiceItems.FindAsync(detail.ServiceId);
-            if (serviceItem == null)return false;
-            if (serviceItem.StockQuantity < detail.Quantity)return false;
+
             detail.IsFulFilled = true;
-            serviceItem.StockQuantity -= detail.Quantity;
 
             await _context.SaveChangesAsync();
 

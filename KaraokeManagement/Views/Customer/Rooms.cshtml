@@ -252,13 +252,11 @@
 </style>
 
 <div class="t-customer-rooms-container">
-	<!-- Hero Section -->
 	<div class="t-customer-rooms-hero">
 		<h1>Khám phá Phòng hát</h1>
 		<p>Lựa chọn không gian hoàn hảo cho bữa tiệc âm nhạc của bạn</p>
 	</div>
 
-	<!-- Main Content -->
 	<div class="t-rooms-main-content">
 
 		<form method="get" action="@Url.Action("Rooms", "Customer")" class="t-customer-rooms-controls">
@@ -285,7 +283,6 @@
 			</button>
 		</form>
 
-		<!-- Grid Cards đổ dữ liệu từ Model -->
 		<div class="t-customer-rooms-grid">
 
 			@if (Model != null && Model.Any())
@@ -295,22 +292,18 @@
 					<div class="t-customer-room-card">
 						<div class="t-customer-room-card-image-wrapper">
 							@{
-								// Lấy ảnh đầu tiên của loại phòng này, nếu chưa có thì dùng ảnh mặc định
 								var displayImg = (roomType.RoomImages != null && roomType.RoomImages.Any())
 								? roomType.RoomImages.First().ImageUrl
 								: "https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?auto=format&fit=crop&q=80&w=600";
 							}
-							<!-- Hiển thị ảnh động -->
 							<img src="@displayImg" alt="@roomType.TypeName" class="t-customer-room-card-image" />
 						</div>
 						<div class="t-customer-room-card-content">
 							<div class="t-customer-room-card-price">
-								<!-- Format số tiền chuẩn VNĐ -->
 								<span class="t-customer-room-card-price-night">chỉ từ  </span>@roomType.PricePerHour.ToString("N0") ₫<span class="t-customer-room-card-price-night"> / giờ</span>
 							</div>
 							<h3 class="t-customer-room-card-name">@roomType.TypeName</h3>
 
-							<!-- Bổ sung icon tượng trưng tĩnh do db chưa có -->
 							<div class="t-customer-room-card-details">
 								<span><i class="fa-solid fa-microphone-lines"></i> Âm thanh chuẩn</span>
 								<span><i class="fa-solid fa-couch"></i> Tiện nghi</span>
@@ -320,7 +313,6 @@
 								@(string.IsNullOrEmpty(roomType.Description) ? "Đang cập nhật mô tả cho loại phòng hát này. Mang đến trải nghiệm âm nhạc tuyệt vời nhất cho bạn." : roomType.Description)
 							</p>
 
-							<!-- Chuyển link động vào Detail -->
 							<a asp-controller="Customer" asp-action="RoomDetail" asp-route-id="@roomType.RoomTypeId" class="t-customer-room-card-button">
 								Xem chi tiết
 							</a>
@@ -339,9 +331,4 @@
 </div>
 
 @section Scripts {
-	<!-- Nếu bạn muốn chuyển JS filter/sort vào đây giống bên React, bạn có thể viết script lọc ở đây -->
-	<script>
-		// Placeholder cho logic search/filter bằng JavaScript nếu cần thiết
-		// Nếu bạn filter bằng Backend C# thì không cần đoạn Script này.
-	</script>
 }

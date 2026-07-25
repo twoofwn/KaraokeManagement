@@ -416,10 +416,8 @@
 <div class="t-roomdetail-container">
 	<div class="t-roomdetail-main-wrapper">
 
-		<!-- Header -->
 		<div class="t-roomdetail-header">
 			<div class="t-roomdetail-header-decorator"></div>
-			<!-- Thay bằng TypeName -->
 			<h1 class="t-roomdetail-header-title">@Model.TypeName</h1>
 			<div class="t-roomdetail-breadcrumbs">
 				<a href="/Customer/Index">Trang chủ</a><span>&gt;</span>
@@ -429,10 +427,8 @@
 		</div>
 
 		<div class="t-roomdetail-layout">
-			<!-- Left Column: Gallery, Description, Amenities -->
 			<div class="t-roomdetail-left-column">
 
-				<!-- Image Gallery -->
 				<div class="t-roomdetail-gallery">
 					@{
 						var firstImage = (Model.RoomImages != null && Model.RoomImages.Any())
@@ -440,11 +436,8 @@
 						: "https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?auto=format&fit=crop&q=80&w=800";
 					}
 
-					<!-- Ảnh chính -->
-					<img src="@firstImage"
-						 alt="Room main view" id="mainRoomImage" class="t-roomdetail-gallery-main-img" />
+					<img src="@firstImage" alt="Room main view" id="mainRoomImage" class="t-roomdetail-gallery-main-img" />
 
-					<!-- Danh sách các ảnh nhỏ (Thumbnails) -->
 					<div class="t-roomdetail-gallery-thumbnails">
 						@if (Model.RoomImages != null && Model.RoomImages.Any())
 						{
@@ -460,7 +453,6 @@
 						}
 						else
 						{
-							<!-- Fallback nếu DB trống -->
 							<div class="t-roomdetail-gallery-thumbnail-item">
 								<img src="https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?auto=format&fit=crop&q=80&w=400"
 									 class="t-roomdetail-gallery-thumbnail-img active" onclick="changeImage(this)" />
@@ -469,12 +461,10 @@
 					</div>
 				</div>
 
-				<!-- Description -->
 				<div class="t-roomdetail-description">
 					<p>@(string.IsNullOrEmpty(Model.Description) ? "Chưa có mô tả cho loại phòng này." : Model.Description)</p>
 				</div>
 
-				<!-- Amenities -->
 				<div class="t-roomdetail-amenities-section">
 					<h2 class="t-roomdetail-section-title">Tiện nghi phòng</h2>
 					<div class="t-roomdetail-amenities-grid">
@@ -487,7 +477,6 @@
 					</div>
 				</div>
 
-				<!-- Các phòng trống (Đổ từ Model.Rooms) -->
 				<div class="t-roomdetail-section">
 					<h2 class="t-roomdetail-section-title">Danh sách phòng khả dụng</h2>
 					<div class="t-roomdetail-rooms-row">
@@ -496,7 +485,6 @@
 							bool isFirst = true;
 							foreach (var room in Model.Rooms)
 							{
-								// *Ghi chú: Đổi "room.RoomId" thành "room.RoomName" nếu bảng Room của bạn có trường Tên phòng
 								<div class="t-roomdetail-room-item @(isFirst ? "selected" : "")">@room.RoomName</div>
 								isFirst = false;
 							}
@@ -509,7 +497,6 @@
 				</div>
 			</div>
 
-			<!-- Right Column: Booking Form -->
 			<div class="t-roomdetail-right-column">
 				<div class="t-roomdetail-price-card">
 					<span class="t-roomdetail-price-label"><i class="fa-solid fa-tags"></i> Bảng giá niêm yết</span>
@@ -517,7 +504,6 @@
 					@if (Model.RoomPrices != null && Model.RoomPrices.Any())
 					{
 						<div class="t-roomdetail-price-list">
-							<!-- Lặp qua danh sách cấu hình giá, format thời gian giờ:phút -->
 							@foreach (var priceConfig in Model.RoomPrices.OrderBy(p => p.StartTime))
 							{
 								<div class="t-roomdetail-price-item">
@@ -532,11 +518,9 @@
 					}
 					else
 					{
-						<!-- Fallback nếu bảng RoomPrices chưa có dữ liệu cấu hình -->
 						<span class="t-roomdetail-price-amount">@Model.PricePerHour.ToString("N0") ₫<span style="font-size: 1.2rem; font-weight: 500;"> / giờ</span></span>
 					}
 
-					<!-- LƯU Ý PHỤ THU -->
 					@if (ViewBag.ActivePolicies != null && ((IEnumerable<KaraokeManagement.Models.PricingPolicy>)ViewBag.ActivePolicies).Any())
 					{
 						<div class="t-roomdetail-policy-note">
@@ -544,7 +528,6 @@
 							<ul class="t-roomdetail-policy-list">
 								@foreach (var policy in (IEnumerable<KaraokeManagement.Models.PricingPolicy>)ViewBag.ActivePolicies)
 								{
-									<!-- Hiển thị value (giả định là % phụ thu) -->
 									<li>@policy.PolicyName: Tăng <b>@policy.Value.ToString("0.##")%</b></li>
 								}
 							</ul>
@@ -558,7 +541,6 @@
 
 					<form class="t-roomdetail-booking-form" onsubmit="handleBooking(event)">
 
-						<!-- Check-in & Check-out -->
 						<div class="t-roomdetail-form-group full-width">
 							<label class="t-roomdetail-form-label">Ngày hát</label>
 							<div class="t-roomdetail-input-wrapper">
@@ -567,7 +549,6 @@
 							</div>
 						</div>
 
-						<!-- Giờ bắt đầu & Thời gian hát -->
 						<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;" class="full-width">
 							<div class="t-roomdetail-form-group" style="margin-bottom:0;">
 								<label class="t-roomdetail-form-label">Giờ bắt đầu</label>
@@ -592,12 +573,10 @@
 							</div>
 						</div>
 
-						<!-- Dropdown chọn phòng -->
 						<div class="t-roomdetail-form-group full-width">
 							<label class="t-roomdetail-form-label">Phòng</label>
 							<div class="t-roomdetail-input-wrapper">
 
-								<!-- THÊM: Input ẩn để lưu RoomId -->
 								<input type="hidden" id="selectedRoomId" value="@(Model.Rooms != null && Model.Rooms.Any() ? Model.Rooms.First().RoomId : 0)" />
 
 								<div class="t-roomdetail-custom-select-trigger" onclick="toggleRoomDropdown()">
@@ -613,7 +592,6 @@
 											bool isFirst = true;
 											foreach (var room in Model.Rooms)
 											{
-												<!-- THÊM: Truyền thêm @room.RoomId vào tham số đầu tiên của selectFormRoom -->
 												<div class="t-roomdetail-room-item @(isFirst ? "selected" : "")"
 													 onclick="selectFormRoom(@room.RoomId, '@room.RoomName', this)">
 													@room.RoomName

@@ -400,9 +400,7 @@
 
 	<main class="t-servicedetail-main-content">
 
-		<!-- Cột Trái: Hình ảnh & Mô tả -->
 		<div class="t-servicedetail-left-column">
-			<!-- Tạm thời dùng ảnh tĩnh vì chưa có field Image trong DB -->
 			<img src="@(!string.IsNullOrEmpty(Model.ImageUrl) ? Model.ImageUrl : "https://images.unsplash.com/photo-1600984880922-6b997c2317af?auto=format&fit=crop&q=80&w=800")"
 				 alt="@Model.ServiceName"
 				 class="t-servicedetail-image" />
@@ -431,7 +429,6 @@
 			</div>
 		</div>
 
-		<!-- Cột Phải: Form Đặt dịch vụ -->
 		<div class="t-servicedetail-right-column">
 			<div class="t-servicedetail-request-box">
 
@@ -497,7 +494,6 @@
 		</div>
 	</main>
 
-	<!-- Các Dịch vụ Gợi ý (Cùng danh mục) -->
 	@if (ViewBag.SuggestedServices != null && ((IEnumerable<KaraokeManagement.Models.ServiceItem>)ViewBag.SuggestedServices).Any())
 	{
 		<section class="t-servicedetail-suggest-section">
@@ -525,7 +521,6 @@
 				</div>
 			</div>
 
-			<!-- Điều hướng Scroll cho Suggested List -->
 			<div class="t-servicedetail-suggest-nav">
 				<button class="t-servicedetail-suggest-nav-btn" onclick="scrollList(-300)">
 					<i class="fa-solid fa-chevron-left"></i>
@@ -541,9 +536,7 @@
 
 @section Scripts {
 	<script>
-		// Xử lý Tăng/Giảm Số lượng
 		let quantity = 1;
-		// Lấy tồn kho tối đa từ Model (Nếu = null thì mặc định 99)
 		const maxStock = @(Model.StockQuantity.HasValue? Model.StockQuantity.Value : 99);
 
 		function changeQty(amount) {
@@ -557,7 +550,6 @@
 			document.getElementById('qtyDisplay').innerText = quantity;
 		}
 
-		// Xử lý nút Scroll qua lại của Gợi ý Dịch vụ
 		function scrollList(offset) {
 			const container = document.getElementById('suggestList');
 			if (container) {
@@ -565,16 +557,15 @@
 			}
 		}
 
-		// Xử lý Submit Form bằng SweetAlert2
 				async function handleRequestSubmit(e) {
 			e.preventDefault();
 
 			const roomSelect = document.getElementById('roomSelect');
 			const roomId = parseInt(roomSelect.value);
-			const roomName = roomSelect.options[roomSelect.selectedIndex].text; // Lấy tên phòng để hiện thông báo
+			const roomName = roomSelect.options[roomSelect.selectedIndex].text;
 
 			const notes = document.getElementById('notes').value;
-			const serviceId = @Model.ServiceId; // Lấy ID của món hiện tại từ Model
+			const serviceId = @Model.ServiceId;
 			const serviceName = "@Html.Raw(Model.ServiceName)";
 
 			if (isNaN(roomId)) {
@@ -609,7 +600,6 @@
 					});
 
 					try {
-						// Đóng gói dữ liệu gửi lên API
 						const payload = {
 							RoomId: roomId,
 							ServiceId: serviceId,
@@ -632,7 +622,7 @@
 								icon: "success",
 								confirmButtonColor: "#43334C"
 							}).then(() => {
-								window.location.reload(); // Reload lại trang để cập nhật tồn kho
+								window.location.reload();
 							});
 						} else {
 							Swal.fire('Thất bại', data.message, 'error');

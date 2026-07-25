@@ -13,7 +13,7 @@ namespace KaraokeManagement.Services.CustomerServices
         {
             return !await _context.Bookings.AnyAsync(b =>
                 b.RoomId == roomId &&
-                b.Status != "Cancelled" && b.Status != "Đã hủy" &&
+                b.Status != "Cancelled" &&
                 b.StartTime < endDateTime &&
                 (b.EndTime == null || b.EndTime > startDateTime));
         }

@@ -1,4 +1,4 @@
-@model List<KaraokeManagement.Models.Booking>
+﻿@model List<KaraokeManagement.Models.Booking>
 @{
     ViewData["Title"] = "Lịch sử đặt phòng";
     Layout = "~/Views/Customer/_CustomerLayout.cshtml";
@@ -6,7 +6,6 @@
 }
 
 <div class="bookings-page">
-    <!-- Page Header -->
     <div class="bookings-header">
         <div class="bookings-header-content">
             <h1><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử đặt phòng</h1>
@@ -31,7 +30,6 @@
         </div>
     </div>
 
-    <!-- Filter Tabs -->
     <div class="bookings-filter-bar">
         <button class="filter-tab active" data-filter="all">
             <i class="fa-solid fa-border-all"></i> Tất cả
@@ -55,7 +53,6 @@
         </button>
     </div>
 
-    <!-- Bookings List -->
     @if (Model.Count == 0)
     {
         <div class="bookings-empty">
@@ -109,14 +106,12 @@
 
                 <a href="/Customer/BookingDetail?id=@booking.BookingId" class="booking-card-link" data-status="@filterGroup">
                     <div class="booking-card @(booking.Status == "CheckedIn" ? "booking-card-active" : "")">
-                        <!-- Status ribbon -->
                         <div class="booking-status-ribbon @statusClass">
                             <i class="@statusIcon"></i>
                             <span>@statusText</span>
                         </div>
 
                         <div class="booking-card-body">
-                            <!-- Room Info -->
                             <div class="booking-room-info">
                                 <div class="booking-room-icon">
                                     <i class="fa-solid fa-door-open"></i>
@@ -127,7 +122,6 @@
                                 </div>
                             </div>
 
-                            <!-- Booking Details Row -->
                             <div class="booking-details-row">
                                 <div class="booking-detail-item">
                                     <i class="fa-regular fa-calendar"></i>
@@ -146,7 +140,6 @@
                                 }
                             </div>
 
-                            <!-- Footer: Price + Arrow -->
                             <div class="booking-card-footer">
                                 @if (invoice != null && invoice.GrandTotal.HasValue)
                                 {
